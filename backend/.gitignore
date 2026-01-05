@@ -1,0 +1,22 @@
+
+# Dependencies
+node_modules/
+
+# Build
+dist/
+build/
+
+# Config & Secrets
+src/config/serviceAccountKey.json
+.env
+.env.production
+.env.development
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Misc
+.DS_Store
+coverage/
