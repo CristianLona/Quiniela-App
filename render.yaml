@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: quiniela-backend
+    env: node
+    plan: free
+    buildCommand: cd backend && npm install && npm run build
+    startCommand: cd backend && npm run start:prod
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: FIREBASE_CREDENTIALS
+        sync: false # User must paste this manually in dashboard

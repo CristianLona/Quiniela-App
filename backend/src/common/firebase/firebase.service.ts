@@ -7,25 +7,46 @@ export class FirebaseService implements OnModuleInit {
     private db: admin.firestore.Firestore;
 
     onModuleInit() {
-        try {
-            // Check if app is already initialized to prevent duplicate errors
-            if (admin.apps.length === 0) {
-                // Determine path to serviceAccountKey.json
-                // Assumes it is in dist/config/serviceAccountKey.json (after build) 
-                // OR src/config during dev. Best to try/catch or use env vars in production.
-                // For this MVP, let's assume root/src/config logic.
-                const serviceAccount = require(path.resolve(process.cwd(), 'src/config/serviceAccountKey.json'));
+        if (admin.apps.length > 0) {
+            this.db = admin.firestore();
+            return;
+        }
 
-                admin.initializeApp({
-                    credential: admin.credential.cert(serviceAccount)
-                });
+        try {
+            let serviceAccount;
+            // 1. Try Environment Variable (Production/Render)
+            if (process.env.FIREBASE_CREDENTIALS) {
+                try {
+                    serviceAccount = JSON.parse(process.env.FIREBASE_CREDENTIALS);
+                    console.log('Using Firebase Credentials from Environment Variable');
+                } catch (e) {
+                    console.warn('Failed to parse FIREBASE_CREDENTIALS');
+                }
             }
+
+            // 2. Try Local File (Development)
+            if (!serviceAccount) {
+                try {
+                    const filePath = path.resolve(process.cwd(), 'src/config/serviceAccountKey.json');
+                    serviceAccount = require(filePath);
+                    console.log('Using Firebase Credentials from Local File');
+                } catch (e) {
+                    // Ignore if file missing
+                }
+            }
+
+            if (!serviceAccount) {
+                throw new Error('No Firebase credentials found (File or Env Var)');
+            }
+
+            admin.initializeApp({
+                credential: admin.credential.cert(serviceAccount)
+            });
+
             this.db = admin.firestore();
             console.log('🔥 Firebase Initialized Successfully');
         } catch (error) {
-            console.warn('⚠️  Firebase init failed. Missing serviceAccountKey.json? Using Mock/Memory DB if configured (or process will fail).', error.message);
-            // In a real app, we might throw here. 
-            // For now, let's allow it to fail gracefully so the user sees the error in terminal.
+            console.warn('⚠️  Firebase init failed.', error.message);
         }
     }
 

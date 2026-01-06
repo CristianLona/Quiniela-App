@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { cn } from '../../lib/utils';
-import { Lock, Plus, Play, Loader2, Trophy, ClipboardList, PenTool, Save } from 'lucide-react';
+import { Lock, Plus, Play, Loader2, Trophy, ClipboardList, PenTool } from 'lucide-react';
 import type { WeekDraft, Match } from '../../types';
 import { api } from '../../lib/api';
 
@@ -151,7 +151,6 @@ export default function AdminPanel() {
 function ResultsEditor() {
     const [matches, setMatches] = useState<Match[]>([]);
     const [weekId, setWeekId] = useState<string | null>(null);
-    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         api.weeks.getAll().then(weeks => {

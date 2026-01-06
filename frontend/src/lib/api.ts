@@ -1,6 +1,6 @@
 import type { Week, WeekDraft, ParticipantEntry, PickSelection, MatchOutcome } from '../types';
 
-const API_URL = 'http://localhost:3000'; // TODO: Env var
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 async function fetchJson<T>(endpoint: string, options?: RequestInit): Promise<T> {
     const res = await fetch(`${API_URL}${endpoint}`, {

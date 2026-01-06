@@ -189,7 +189,7 @@ export default function FillQuiniela() {
                         <Target className="w-4 h-4" /> Partidos
                     </h2>
                     <div className="space-y-4">
-                        {matches.map((match, idx) => (
+                        {matches.map((match) => (
                             <MatchCard
                                 key={match.id}
                                 match={match}
