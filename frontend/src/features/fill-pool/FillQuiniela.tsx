@@ -121,7 +121,10 @@ export default function FillQuiniela() {
                         <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">{weekName}</p>
                     </div>
 
-                    <div className="w-12 h-12 rounded-full bg-[#22c55e] flex items-center justify-center shadow-[0_0_20px_rgba(34,197,94,0.4)]">
+                    <div
+                        onClick={() => navigate('/scoreboard')}
+                        className="w-12 h-12 rounded-full bg-[#22c55e] flex items-center justify-center shadow-[0_0_20px_rgba(34,197,94,0.4)] cursor-pointer hover:scale-105 transition-transform active:scale-95"
+                    >
                         <Trophy className="w-6 h-6 text-black fill-current" />
                     </div>
                 </div>

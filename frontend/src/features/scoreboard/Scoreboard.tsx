@@ -13,6 +13,35 @@ export default function Scoreboard() {
     const [weekName, setWeekName] = useState('Cargando...');
     const [currentWeekData, setCurrentWeekData] = useState<any>(null); // Ideally use Week type
 
+    // Auto-Scale Logic
+    const [scale, setScale] = useState(1);
+    const [container, setContainer] = useState<HTMLDivElement | null>(null);
+    const [table, setTable] = useState<HTMLTableElement | null>(null);
+
+    useEffect(() => {
+        const handleResize = () => {
+            if (container && table) {
+                const containerWidth = container.clientWidth;
+                const tableWidth = table.offsetWidth; // Use offsetWidth for actual rendered width
+
+                if (tableWidth > 0) {
+                    // Always match the container width
+                    // This will scale DOWN if table is huge
+                    // And scale UP if table is small (filling the screen)
+                    const newScale = containerWidth / tableWidth;
+                    setScale(newScale);
+                }
+            }
+        };
+
+        // Initial calc
+        handleResize();
+
+        // Listener
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, [container, table, matches, participants]); // Re-run if data changes size
+
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -78,12 +107,12 @@ export default function Scoreboard() {
         <div className="min-h-screen bg-black flex flex-col items-center p-4 md:p-8">
 
             {/* Top Navigation Bar */}
-            <div className="w-full max-w-[1400px] mb-6 md:mb-8 flex items-center justify-between">
+            <div className="w-full max-w-[1400px] mb-6 md:mb-8 flex items-center justify-between gap-4">
                 <button onClick={() => navigate('/')} className="group flex items-center gap-2 px-4 py-2 bg-white/5 rounded-xl hover:bg-white/10 transition-colors">
                     <ArrowLeft className="w-5 h-5 text-white group-hover:-translate-x-1 transition-transform" />
                     <span className="text-sm font-bold text-white hidden md:block">Inicio</span>
                 </button>
-                <h1 className="text-lg md:text-xl font-black text-white tracking-widest uppercase">Resultados</h1>
+                <h1 className="text-lg md:text-xl font-black text-white tracking-widest uppercase truncate">Resultados</h1>
 
                 <button onClick={() => navigate('/fill')} className="flex items-center gap-2 px-4 py-2 bg-[#22c55e] rounded-xl hover:bg-[#16a34a] transition-colors shadow-[0_0_15px_rgba(34,197,94,0.3)]">
                     <span className="text-sm font-black text-[#020617] uppercase">Jugar</span>
@@ -127,101 +156,113 @@ export default function Scoreboard() {
                 </div>
             </div>
 
-            {/* Main Scoreboard Table - Full Width */}
+            {/* Main Scoreboard Table - Full Width Auto-Scale */}
             <div className="w-full max-w-[1400px]">
-                <div className="pool-card p-1 overflow-hidden bg-[#0A0A0A]">
-                    <div className="overflow-x-auto custom-scrollbar">
-                        <table className="w-full">
-                            <thead>
-                                <tr className="bg-[#151515]">
-                                    <th className="p-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider sticky left-0 bg-[#151515] z-10">Participante</th>
-                                    {matches.map(m => (
-                                        <th key={m.id} className="p-2 min-w-[60px] text-center align-bottom relative group">
-                                            {/* Hover Guide Trace */}
-                                            <div className="absolute inset-x-0 bottom-0 top-0 bg-white/0 group-hover:bg-white/5 -z-10 transition-colors pointer-events-none" />
+                <div className="pool-card bg-[#0A0A0A] overflow-hidden">
+                    <div
+                        ref={setContainer}
+                        className="w-full overflow-hidden relative"
+                        style={{ height: table ? (table.scrollHeight * scale) : 'auto' }} // Adjust height to match scaled table
+                    >
+                        <div
+                            style={{
+                                transform: `scale(${scale})`,
+                                transformOrigin: 'top left',
+                                width: 'fit-content' // Allow table to be its natural full size
+                            }}
+                        >
+                            <table ref={setTable} className="w-max"> {/* w-max forces full width */}
+                                <thead>
+                                    <tr className="bg-[#151515]">
+                                        <th className="p-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider sticky left-0 bg-[#151515] z-10">Participante</th>
+                                        {matches.map(m => (
+                                            <th key={m.id} className="p-2 min-w-[60px] text-center align-bottom relative group">
+                                                {/* Hover Guide Trace */}
+                                                <div className="absolute inset-x-0 bottom-0 top-0 bg-white/0 group-hover:bg-white/5 -z-10 transition-colors pointer-events-none" />
 
-                                            <div className="flex flex-col items-center justify-between h-64 pb-2 pt-2">
-                                                {/* Team Names (Top Aligned) */}
-                                                <div className="flex-1 flex items-center justify-center">
-                                                    <span className="text-[11px] font-bold text-slate-400 uppercase whitespace-nowrap tracking-wider opacity-80 group-hover:opacity-100 transition-opacity" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>
-                                                        {m.homeTeam} <span className="text-slate-600 mx-1 font-normal">vs</span> {m.awayTeam}
-                                                    </span>
+                                                <div className="flex flex-col items-center justify-between h-64 pb-2 pt-2">
+                                                    {/* Team Names (Top Aligned) */}
+                                                    <div className="flex-1 flex items-center justify-center">
+                                                        <span className="text-[11px] font-bold text-slate-400 uppercase whitespace-nowrap tracking-wider opacity-80 group-hover:opacity-100 transition-opacity" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>
+                                                            {m.homeTeam} <span className="text-slate-600 mx-1 font-normal">vs</span> {m.awayTeam}
+                                                        </span>
+                                                    </div>
+
+                                                    {/* Bottom Block: Box + Score */}
+                                                    <div className="flex flex-col items-center gap-1">
+                                                        {/* Outcome Box */}
+                                                        <div className={cn(
+                                                            "w-8 h-8 rounded-lg text-xs flex items-center justify-center font-black shadow-md border-2 transition-transform group-hover:scale-110",
+                                                            m.status === 'FINISHED' ? (
+                                                                m.result?.outcome === 'L' ? 'bg-white border-white text-black' :
+                                                                    m.result?.outcome === 'E' ? 'bg-slate-700 border-slate-700 text-white' :
+                                                                        'bg-[#22c55e] border-[#22c55e] text-black'
+                                                            ) : 'bg-[#151515] border-white/10 text-slate-700'
+                                                        )}>
+                                                            {m.status === 'FINISHED' ? m.result?.outcome : '-'}
+                                                        </div>
+
+                                                        {/* Score Display */}
+                                                        <div className="h-5 text-[10px] font-mono font-bold text-slate-400">
+                                                            {m.status === 'FINISHED' && m.result
+                                                                ? `${m.result.homeScore}-${m.result.awayScore}`
+                                                                : ''}
+                                                        </div>
+                                                    </div>
                                                 </div>
-
-                                                {/* Bottom Block: Box + Score */}
-                                                <div className="flex flex-col items-center gap-1">
-                                                    {/* Outcome Box */}
-                                                    <div className={cn(
-                                                        "w-8 h-8 rounded-lg text-xs flex items-center justify-center font-black shadow-md border-2 transition-transform group-hover:scale-110",
-                                                        m.status === 'FINISHED' ? (
-                                                            m.result?.outcome === 'L' ? 'bg-white border-white text-black' :
-                                                                m.result?.outcome === 'E' ? 'bg-slate-700 border-slate-700 text-white' :
-                                                                    'bg-[#22c55e] border-[#22c55e] text-black'
-                                                        ) : 'bg-[#151515] border-white/10 text-slate-700'
-                                                    )}>
-                                                        {m.status === 'FINISHED' ? m.result?.outcome : '-'}
-                                                    </div>
-
-                                                    {/* Score Display */}
-                                                    <div className="h-5 text-[10px] font-mono font-bold text-slate-400">
-                                                        {m.status === 'FINISHED' && m.result
-                                                            ? `${m.result.homeScore}-${m.result.awayScore}`
-                                                            : ''}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </th>
-                                    ))}
-                                    <th className="p-4 text-center text-sm font-black text-[#22c55e] uppercase bg-[#151515]">PTS</th>
-                                    <th className="p-4 text-center text-sm font-black text-slate-400 uppercase bg-[#151515]">GOL</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-white/5">
-                                {sortedParticipants.map((p, idx) => (
-                                    <tr key={p.id} className="hover:bg-white/5 transition-colors group">
-                                        <td className="p-4 whitespace-nowrap sticky left-0 bg-[#0A0A0A] z-10 border-r border-white/5 group-hover:bg-[#111]">
-                                            <div className="flex items-center gap-4">
-                                                <span className={cn(
-                                                    "w-8 h-8 rounded-lg flex items-center justify-center text-sm font-black",
-                                                    idx === 0 ? "bg-[#fbbf24] text-black" :
-                                                        idx === 1 ? "bg-slate-300 text-black" :
-                                                            idx === 2 ? "bg-amber-700 text-white" : "text-slate-600 bg-white/5"
-                                                )}>{idx + 1}</span>
-                                                <span className={cn("font-bold text-base", idx < 3 ? "text-white" : "text-slate-300")}>{p.participantName}</span>
-                                            </div>
-                                        </td>
-                                        {matches.map(m => {
-                                            const pick = p.picks.find(pick => pick.matchId === m.id);
-                                            const isHit = p.hits?.includes(m.id);
-                                            return (
-                                                <td key={m.id} className="p-2 text-center">
-                                                    <div className={cn(
-                                                        "w-8 h-8 mx-auto rounded-lg text-xs flex items-center justify-center font-bold transition-all border-2",
-                                                        isHit
-                                                            ? "bg-[#22c55e] border-[#22c55e] text-black shadow-[0_0_15px_rgba(34,197,94,0.3)] scale-110"
-                                                            : "text-slate-500 bg-white/5 border-transparent"
-                                                    )}>
-                                                        {pick?.selection || '-'}
-                                                    </div>
-                                                </td>
-                                            )
-                                        })}
-                                        <td className="p-4 text-center font-black text-xl text-white">{p.score}</td>
-                                        <td className="p-4 text-center text-sm font-mono text-slate-400">{p.totalGoalsPrediction}</td>
+                                            </th>
+                                        ))}
+                                        <th className="p-4 text-center text-sm font-black text-[#22c55e] uppercase bg-[#151515]">PTS</th>
+                                        <th className="p-4 text-center text-sm font-black text-slate-400 uppercase bg-[#151515]">GOL</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                            <tfoot>
-                                <tr className="bg-[#151515]/50 border-t-2 border-white/10">
-                                    <td className="p-4 text-right font-bold text-xs uppercase text-slate-500 sticky left-0 bg-[#0A0A0A]" colSpan={matches.length + 2}>
-                                        Total Goles Real:
-                                    </td>
-                                    <td className="p-4 text-center font-black text-xl text-white bg-[#151515]">
-                                        {totalGoals}
-                                    </td>
-                                </tr>
-                            </tfoot>
-                        </table>
+                                </thead>
+                                <tbody className="divide-y divide-white/5">
+                                    {sortedParticipants.map((p, idx) => (
+                                        <tr key={p.id} className="hover:bg-white/5 transition-colors group">
+                                            <td className="p-4 whitespace-nowrap sticky left-0 bg-[#0A0A0A] z-10 border-r border-white/5 group-hover:bg-[#111]">
+                                                <div className="flex items-center gap-4">
+                                                    <span className={cn(
+                                                        "w-8 h-8 rounded-lg flex items-center justify-center text-sm font-black",
+                                                        idx === 0 ? "bg-[#fbbf24] text-black" :
+                                                            idx === 1 ? "bg-slate-300 text-black" :
+                                                                idx === 2 ? "bg-amber-700 text-white" : "text-slate-600 bg-white/5"
+                                                    )}>{idx + 1}</span>
+                                                    <span className={cn("font-bold text-base", idx < 3 ? "text-white" : "text-slate-300")}>{p.participantName}</span>
+                                                </div>
+                                            </td>
+                                            {matches.map(m => {
+                                                const pick = p.picks.find(pick => pick.matchId === m.id);
+                                                const isHit = p.hits?.includes(m.id);
+                                                return (
+                                                    <td key={m.id} className="p-2 text-center">
+                                                        <div className={cn(
+                                                            "w-8 h-8 mx-auto rounded-lg text-xs flex items-center justify-center font-bold transition-all border-2",
+                                                            isHit
+                                                                ? "bg-[#22c55e] border-[#22c55e] text-black shadow-[0_0_15px_rgba(34,197,94,0.3)] scale-110"
+                                                                : "text-slate-500 bg-white/5 border-transparent"
+                                                        )}>
+                                                            {pick?.selection || '-'}
+                                                        </div>
+                                                    </td>
+                                                )
+                                            })}
+                                            <td className="p-4 text-center font-black text-xl text-white">{p.score}</td>
+                                            <td className="p-4 text-center text-sm font-mono text-slate-400">{p.totalGoalsPrediction}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                                <tfoot>
+                                    <tr className="bg-[#151515]/50 border-t-2 border-white/10">
+                                        <td className="p-4 text-right font-bold text-xs uppercase text-slate-500 sticky left-0 bg-[#0A0A0A]" colSpan={matches.length + 2}>
+                                            Total Goles Real:
+                                        </td>
+                                        <td className="p-4 text-center font-black text-xl text-white bg-[#151515]">
+                                            {totalGoals}
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
