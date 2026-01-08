@@ -1,24 +1,70 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Trophy, ChevronRight, Loader2, Play, Activity } from 'lucide-react';
+import { Trophy, ChevronRight, Loader2, Play, Activity, Timer } from 'lucide-react';
 import { api } from '../../lib/api';
 
 export default function Home() {
     const navigate = useNavigate();
     const [weekName, setWeekName] = useState<string>("Cargando...");
     const [loading, setLoading] = useState(true);
+    const [closeDate, setCloseDate] = useState<number | string | null>(null);
+    const [timeLeft, setTimeLeft] = useState("");
 
     useEffect(() => {
         api.weeks.getAll()
             .then(weeks => {
                 const sorted = weeks.sort((a, b) => b.createdAt - a.createdAt);
                 const active = sorted.find(w => w.status === 'OPEN') || sorted[0];
-                if (active) setWeekName(active.name);
-                else setWeekName("Sin Jornada Activa");
+                if (active) {
+                    setWeekName(active.name);
+                    // Use earliest match date for countdown to ensure accuracy
+                    if (active.matches && active.matches.length > 0) {
+                        const earliest = [...active.matches].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0];
+                        setCloseDate(earliest.date);
+                    } else {
+                        setCloseDate(active.closeDate); // Fallback
+                    }
+                } else {
+                    setWeekName("Sin Jornada Activa");
+                }
             })
             .catch(() => setWeekName("Quiniela"))
             .finally(() => setLoading(false));
     }, []);
+
+    /* Countdown Logic */
+    useEffect(() => {
+        if (!closeDate) return;
+
+        const targetTime = new Date(closeDate).getTime();
+
+        const timer = setInterval(() => {
+            const now = Date.now();
+            const diff = targetTime - now;
+
+            if (diff <= 0) {
+                setTimeLeft("Cerrada");
+                clearInterval(timer);
+                return;
+            }
+
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+            // Format with leading zeros
+            const h = hours < 10 ? `0${hours}` : hours;
+            const m = minutes < 10 ? `0${minutes}` : minutes;
+
+            if (days > 0) {
+                setTimeLeft(`${days}d ${h}h ${m}m`);
+            } else {
+                setTimeLeft(`${h}h ${m}m`);
+            }
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, [closeDate]);
 
     if (loading) return (
         <div className="h-screen flex items-center justify-center bg-[#09090b] text-[#22c55e]">
@@ -54,6 +100,41 @@ export default function Home() {
                             {weekName}
                         </span>
                     </div>
+
+                    {/* Timer Banner - Redesigned */}
+                    {timeLeft && (
+                        <div className="relative group overflow-hidden rounded-2xl bg-zinc-900 border border-zinc-800 p-4 mb-6 shadow-2xl shadow-[#22c55e]/10">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-[#22c55e]/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
+
+                            <div className="relative z-10 flex items-center justify-between gap-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-[#22c55e]/10 rounded-lg animate-pulse">
+                                        <Timer className="w-5 h-5 text-[#22c55e]" />
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">Cierre de Jornada</span>
+                                        <span className="text-xl md:text-2xl font-black text-white font-mono tracking-tight leading-none">
+                                            {timeLeft}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {/* Status Indicator */}
+                                <div className="flex flex-col items-end">
+                                    <span className="flex h-2 w-2 relative">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#fbbf24] opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-[#fbbf24]"></span>
+                                    </span>
+                                    <span className="text-[8px] font-bold text-[#fbbf24] mt-1 uppercase tracking-widest">En Curso</span>
+                                </div>
+                            </div>
+
+                            {/* Progress Bar visual decoration */}
+                            <div className="absolute bottom-0 left-0 h-0.5 bg-zinc-800 w-full">
+                                <div className="h-full bg-gradient-to-r from-[#22c55e] to-zinc-500 w-3/4 animate-pulse"></div>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Main Brand with "OFFICIAL APP" */}
                     <div>

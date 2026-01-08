@@ -25,7 +25,7 @@ export interface Week {
     id: string; // e.g., "S24-W01"
     name: string; // "Jornada 1"
     status: 'OPEN' | 'CLOSED' | 'FINISHED';
-    closeDate: number; // Timestamp of the first match start
+    closeDate: number | string; // Timestamp of the first match start
     matches: Match[]; // Array of matches in this week
     totalGoalsResult?: number; // Sum of all goals (valid only when all matches finished)
     price?: number; // Cost to enter the pool

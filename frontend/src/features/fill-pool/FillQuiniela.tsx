@@ -18,7 +18,7 @@ export default function FillQuiniela() {
     const [weekID, setWeekID] = useState<string | null>(null);
     const [weekName, setWeekName] = useState("");
     const [price, setPrice] = useState<number>(0);
-    const [closeDate, setCloseDate] = useState<number>(0);
+    const [closeDate, setCloseDate] = useState<number | string>(0);
     const [timeLeft, setTimeLeft] = useState("");
 
     useEffect(() => {
@@ -32,20 +32,31 @@ export default function FillQuiniela() {
                     setWeekName(active.name);
                     setMatches(active.matches);
                     setPrice(active.price || 0);
-                    setCloseDate(active.closeDate || 0);
+
+                    // Use earliest match date
+                    if (active.matches && active.matches.length > 0) {
+                        const earliest = [...active.matches].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0];
+                        setCloseDate(earliest.date);
+                    } else {
+                        setCloseDate(active.closeDate || 0);
+                    }
                 }
             })
             .catch(err => console.error("Failed to load weeks", err))
             .finally(() => setFetching(false));
     }, []);
 
-    // Countdown Logic
+    /* Countdown Logic */
     useEffect(() => {
         if (!closeDate) return;
 
+        const targetTime = new Date(closeDate).getTime();
+        console.log("Countdown Debug:", { closeDate, targetTime, now: Date.now() }); // Debug log
+
         const timer = setInterval(() => {
             const now = Date.now();
-            const diff = closeDate - now;
+            const diff = targetTime - now;
+            // ... (rest is same)
 
             if (diff <= 0) {
                 setTimeLeft("Cerrada");
@@ -57,7 +68,15 @@ export default function FillQuiniela() {
             const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
 
-            setTimeLeft(`${days}d ${hours}h ${minutes}m`);
+            // Optional: Format with leading zeros
+            const h = hours < 10 ? `0${hours}` : hours;
+            const m = minutes < 10 ? `0${minutes}` : minutes;
+
+            if (days > 0) {
+                setTimeLeft(`${days}d ${h}h ${m}m`);
+            } else {
+                setTimeLeft(`${h}h ${m}m`);
+            }
         }, 1000);
 
         return () => clearInterval(timer);
