@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import type { Match, MatchOutcome } from "../../types";
 import { MatchCard } from "../../components/MatchCard";
-import { Trophy, Clock, Loader2, User, Target, ChevronRight, ArrowLeft } from "lucide-react";
+import { Trophy, Clock, Loader2, User, Target, ArrowLeft, CheckCircle2, Ticket, Timer } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { api } from "../../lib/api";
 import { useNavigate } from "react-router-dom";
@@ -17,6 +17,9 @@ export default function FillQuiniela() {
     const [matches, setMatches] = useState<Match[]>([]);
     const [weekID, setWeekID] = useState<string | null>(null);
     const [weekName, setWeekName] = useState("");
+    const [price, setPrice] = useState<number>(0);
+    const [closeDate, setCloseDate] = useState<number>(0);
+    const [timeLeft, setTimeLeft] = useState("");
 
     useEffect(() => {
         api.weeks.getAll()
@@ -28,11 +31,37 @@ export default function FillQuiniela() {
                     setWeekID(active.id);
                     setWeekName(active.name);
                     setMatches(active.matches);
+                    setPrice(active.price || 0);
+                    setCloseDate(active.closeDate || 0);
                 }
             })
             .catch(err => console.error("Failed to load weeks", err))
             .finally(() => setFetching(false));
     }, []);
+
+    // Countdown Logic
+    useEffect(() => {
+        if (!closeDate) return;
+
+        const timer = setInterval(() => {
+            const now = Date.now();
+            const diff = closeDate - now;
+
+            if (diff <= 0) {
+                setTimeLeft("Cerrada");
+                clearInterval(timer);
+                return;
+            }
+
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+            setTimeLeft(`${days}d ${hours}h ${minutes}m`);
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, [closeDate]);
 
     const handleSelect = (matchId: string, selection: MatchOutcome) => {
         setPicks(prev => ({ ...prev, [matchId]: selection }));
@@ -58,11 +87,12 @@ export default function FillQuiniela() {
                 totalGoalsPrediction: parseInt(goals),
                 picks: picksArray
             });
-            alert("¡Quiniela enviada con éxito! Mucha suerte 🍀");
+            alert("¡Quiniela enviada con éxito! Mucha suerte");
             setName("");
             setGoals("");
             setPicks({});
             window.scrollTo({ top: 0, behavior: 'smooth' });
+            navigate('/scoreboard');
         } catch (err: unknown) {
             alert("Error: " + (err instanceof Error ? err.message : String(err)));
         } finally {
@@ -71,160 +101,205 @@ export default function FillQuiniela() {
     };
 
     if (fetching) return (
-        <div className="h-screen flex flex-col items-center justify-center bg-black text-white gap-4">
-            <Loader2 className="w-10 h-10 animate-spin text-pool-green" />
+        <div className="h-screen flex flex-col items-center justify-center bg-[#09090b] text-white gap-4">
+            <Loader2 className="w-10 h-10 animate-spin text-[#22c55e]" />
         </div>
     );
 
     if (!weekID || matches.length === 0) return (
-        <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center p-8 text-center">
-            <div className="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center mb-6 animate-pulse">
-                <Trophy className="w-12 h-12 text-slate-500" />
+        <div className="min-h-screen bg-[#09090b] flex flex-col items-center justify-center p-8 text-center relative overflow-hidden">
+            {/* Background Texture */}
+            <div className="absolute inset-0 z-0 opacity-20"
+                style={{ backgroundImage: 'radial-gradient(#3f3f46 1px, transparent 1px)', backgroundSize: '32px 32px' }}>
             </div>
-            <h2 className="text-2xl font-black text-white mb-2 uppercase italic tracking-wider">Sin Quinielas Activas</h2>
-            <p className="text-slate-400 font-medium mb-8 max-w-sm">
-                No hay partidos disponibles para jugar en este momento. Revisa más tarde o consulta los resultados anteriores.
-            </p>
-            <div className="flex flex-col gap-4 w-full max-w-xs">
+
+            <div className="relative z-10 flex flex-col items-center">
+                <div className="w-24 h-24 bg-zinc-900 rounded-full flex items-center justify-center mb-6 animate-pulse border border-zinc-800">
+                    <Trophy className="w-10 h-10 text-zinc-600" />
+                </div>
+                <h2 className="text-3xl font-black text-white mb-2 uppercase italic tracking-wider">Sin Jornada Activa</h2>
+                <p className="text-zinc-500 font-medium mb-8 max-w-sm">
+                    No hay partidos disponibles para jugar en este momento.
+                </p>
                 <button
                     onClick={() => navigate('/')}
-                    className="w-full py-4 bg-[#22c55e] hover:bg-[#16a34a] text-black font-black uppercase tracking-widest rounded-xl transition-all shadow-[0_0_20px_rgba(34,197,94,0.3)] flex items-center justify-center gap-2"
+                    className="px-8 py-3 bg-[#22c55e] hover:bg-[#1faa50] text-black font-black uppercase tracking-widest rounded-xl transition-all shadow-lg hover:shadow-[#22c55e]/20"
                 >
-                    <ArrowLeft className="w-5 h-5" /> Volver al Inicio
-                </button>
-                <button
-                    onClick={() => navigate('/scoreboard')}
-                    className="w-full py-4 bg-white/10 hover:bg-white/15 text-white font-bold uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2"
-                >
-                    Ver Resultados
+                    Volver al Inicio
                 </button>
             </div>
         </div>
     );
 
     return (
-        <div className="min-h-screen bg-[#020617] text-white font-sans pb-20 md:pb-0">
+        <div className="min-h-screen bg-[#09090b] text-white font-sans relative overflow-x-hidden">
+            {/* Background Texture */}
+            <div className="absolute inset-0 z-0 opacity-20 pointer-events-none fixed"
+                style={{ backgroundImage: 'radial-gradient(#3f3f46 1px, transparent 1px)', backgroundSize: '32px 32px' }}>
+            </div>
 
-            {/* Header / Hero Section */}
-            <div className="px-4 py-6 md:px-8 md:py-8">
-                {/* Nav & Title */}
-                <div className="flex items-center justify-between mb-8">
-                    <button onClick={() => navigate('/')} className="group flex items-center gap-2 px-4 py-3 bg-white/5 rounded-2xl hover:bg-white/10 transition-colors backdrop-blur-sm border border-white/5">
-                        <ArrowLeft className="w-5 h-5 text-white group-hover:-translate-x-1 transition-transform" />
-                        <span className="text-sm font-bold text-white hidden md:block">Inicio</span>
+            {/* Gradient Orbs */}
+            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#22c55e]/10 blur-[120px] rounded-full pointer-events-none translate-x-1/3 -translate-y-1/3 fixed z-0" />
+            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-zinc-800/20 blur-[100px] rounded-full pointer-events-none -translate-x-1/3 translate-y-1/3 fixed z-0" />
+
+            {/* Header Sticky */}
+            <div className="sticky top-0 z-50 bg-[#09090b]/80 backdrop-blur-md border-b border-zinc-800">
+                <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+                    <button onClick={() => navigate('/')} className="group flex items-center gap-2 p-2 rounded-lg hover:bg-white/5 transition-colors">
+                        <ArrowLeft className="w-5 h-5 text-zinc-400 group-hover:text-white transition-colors" />
+                        <span className="text-sm font-bold text-zinc-400 group-hover:text-white hidden md:block">Inicio</span>
                     </button>
 
                     <div className="flex flex-col items-center">
-                        <h1 className="text-2xl md:text-3xl font-black text-white tracking-tighter italic uppercase">
+                        <h1 className="text-xl font-black text-white italic tracking-tighter uppercase leading-none">
                             Pro<span className="text-[#22c55e]">Quiniela</span>
                         </h1>
-                        <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">{weekName}</p>
+                        <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">{weekName}</p>
                     </div>
 
-                    <div
+                    <button
                         onClick={() => navigate('/scoreboard')}
-                        className="w-12 h-12 rounded-full bg-[#22c55e] flex items-center justify-center shadow-[0_0_20px_rgba(34,197,94,0.4)] cursor-pointer hover:scale-105 transition-transform active:scale-95"
+                        className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center hover:border-[#22c55e]/50 transition-colors group"
                     >
-                        <Trophy className="w-6 h-6 text-black fill-current" />
-                    </div>
-                </div>
-
-                {/* Progress Card */}
-                <div className="pool-card p-4 flex items-center justify-between mb-4 bg-[#1A1A1A] border-none shadow-lg">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-white/5 rounded-lg">
-                            <Clock className="w-5 h-5 text-[#fbbf24]" />
-                        </div>
-                        <div>
-                            <p className="text-xs text-slate-400 uppercase font-bold">Progreso</p>
-                            <p className="text-white font-bold">{Object.keys(picks).length} de {matches.length} partidos</p>
-                        </div>
-                    </div>
-                    <div className="w-12 h-12 relative flex items-center justify-center">
-                        <svg className="w-full h-full -rotate-90">
-                            <circle cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="4" fill="transparent" className="text-slate-800" />
-                            <circle cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="4" fill="transparent"
-                                className="text-[#22c55e] transition-all duration-500"
-                                strokeDasharray={`${((Object.keys(picks).length / matches.length) * 126)} 126`}
-                            />
-                        </svg>
-                    </div>
+                        <Trophy className="w-5 h-5 text-zinc-500 group-hover:text-[#22c55e] transition-colors" />
+                    </button>
                 </div>
             </div>
 
-            {/* Main Content Area - Overlapping the Header */}
-            <form onSubmit={handleSubmit} className="flex-1 bg-[#0a0a0a] rounded-t-4xl p-6 -mt-8 relative z-10 border-t border-white/10 shadow-2xl space-y-8">
+            <div className="max-w-5xl mx-auto p-4 md:p-8 relative z-10 pb-32">
 
-                {/* Section: Player Info */}
-                <div className="space-y-4">
-                    <h2 className="text-sm font-bold text-slate-500 uppercase tracking-widest pl-2 flex items-center gap-2">
-                        <User className="w-4 h-4" /> Tus Datos
-                    </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="pool-card p-4 focus-within:border-[#22c55e] transition-colors">
-                            <label className="block text-[10px] text-slate-400 font-bold uppercase mb-1">Nombre de Participante</label>
-                            <input
-                                type="text"
-                                value={name}
-                                onChange={e => setName(e.target.value)}
-                                placeholder="Tu Nombre"
-                                className="w-full bg-transparent text-white font-bold text-lg outline-none placeholder:text-slate-700"
-                            />
+                {/* Intro & Stats (Price/Time) */}
+                <div className="grid grid-cols-2 gap-4 mb-8">
+                    {/* Price Card */}
+                    <div className="bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 p-4 rounded-2xl flex flex-col items-center justify-center text-center">
+                        <div className="flex items-center gap-2 text-zinc-500 mb-1">
+                            <Ticket className="w-4 h-4" />
+                            <span className="text-[10px] font-bold uppercase tracking-widest">Costo</span>
                         </div>
-                        <div className="pool-card p-4 focus-within:border-[#22c55e] transition-colors">
-                            <label className="block text-[10px] text-slate-400 font-bold uppercase mb-1 flex items-center gap-2">
-                                Goles Totales <span className="text-[#fbbf24] text-[8px] bg-[#fbbf24]/10 px-1 rounded">DESEMPATE</span>
-                            </label>
-                            <input
-                                type="number"
-                                value={goals}
-                                onChange={e => setGoals(e.target.value)}
-                                placeholder="0"
-                                className="w-full bg-transparent text-white font-bold text-lg outline-none placeholder:text-slate-700"
-                            />
+                        <div className="font-black text-2xl text-white">
+                            ${price}
+                        </div>
+                    </div>
+
+                    {/* Timer Card */}
+                    <div className="bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 p-4 rounded-2xl flex flex-col items-center justify-center text-center">
+                        <div className="flex items-center gap-2 text-zinc-500 mb-1">
+                            <Timer className="w-4 h-4" />
+                            <span className="text-[10px] font-bold uppercase tracking-widest">Cierra en</span>
+                        </div>
+                        <div className="font-black text-xl md:text-2xl text-[#22c55e] font-mono">
+                            {timeLeft || "Calculando..."}
                         </div>
                     </div>
                 </div>
 
-                {/* Section: Matches */}
-                <div className="space-y-4">
-                    <h2 className="text-sm font-bold text-slate-500 uppercase tracking-widest pl-2 flex items-center gap-2">
-                        <Target className="w-4 h-4" /> Partidos
+                {/* Intro Text */}
+                <div className="text-center mb-8">
+                    <h2 className="text-3xl font-black text-white italic uppercase tracking-tight mb-2">
+                        Arma tu <span className="text-[#22c55e]">Jugada</span>
                     </h2>
+                    <p className="text-zinc-500 text-sm">Completa todos los pronósticos para participar.</p>
+                </div>
+
+                {/* Progress Bar (Sticky under header approx) */}
+                <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 mb-8 flex items-center justify-between shadow-lg relative overflow-hidden">
+                    <div className="absolute top-0 left-0 h-1 bg-[#22c55e] transition-all duration-500" style={{ width: `${(Object.keys(picks).length / matches.length) * 100}%` }}></div>
+
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-zinc-800 rounded-lg">
+                            <Clock className="w-5 h-5 text-[#22c55e]" />
+                        </div>
+                        <div>
+                            <p className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">Tu Progreso</p>
+                            <p className="text-white font-bold text-sm">
+                                {Object.keys(picks).length} <span className="text-zinc-600">/</span> {matches.length} Seleccionados
+                            </p>
+                        </div>
+                    </div>
+                    <div className="text-right">
+                        <span className="text-2xl font-black text-[#22c55e]">{Math.round((Object.keys(picks).length / matches.length) * 100)}%</span>
+                    </div>
+                </div>
+
+                <form onSubmit={handleSubmit} className="space-y-8">
+
+                    {/* Section: User Info */}
                     <div className="space-y-4">
-                        {matches.map((match) => (
-                            <MatchCard
-                                key={match.id}
-                                match={match}
-                                selection={picks[match.id]}
-                                onSelect={handleSelect}
-                            />
-                        ))}
-                    </div>
-                </div>
+                        <div className="flex items-center gap-2 mb-2">
+                            <User className="w-4 h-4 text-[#22c55e]" />
+                            <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Tus Datos</span>
+                        </div>
 
-                {/* Submit Area */}
-                <div className="pt-8 pb-safe">
-                    <button
-                        onClick={handleSubmit}
-                        disabled={!isComplete || loading}
-                        className={cn(
-                            "w-full py-5 rounded-2xl font-black text-lg uppercase tracking-wider flex items-center justify-center gap-3 transition-all transform active:scale-95 disabled:active:scale-100 disabled:opacity-50 disabled:cursor-not-allowed",
-                            isComplete
-                                ? "bg-[#22c55e] text-black shadow-[0_0_30px_rgba(34,197,94,0.3)] hover:shadow-[0_0_40px_rgba(34,197,94,0.5)]"
-                                : "bg-slate-800 text-slate-500"
-                        )}
-                    >
-                        {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : (
-                            <>
-                                Enviar Quiniela
-                                <div className="bg-black/10 p-1 rounded-full"><ChevronRight className="w-4 h-4" /></div>
-                            </>
-                        )}
-                    </button>
-                </div>
-            </form>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-2xl p-4 focus-within:border-[#22c55e] focus-within:ring-1 focus-within:ring-[#22c55e]/50 transition-all hover:bg-zinc-900">
+                                <label className="block text-[10px] text-zinc-500 font-bold uppercase mb-1">Nombre</label>
+                                <input
+                                    type="text"
+                                    value={name}
+                                    onChange={e => setName(e.target.value)}
+                                    placeholder="Tu Apodo"
+                                    className="w-full bg-transparent text-white font-bold text-lg outline-none placeholder:text-zinc-700"
+                                />
+                            </div>
+                            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 focus-within:border-[#22c55e] focus-within:ring-1 focus-within:ring-[#22c55e]/50 transition-all">
+                                <label className="block text-[10px] text-zinc-500 font-bold uppercase mb-1 flex items-center justify-between w-full">
+                                    Goles Totales
+                                    <span className="text-[#fbbf24] text-[8px] bg-[#fbbf24]/10 px-1.5 py-0.5 rounded ml-2">Desempate</span>
+                                </label>
+                                <input
+                                    type="number"
+                                    value={goals}
+                                    onChange={e => setGoals(e.target.value)}
+                                    placeholder="0"
+                                    className="w-full bg-transparent text-white font-bold text-lg outline-none placeholder:text-zinc-700"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Section: Matches */}
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-2 mb-2 sticky top-[72px] bg-[#09090b]/95 backdrop-blur-sm py-2 z-40 border-b border-zinc-800/50">
+                            <Target className="w-4 h-4 text-[#22c55e]" />
+                            <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Partidos de la Jornada</span>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 md:gap-6">
+                            {matches.map((match) => (
+                                <MatchCard
+                                    key={match.id}
+                                    match={match}
+                                    selection={picks[match.id]}
+                                    onSelect={handleSelect}
+                                />
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Submit Button Floating */}
+                    <div className="bottom-6 left-0 right-0 px-6 max-w-xl mx-auto z-50">
+                        <button
+                            onClick={handleSubmit}
+                            disabled={!isComplete || loading}
+                            className={cn(
+                                "w-full py-4 rounded-2xl font-black text-lg uppercase tracking-wider flex items-center justify-center gap-3 transition-all transform shadow-2xl backdrop-blur-md border border-white/5",
+                                isComplete
+                                    ? "bg-[#22c55e] text-black shadow-[#22c55e]/20 hover:scale-[1.02] active:scale-[0.98]"
+                                    : "bg-zinc-900/90 text-zinc-600 border-zinc-800"
+                            )}
+                        >
+                            {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : (
+                                <>
+                                    {isComplete && <CheckCircle2 className="w-5 h-5" />}
+                                    {isComplete ? "Enviar Quiniela" : "Completa los campos"}
+                                    {!isComplete && <div className="w-2 h-2 rounded-full bg-zinc-700 animate-pulse" />}
+                                </>
+                            )}
+                        </button>
+                    </div>
+
+                </form>
+            </div>
         </div>
     );
 }
-
