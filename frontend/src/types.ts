@@ -30,6 +30,7 @@ export interface Week {
     totalGoalsResult?: number; // Sum of all goals (valid only when all matches finished)
     price?: number; // Cost to enter the pool
     adminFee?: number; // Amount subtracted from the total pot
+    hideUnpaid?: boolean; // Toggle to hide unpaid participants
     createdAt: number;
 }
 

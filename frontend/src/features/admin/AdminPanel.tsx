@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
 import { cn } from '../../lib/utils';
-import { Lock, Plus, Play, Loader2, Trophy, ClipboardList, PenTool } from 'lucide-react';
-import type { WeekDraft, Match } from '../../types';
+import { Lock, Plus, Play, Loader2, Trophy, ClipboardList, PenTool, User, Eye, EyeOff, DollarSign, CheckCircle2 } from 'lucide-react';
+import type { WeekDraft, Match, ParticipantEntry } from '../../types';
 import { api } from '../../lib/api';
 
 export default function AdminPanel() {
     const [auth, setAuth] = useState(false);
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
-    const [tab, setTab] = useState<'create-week' | 'results'>('create-week');
+    const [tab, setTab] = useState<'create-week' | 'results' | 'participants'>('create-week');
 
     // Create Week State
     const [weekName, setWeekName] = useState('Jornada 1');
@@ -86,6 +86,9 @@ export default function AdminPanel() {
                     <button onClick={() => setTab('results')} className={cn("px-6 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center gap-2", tab === 'results' ? "bg-pool-green text-[#020617] shadow-md" : "text-slate-400 hover:text-white hover:bg-white/5")}>
                         <ClipboardList className="w-4 h-4" /> Capturar Resultados
                     </button>
+                    <button onClick={() => setTab('participants')} className={cn("px-6 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center gap-2", tab === 'participants' ? "bg-pool-green text-[#020617] shadow-md" : "text-slate-400 hover:text-white hover:bg-white/5")}>
+                        <User className="w-4 h-4" /> Participantes
+                    </button>
                 </div>
 
                 {tab === 'create-week' && (
@@ -142,6 +145,7 @@ export default function AdminPanel() {
                 )}
 
                 {tab === 'results' && <ResultsEditor />}
+                {tab === 'participants' && <ParticipantsEditor />}
 
             </main>
         </div>
@@ -219,4 +223,120 @@ function ResultsEditor() {
             </div>
         </div>
     )
+}
+
+function ParticipantsEditor() {
+    const [participants, setParticipants] = useState<ParticipantEntry[]>([]);
+    const [weekId, setWeekId] = useState<string | null>(null);
+    const [hideUnpaid, setHideUnpaid] = useState(false);
+    const [loading, setLoading] = useState(false);
+
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            const weeks = await api.weeks.getAll();
+            const sorted = weeks.sort((a, b) => b.createdAt - a.createdAt);
+            if (sorted.length > 0) {
+                const active = sorted.find(w => w.status === 'OPEN') || sorted[0];
+                setWeekId(active.id);
+                setHideUnpaid(!!active.hideUnpaid);
+
+                const parts = await api.picks.getByWeek(active.id);
+                setParticipants(parts.sort((a, b) => b.submittedAt - a.submittedAt));
+                // setParticipants(parts);
+            }
+        } catch (e) {
+            alert('Error loading participants');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const togglePayment = async (p: ParticipantEntry) => {
+        try {
+            const updated = await api.picks.togglePayment(p.id);
+            setParticipants(prev => prev.map(item => item.id === p.id ? { ...item, paymentStatus: updated.paymentStatus } : item));
+        } catch (e) {
+            alert('Error updating payment status');
+        }
+    };
+
+    const toggleVisibility = async () => {
+        if (!weekId) return;
+        try {
+            const newVal = !hideUnpaid;
+            await api.weeks.toggleVisibility(weekId, newVal);
+            setHideUnpaid(newVal);
+        } catch (e) {
+            alert('Error updating visibility');
+        }
+    };
+
+    if (loading && participants.length === 0) return <div className="p-8 flex justify-center"><Loader2 className="animate-spin text-pool-green" /></div>;
+
+    if (!weekId) return <div className="text-slate-500 text-center py-12">No hay jornada activa.</div>;
+
+    return (
+        <div className="bg-[#1e293b] p-6 rounded-2xl border border-white/5 shadow-xl animate-in fade-in slide-in-from-bottom-4">
+            <div className="flex items-center justify-between mb-8">
+                <h2 className="text-xs font-bold text-pool-accent uppercase flex items-center gap-2">
+                    <User className="w-4 h-4" />
+                    Gestión de Participantes
+                </h2>
+
+                <button
+                    onClick={toggleVisibility}
+                    className={cn(
+                        "px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all border",
+                        hideUnpaid
+                            ? "bg-red-500/10 text-red-500 border-red-500/20 hover:bg-red-500/20"
+                            : "bg-emerald-500/10 text-emerald-500 border-emerald-500/20 hover:bg-emerald-500/20"
+                    )}
+                >
+                    {hideUnpaid ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                    {hideUnpaid ? "Ocultando No Pagados" : "Mostrando Todos"}
+                </button>
+            </div>
+
+            <div className="space-y-3">
+                {participants.length === 0 ? (
+                    <div className="text-center py-8 text-slate-500 text-sm">No hay participantes aún.</div>
+                ) : (
+                    participants.map(p => (
+                        <div key={p.id} className="bg-[#0f172a] p-4 rounded-xl border border-white/5 flex items-center justify-between group hover:border-white/10 transition-colors">
+                            <div className="flex items-center gap-4">
+                                <div className={cn("w-10 h-10 rounded-full flex items-center justify-center font-bold text-white", p.paymentStatus === 'PAID' ? "bg-emerald-600" : "bg-slate-700")}>
+                                    {p.participantName.charAt(0).toUpperCase()}
+                                </div>
+                                <div>
+                                    <p className="font-bold text-white text-sm">{p.participantName}</p>
+                                    <p className="text-[10px] text-slate-500 uppercase tracking-wider">{new Date(p.submittedAt).toLocaleDateString()}</p>
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={() => togglePayment(p)}
+                                className={cn(
+                                    "px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 transition-all border",
+                                    p.paymentStatus === 'PAID'
+                                        ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20"
+                                        : "bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700 hover:text-white"
+                                )}
+                            >
+                                {p.paymentStatus === 'PAID' ? (
+                                    <><CheckCircle2 className="w-3 h-3" /> Pagado</>
+                                ) : (
+                                    <><DollarSign className="w-3 h-3" /> Pendiente</>
+                                )}
+                            </button>
+                        </div>
+                    ))
+                )}
+            </div>
+        </div>
+    );
 }

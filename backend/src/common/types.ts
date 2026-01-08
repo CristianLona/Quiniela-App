@@ -30,6 +30,7 @@ export interface Week {
     totalGoalsResult?: number; // Sum of all goals (valid only when all matches finished)
     price?: number;
     adminFee?: number;
+    hideUnpaid?: boolean; // Toggle to hide unpaid participants from public
     createdAt: number;
 }
 

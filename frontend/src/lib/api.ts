@@ -36,6 +36,9 @@ export const api = {
         getAll: () => fetchJson<Week[]>('/weeks'),
 
         getOne: (id: string) => fetchJson<Week>(`/weeks/${id}`),
+
+        toggleVisibility: (id: string, hide: boolean) =>
+            fetchJson<Week>(`/weeks/${id}/visibility`, { method: 'PATCH', body: JSON.stringify({ hide }) }),
     },
 
     picks: {

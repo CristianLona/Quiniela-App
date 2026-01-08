@@ -34,4 +34,12 @@ export class WeeksController {
     ) {
         return this.weeksService.updateMatch(weekId, matchId, body.homeScore, body.awayScore);
     }
+
+    @Patch(':id/visibility')
+    toggleVisibility(
+        @Param('id') id: string,
+        @Body() body: { hide: boolean }
+    ) {
+        return this.weeksService.toggleVisibility(id, body.hide);
+    }
 }

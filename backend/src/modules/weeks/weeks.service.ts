@@ -77,4 +77,13 @@ export class WeeksService {
         await this.firebaseService.getDb().collection('weeks').doc(weekId).set(week);
         return week;
     }
+
+    async toggleVisibility(id: string, hide: boolean): Promise<Week> {
+        const week = await this.findOne(id);
+        if (!week) throw new BadRequestException('Week not found');
+
+        week.hideUnpaid = hide;
+        await this.firebaseService.getDb().collection('weeks').doc(id).set(week);
+        return week;
+    }
 }

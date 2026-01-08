@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import type { Match, ParticipantEntry } from '../../types';
 import { cn } from '../../lib/utils';
-import { Trophy, Loader2, ArrowLeft } from 'lucide-react';
+import { Trophy, Loader2, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { api } from '../../lib/api';
 import { useNavigate } from 'react-router-dom';
 
@@ -50,7 +50,13 @@ export default function Scoreboard() {
                     setMatches(currentWeek.matches);
                     setCurrentWeekData(currentWeek);
                     const parts = await api.picks.getByWeek(currentWeek.id);
-                    const scoredParticipants = parts.map(p => {
+
+                    // Filter based on hideUnpaid setting
+                    const visibleParts = currentWeek.hideUnpaid
+                        ? parts.filter(p => p.paymentStatus === 'PAID')
+                        : parts;
+
+                    const scoredParticipants = visibleParts.map(p => {
                         let score = 0;
                         const hits: string[] = [];
                         p.picks.forEach(pick => {
@@ -229,6 +235,11 @@ export default function Scoreboard() {
                                                                     idx === 2 ? "bg-amber-700 text-white" : "text-slate-600 bg-white/5"
                                                         )}>{idx + 1}</span>
                                                         <span className={cn("font-bold text-base", idx < 3 ? "text-white" : "text-slate-300")}>{p.participantName}</span>
+                                                        {p.paymentStatus === 'PAID' && (
+                                                            <div title="Pagado" className="bg-[#22c55e]/10 border border-[#22c55e]/20 p-0.5 rounded-full">
+                                                                <CheckCircle2 className="w-3 h-3 text-[#22c55e]" />
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </td>
                                                 {matches.map(m => {
