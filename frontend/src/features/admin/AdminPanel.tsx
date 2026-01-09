@@ -154,16 +154,31 @@ export default function AdminPanel() {
 
 function ResultsEditor() {
     const [matches, setMatches] = useState<Match[]>([]);
+    const [week, setWeek] = useState<any | null>(null);
     const [weekId, setWeekId] = useState<string | null>(null);
+    const [participantsCount, setParticipantsCount] = useState(0);
 
-    useEffect(() => {
-        api.weeks.getAll().then(weeks => {
+    const fetchData = async () => {
+        try {
+            const weeks = await api.weeks.getAll();
             const sorted = weeks.sort((a, b) => b.createdAt - a.createdAt);
             if (sorted.length > 0) {
-                setWeekId(sorted[0].id);
-                setMatches(sorted[0].matches);
+                const currentWeek = sorted[0];
+                setWeekId(currentWeek.id);
+                setWeek(currentWeek);
+                setMatches(currentWeek.matches);
+
+                const parts = await api.picks.getByWeek(currentWeek.id);
+                // User requested to calculate based on TOTAL participants, not just paid ones
+                setParticipantsCount(parts.length);
             }
-        });
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
+    useEffect(() => {
+        fetchData();
     }, []);
 
     const handleUpdateScore = async (matchId: string, home: number, away: number) => {
@@ -184,42 +199,88 @@ function ResultsEditor() {
         }
     };
 
+    const handleUpdateFee = async (newFee: number) => {
+        if (!weekId) return;
+        try {
+            setWeek((prev: any) => ({ ...prev, adminFee: newFee }));
+            await api.weeks.update(weekId, { adminFee: newFee });
+        } catch (e) {
+            alert('Error updating fee');
+            fetchData();
+        }
+    };
+
     if (matches.length === 0) return <div className="text-center text-slate-500 py-12">No hay partidos cargados.</div>;
 
+    const totalPot = participantsCount * (week?.price || 0);
+    const realPrize = totalPot - (week?.adminFee || 0);
+
     return (
-        <div className="bg-[#1e293b] p-6 rounded-2xl border border-white/5 shadow-xl animate-in fade-in slide-in-from-bottom-4">
-            <h2 className="text-xs font-bold text-pool-accent uppercase mb-6 flex items-center gap-2">
-                <ClipboardList className="w-4 h-4" />
-                Capturar Marcadores (Guardado Automático)
-            </h2>
-            <div className="space-y-4">
-                {matches.map(m => (
-                    <div key={m.id} className="bg-[#0f172a] p-4 rounded-xl border border-white/5 flex flex-col md:flex-row items-center justify-between gap-4">
-                        <div className="flex items-center gap-4 flex-1 justify-end">
-                            <span className="font-bold text-white text-right">{m.homeTeam}</span>
-                            <div className="bg-slate-800 rounded-lg p-1 w-12 text-center">
-                                <input
-                                    type="number"
-                                    className="w-full bg-transparent text-center text-white font-bold outline-none"
-                                    defaultValue={m.result?.homeScore}
-                                    onBlur={(e) => handleUpdateScore(m.id, parseInt(e.target.value) || 0, m.result?.awayScore || 0)}
-                                />
-                            </div>
-                        </div>
-                        <span className="text-xs text-slate-600 font-bold px-2">VS</span>
-                        <div className="flex items-center gap-4 flex-1">
-                            <div className="bg-slate-800 rounded-lg p-1 w-12 text-center">
-                                <input
-                                    type="number"
-                                    className="w-full bg-transparent text-center text-white font-bold outline-none"
-                                    defaultValue={m.result?.awayScore}
-                                    onBlur={(e) => handleUpdateScore(m.id, m.result?.homeScore || 0, parseInt(e.target.value) || 0)}
-                                />
-                            </div>
-                            <span className="font-bold text-white text-left">{m.homeTeam}</span>
-                        </div>
+        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+            {/* Prize Management Section */}
+            <div className="bg-[#1e293b] p-6 rounded-2xl border border-white/5 shadow-xl grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                    <label className="block text-xs font-bold text-slate-400 mb-2 uppercase">Recaudado (Total: {participantsCount})</label>
+                    <div className="text-2xl font-black text-white bg-[#0f172a] p-3 rounded-lg border border-white/5 flex items-center gap-2">
+                        <span className="text-slate-500 text-base">$</span>
+                        {totalPot.toLocaleString()}
                     </div>
-                ))}
+                </div>
+                <div>
+                    <label className="block text-xs font-bold text-pool-accent mb-2 uppercase">Ganancia / Gastos</label>
+                    <div className="relative">
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold">$</span>
+                        <input
+                            type="number"
+                            value={week?.adminFee || 0}
+                            onChange={(e) => handleUpdateFee(parseFloat(e.target.value) || 0)}
+                            className="w-full bg-[#0f172a] text-white text-xl font-bold border border-pool-accent/50 rounded-lg p-3 pl-8 focus:border-pool-green outline-none transition-colors"
+                        />
+                    </div>
+                </div>
+                <div>
+                    <label className="block text-xs font-bold text-emerald-400 mb-2 uppercase">Premio Real a Repartir</label>
+                    <div className="text-3xl font-black text-emerald-400 bg-emerald-400/10 p-3 rounded-lg border border-emerald-400/20 flex items-center gap-2">
+                        <span className="text-emerald-500/50 text-xl">$</span>
+                        {realPrize.toLocaleString()}
+                    </div>
+                </div>
+            </div>
+
+            <div className="bg-[#1e293b] p-6 rounded-2xl border border-white/5 shadow-xl">
+                <h2 className="text-xs font-bold text-pool-accent uppercase mb-6 flex items-center gap-2">
+                    <ClipboardList className="w-4 h-4" />
+                    Capturar Marcadores (Guardado Automático)
+                </h2>
+                <div className="space-y-4">
+                    {matches.map(m => (
+                        <div key={m.id} className="bg-[#0f172a] p-4 rounded-xl border border-white/5 flex flex-col md:flex-row items-center justify-between gap-4">
+                            <div className="flex items-center gap-4 flex-1 justify-end">
+                                <span className="font-bold text-white text-right">{m.homeTeam}</span>
+                                <div className="bg-slate-800 rounded-lg p-1 w-12 text-center">
+                                    <input
+                                        type="number"
+                                        className="w-full bg-transparent text-center text-white font-bold outline-none"
+                                        defaultValue={m.result?.homeScore}
+                                        onBlur={(e) => handleUpdateScore(m.id, parseInt(e.target.value) || 0, m.result?.awayScore || 0)}
+                                    />
+                                </div>
+                            </div>
+                            <span className="text-xs text-slate-600 font-bold px-2">VS</span>
+                            <div className="flex items-center gap-4 flex-1">
+                                <div className="bg-slate-800 rounded-lg p-1 w-12 text-center">
+                                    <input
+                                        type="number"
+                                        className="w-full bg-transparent text-center text-white font-bold outline-none"
+                                        defaultValue={m.result?.awayScore}
+                                        onBlur={(e) => handleUpdateScore(m.id, m.result?.homeScore || 0, parseInt(e.target.value) || 0)}
+                                    />
+                                </div>
+                                <span className="font-bold text-white text-left">{m.homeTeam}</span>
+                            </div>
+                        </div>
+                    ))}
+                </div>
             </div>
         </div>
     )

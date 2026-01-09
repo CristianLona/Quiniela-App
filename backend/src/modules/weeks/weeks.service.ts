@@ -86,4 +86,10 @@ export class WeeksService {
         await this.firebaseService.getDb().collection('weeks').doc(id).set(week);
         return week;
     }
+
+    async updateWeek(id: string, data: Partial<Week>): Promise<Week> {
+        // We use merge: true to avoid overwriting the whole document if we are just updating fields
+        await this.firebaseService.getDb().collection('weeks').doc(id).set(data, { merge: true });
+        return this.findOne(id);
+    }
 }

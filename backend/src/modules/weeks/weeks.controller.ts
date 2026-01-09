@@ -42,4 +42,12 @@ export class WeeksController {
     ) {
         return this.weeksService.toggleVisibility(id, body.hide);
     }
+
+    @Patch(':id')
+    update(
+        @Param('id') id: string,
+        @Body() body: { adminFee?: number; price?: number }
+    ) {
+        return this.weeksService.updateWeek(id, body);
+    }
 }

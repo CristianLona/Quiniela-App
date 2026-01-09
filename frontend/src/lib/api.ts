@@ -39,6 +39,9 @@ export const api = {
 
         toggleVisibility: (id: string, hide: boolean) =>
             fetchJson<Week>(`/weeks/${id}/visibility`, { method: 'PATCH', body: JSON.stringify({ hide }) }),
+
+        update: (id: string, data: { adminFee?: number; price?: number }) =>
+            fetchJson<Week>(`/weeks/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
     },
 
     picks: {
