@@ -1,92 +1,168 @@
-# Quiniela App
+# ⚽ Quiniela App
 
-Una aplicación web para gestionar y participar en quinielas deportivas.
+A full-stack web application for managing and participating in sports prediction pools (quinielas).
+This project is focused on clean architecture, separation of concerns, and the use of modern web technologies with TypeScript.
+
+---
+
+## 🧠 Purpose of the Project
+
+The goal of this project is to practice and demonstrate:
+
+-   **Full-stack software development** using TypeScript
+-   **REST API design** and implementation
+-   **Frontend–backend communication**
+-   **Scalable and maintainable** project organization
+
+This is a **personal project** built to strengthen my software engineering skills and prepare for professional environments.
+
+---
+
+## 👤 Role
+
+-   **Full-stack Developer** (personal project)
+
+---
 
 ## 🛠 Tech Stack
 
 ### Frontend
-- **Framework**: React 19 + Vite
-- **Lenguaje**: TypeScript
-- **Estilos**: TailwindCSS 4
-- **Iconos**: Lucide React
-- **Routing**: React Router DOM 7
+
+-   **Framework:** React 19 + Vite
+-   **Language:** TypeScript
+-   **Styling:** TailwindCSS 4
+-   **Icons:** Lucide React
+-   **Routing:** React Router DOM 7
 
 ### Backend
-- **Framework**: NestJS
-- **Lenguaje**: TypeScript
-- **Base de Datos / Auth**: Firebase (Firebase Admin SDK)
-- **HTTP Client**: Axios
 
-## 📂 Estructura del Proyecto
+-   **Framework:** NestJS
+-   **Language:** TypeScript
+-   **Authentication & Database:** Firebase (Firebase Admin SDK)
+-   **HTTP Client:** Axios
 
-El proyecto está organizado en dos carpetas principales:
+---
 
-- `frontend/`: Contiene la aplicación cliente en React.
-- `backend/`: Contiene la API y lógica del servidor en NestJS.
+## 🏗 Architecture Overview
 
-## 🚀 Comenzando
+```mermaid
+graph TD
+    Client[Client (React + TypeScript)] -->|HTTP/REST| API[REST API (NestJS)]
+    API -->|Auth & Data| Firebase[Firebase]
+```
 
-Sigue estas instrucciones para configurar el proyecto localmente.
+---
 
-### Pre-requisitos
-- Node.js (v18 o superior)
-- npm
+## ✨ Key Features
 
-### Configuración del Backend
+-   **RESTful API** built with NestJS and TypeScript
+-   **Frontend** developed with React and strongly typed components
+-   **Firebase authentication** and secure data handling
+-   **Modular and scalable** project structure
+-   **Admin panel** for match, score, and configuration management
+-   **Sports prediction (quiniela) system** _(in progress)_
 
-1. Navega al directorio del backend:
-   ```bash
-   cd backend
-   ```
+---
 
-2. Instala las dependencias:
-   ```bash
-   npm install
-   ```
+## 🧠 What I Built & Learned
 
-3. Configura las variables de entorno:
-   - Asegúrate de tener el archivo de credenciales de Firebase (por ejemplo, `serviceAccountKey.json`) en la ubicación correcta (`src/config/`).
+-   Designed a full-stack architecture separating frontend and backend responsibilities
+-   Built REST APIs following HTTP and REST principles
+-   Applied TypeScript to improve code safety and maintainability
+-   Integrated Firebase for authentication and data management
+-   Structured the project with scalability and maintainability in mind
 
-4. Inicia el servidor de desarrollo:
-   ```bash
-   npm run start:dev
-   ```
+---
 
-### Configuración del Frontend
+## 📂 Project Structure
 
-1. Navega al directorio del frontend:
-   ```bash
-   cd frontend
-   ```
+-   `/frontend` → React client application
+-   `/backend` → NestJS API and server logic
 
-2. Instala las dependencias:
-   ```bash
-   npm install
-   ```
+---
 
-3. Inicia el servidor de desarrollo:
-   ```bash
-   npm run dev
-   ```
+## 🚀 Getting Started
 
-## 📜 Scripts Disponibles
+Follow these steps to run the project locally.
+
+### Prerequisites
+
+-   Node.js (v18 or higher)
+-   npm
+
+### Backend Setup
+
+1.  Navigate to the backend directory:
+
+    ```bash
+    cd backend
+    ```
+
+2.  Install dependencies:
+
+    ```bash
+    npm install
+    ```
+
+3.  Environment configuration:
+    Add your Firebase service account credentials (e.g. `serviceAccountKey.json`) inside: `src/config/`
+
+4.  Start the development server:
+
+    ```bash
+    npm run start:dev
+    ```
+
+### Frontend Setup
+
+1.  Navigate to the frontend directory:
+
+    ```bash
+    cd frontend
+    ```
+
+2.  Install dependencies:
+
+    ```bash
+    npm install
+    ```
+
+3.  Start the development server:
+
+    ```bash
+    npm run dev
+    ```
+
+---
+
+## 📜 Available Scripts
 
 ### Frontend
-| Script | Descripción |
-|--------|-------------|
-| `npm run dev` | Inicia el servidor de desarrollo con Vite. |
-| `npm run build` | Compila la aplicación para producción. |
-| `npm run lint` | Ejecuta el linter para encontrar errores. |
+
+| Script          | Description                        |
+| :-------------- | :--------------------------------- |
+| `npm run dev`   | Starts the Vite development server |
+| `npm run build` | Builds the app for production      |
+| `npm run lint`  | Runs the linter                    |
 
 ### Backend
-| Script | Descripción |
-|--------|-------------|
-| `npm run start:dev` | Inicia el servidor NestJS en modo observador (watch mode). |
-| `npm run build` | Compila la aplicación NestJS. |
-| `npm run start:prod` | Ejecuta la versión compilada de producción. |
 
-## ✨ Características Principales
+| Script               | Description                        |
+| :------------------- | :--------------------------------- |
+| `npm run start:dev`  | Starts NestJS in watch mode        |
+| `npm run build`      | Builds the backend application     |
+| `npm run start:prod` | Runs the production build          |
 
-- **Scoreboard**: Visualización de marcadores y resultados.
-- **Panel de Administración**: Gestión de partidos, resultados y configuración.
-- **Sistema de Quiniela**: (En desarrollo) Predicciones y tablas de posiciones.
+---
+
+## 📌 Project Status
+
+**🚧 Active development**
+The quiniela prediction system and additional features are currently in progress.
+
+---
+
+## 📬 Contact
+
+-   **GitHub:** [@cristianlona](https://github.com/cristianlona)
+-   **Email:** cristianlonavalos@gmail.com
