@@ -47,7 +47,7 @@ This is a **personal project** built to strengthen my software engineering skill
 
 ```mermaid
 graph TD
-    Client[Client (React + TypeScript)] -->|HTTP/REST| API[REST API (NestJS)]
+    Client["Client (React + TypeScript)"] -->|HTTP/REST| API["REST API (NestJS)"]
     API -->|Auth & Data| Firebase[Firebase]
 ```
 
@@ -165,4 +165,6 @@ The quiniela prediction system and additional features are currently in progress
 ## 📬 Contact
 
 -   **GitHub:** [@cristianlona](https://github.com/cristianlona)
+-   **Linkedin:** [Cristian Lona](https://www.linkedin.com/in/cristian-josue-lona-avalos-3411b2218/)
 -   **Email:** cristianlonavalos@gmail.com
+   
