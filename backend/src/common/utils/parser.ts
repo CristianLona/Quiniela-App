@@ -1,6 +1,6 @@
 import { Match } from '../types';
 
-const DAYS_REGEX = /(?:lunes|martes|miércoles|jueves|viernes|sábado|domingo)/i;
+const DAYS_REGEX = /(?:lunes|martes|miércoles|miercoles|jueves|viernes|sábado|sabado|domingo|lun|mar|mié|mie|jue|vie|sáb|sab|dom)\.?/i;
 
 export function parseLineToMatchDraft(line: string, refDate: Date = new Date()): Partial<Match> | null {
     const cleanLine = line.trim();
@@ -69,7 +69,18 @@ function parseSpanishDateString(dateString: string, refDate: Date): number {
     targetDate.setDate(targetDate.getDate() + dayDiff);
     targetDate.setHours(hours, minutes, 0, 0);
 
-    return targetDate.getTime();
+    // Get current date components
+    const y = targetDate.getFullYear();
+    const m = targetDate.getMonth();
+    const d = targetDate.getDate();
+
+    // Force Mexico Timezone Interpretation (UTC-6)
+    const mexicoOffsetHours = 6;
+
+    // Construct UTC date
+    const utcDate = new Date(Date.UTC(y, m, d, hours + mexicoOffsetHours, minutes, 0));
+
+    return utcDate.getTime();
 }
 
 function spanishDayToIndex(day: string): number {

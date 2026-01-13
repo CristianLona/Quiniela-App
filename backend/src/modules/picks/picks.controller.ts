@@ -10,6 +10,11 @@ export class PicksController {
         return this.picksService.submitPick(body);
     }
 
+    @Post('admin')
+    adminSubmit(@Body() body: any) {
+        return this.picksService.submitPick(body, true);
+    }
+
     @Get('week/:weekId')
     getByWeek(@Param('weekId') weekId: string) {
         return this.picksService.findAllByWeek(weekId);

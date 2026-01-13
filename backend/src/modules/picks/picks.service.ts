@@ -16,14 +16,16 @@ export class PicksService {
         participantName: string;
         totalGoalsPrediction: number;
         picks: PickSelection[];
-    }): Promise<ParticipantEntry> {
+    }, isAdmin = false): Promise<ParticipantEntry> {
         // 1. Validate Week is Open
         const week = await this.weeksService.findOne(data.weekId);
         if (!week) throw new NotFoundException('Week not found');
 
-        // Strict Time Check: If status is closed OR time has passed, reject.
-        if (week.status !== 'OPEN' || Date.now() > week.closeDate) {
-            throw new BadRequestException('La quiniela ya está cerrada (el partido inicial ya comenzó).');
+        // Strict Time Check (Skipped if Admin)
+        if (!isAdmin) {
+            if (week.status !== 'OPEN' || Date.now() > week.closeDate) {
+                throw new BadRequestException('La quiniela ya está cerrada (el partido inicial ya comenzó).');
+            }
         }
 
         // 2. Validate Duplicate Name (Firestore Query)
@@ -49,7 +51,7 @@ export class PicksService {
             participantName: data.participantName,
             totalGoalsPrediction: data.totalGoalsPrediction,
             picks: data.picks,
-            paymentStatus: 'PENDING',
+            paymentStatus: isAdmin ? 'PAID' : 'PENDING', // Admin entries default to PAID? Or Pending? Let's say Pending to be safe, admin can toggle.
             submittedAt: Date.now(),
             score: 0,
             hits: [],

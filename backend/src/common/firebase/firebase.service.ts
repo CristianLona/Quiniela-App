@@ -44,9 +44,9 @@ export class FirebaseService implements OnModuleInit {
             });
 
             this.db = admin.firestore();
-            console.log('🔥 Firebase Initialized Successfully');
+            console.log('Firebase Initialized Successfully');
         } catch (error) {
-            console.warn('⚠️  Firebase init failed.', error.message);
+            console.warn('Firebase init failed.', error.message);
         }
     }
 
