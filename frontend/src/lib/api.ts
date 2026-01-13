@@ -48,6 +48,9 @@ export const api = {
         submit: (data: { weekId: string; participantName: string; totalGoalsPrediction: number; picks: PickSelection[] }) =>
             fetchJson<ParticipantEntry>('/picks', { method: 'POST', body: JSON.stringify(data) }),
 
+        adminSubmit: (data: { weekId: string; participantName: string; totalGoalsPrediction: number; picks: PickSelection[] }) =>
+            fetchJson<ParticipantEntry>('/picks/admin', { method: 'POST', body: JSON.stringify(data) }),
+
         getByWeek: (weekId: string) => fetchJson<ParticipantEntry[]>(`/picks/week/${weekId}`),
 
         togglePayment: (id: string) => fetchJson<ParticipantEntry>(`/picks/${id}/payment`, { method: 'PATCH' }),

@@ -9,10 +9,12 @@ import Home from './features/home/Home';
 // const Scoreboard = () => <div className="p-8 text-center text-2xl">Tabla General (Coming Soon)</div>;
 // const AdminPanel = () => <div className="p-8 text-center text-2xl">Admin Panel (Coming Soon)</div>;
 
+import { Toaster } from 'sonner';
+
 function App() {
   return (
     <BrowserRouter>
-      {/* <Toaster /> */}
+      <Toaster richColors position="top-center" theme="dark" />
       <div className="max-h-screen bg-slate-50 text-slate-900 font-sans">
         <Routes>
           <Route path="/" element={<Home />} />

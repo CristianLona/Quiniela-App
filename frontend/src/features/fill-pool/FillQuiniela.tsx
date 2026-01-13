@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import type { Match, MatchOutcome } from "../../types";
 import { MatchCard } from "../../components/MatchCard";
 import { Trophy, Clock, Loader2, User, Target, ArrowLeft, CheckCircle2, Ticket, Timer } from "lucide-react";
+import { toast } from 'sonner';
+import { Modal } from '../../components/ui/Modal';
 import { cn } from "../../lib/utils";
 import { api } from "../../lib/api";
 import { useNavigate } from "react-router-dom";
@@ -13,6 +15,7 @@ export default function FillQuiniela() {
     const [picks, setPicks] = useState<Record<string, MatchOutcome>>({});
     const [loading, setLoading] = useState(false);
     const [fetching, setFetching] = useState(true);
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
 
     const [matches, setMatches] = useState<Match[]>([]);
     const [weekID, setWeekID] = useState<string | null>(null);
@@ -42,7 +45,10 @@ export default function FillQuiniela() {
                     }
                 }
             })
-            .catch(err => console.error("Failed to load weeks", err))
+            .catch(err => {
+                console.error("Failed to load weeks", err);
+                toast.error("Error cargando la jornada activa");
+            })
             .finally(() => setFetching(false));
     }, []);
 
@@ -92,10 +98,14 @@ export default function FillQuiniela() {
         matches.length > 0 &&
         matches.every(m => picks[m.id]);
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handlePreSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!isComplete || !weekID) return;
+        setShowConfirmModal(true);
+    };
 
+    const handleConfirmSubmit = async () => {
+        if (!weekID) return;
         setLoading(true);
         const picksArray = Object.entries(picks).map(([matchId, selection]) => ({ matchId, selection }));
 
@@ -106,14 +116,16 @@ export default function FillQuiniela() {
                 totalGoalsPrediction: parseInt(goals),
                 picks: picksArray
             });
-            alert("¡Quiniela enviada con éxito! Mucha suerte");
+
+            toast.success("¡Quiniela enviada con éxito! Mucha suerte");
             setName("");
             setGoals("");
             setPicks({});
+            setShowConfirmModal(false);
             window.scrollTo({ top: 0, behavior: 'smooth' });
             navigate('/scoreboard');
         } catch (err: unknown) {
-            alert("Error: " + (err instanceof Error ? err.message : String(err)));
+            toast.error("Error: " + (err instanceof Error ? err.message : String(err)));
         } finally {
             setLoading(false);
         }
@@ -240,7 +252,7 @@ export default function FillQuiniela() {
                     </div>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-8">
+                <form onSubmit={handlePreSubmit} className="space-y-8">
 
                     {/* Section: User Info */}
                     <div className="space-y-4">
@@ -298,7 +310,7 @@ export default function FillQuiniela() {
                     {/* Submit Button Floating */}
                     <div className="bottom-6 left-0 right-0 px-6 max-w-xl mx-auto z-50">
                         <button
-                            onClick={handleSubmit}
+                            type="submit"
                             disabled={!isComplete || loading}
                             className={cn(
                                 "w-full py-4 rounded-2xl font-black text-lg uppercase tracking-wider flex items-center justify-center gap-3 transition-all transform shadow-2xl backdrop-blur-md border border-white/5",
@@ -318,6 +330,54 @@ export default function FillQuiniela() {
                     </div>
 
                 </form>
+
+
+                {/* Confirm Modal */}
+                <Modal
+                    isOpen={showConfirmModal}
+                    onClose={() => setShowConfirmModal(false)}
+                    title="Confirmar Quiniela"
+                >
+                    <div className="space-y-6">
+                        <div className="bg-zinc-900/50 p-4 rounded-xl border border-zinc-800 space-y-3">
+                            <div className="flex justify-between items-center text-sm">
+                                <span className="text-zinc-500 font-bold uppercase">Participante</span>
+                                <span className="text-white font-black text-lg">{name}</span>
+                            </div>
+                            <div className="flex justify-between items-center text-sm">
+                                <span className="text-zinc-500 font-bold uppercase">Goles Totales</span>
+                                <span className="text-[#22c55e] font-black text-lg">{goals}</span>
+                            </div>
+                            <div className="h-px bg-zinc-800 my-2"></div>
+                            <div className="flex justify-between items-center text-sm">
+                                <span className="text-zinc-500 font-bold uppercase">Pronósticos</span>
+                                <span className="text-white font-bold">{Object.keys(picks).length} de {matches.length}</span>
+                            </div>
+                        </div>
+
+                        <p className="text-zinc-400 text-sm text-center">
+                            ¿Estás seguro de enviar tu quiniela? <br />
+                            <span className="text-xs text-zinc-600">No podrás modificarla después.</span>
+                        </p>
+
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setShowConfirmModal(false)}
+                                className="flex-1 px-4 py-3 rounded-xl font-bold text-zinc-500 hover:text-white hover:bg-white/5 transition-colors"
+                            >
+                                Revisar
+                            </button>
+                            <button
+                                onClick={handleConfirmSubmit}
+                                disabled={loading}
+                                className="flex-1 bg-[#22c55e] text-black font-black px-4 py-3 rounded-xl hover:bg-[#1faa50] transition-colors flex items-center justify-center gap-2 shadow-lg shadow-[#22c55e]/20"
+                            >
+                                {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+                                Enviar Ahora
+                            </button>
+                        </div>
+                    </div>
+                </Modal>
             </div>
         </div>
     );

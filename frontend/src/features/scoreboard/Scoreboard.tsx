@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import type { Match, ParticipantEntry } from '../../types';
 import { cn } from '../../lib/utils';
 import { Trophy, Loader2, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { api } from '../../lib/api';
 import { useNavigate } from 'react-router-dom';
 
@@ -74,6 +75,7 @@ export default function Scoreboard() {
                 }
             } catch (err) {
                 console.error("Error loading scoreboard", err);
+                toast.error("Error cargando la tabla de resultados");
             } finally {
                 setLoading(false);
             }

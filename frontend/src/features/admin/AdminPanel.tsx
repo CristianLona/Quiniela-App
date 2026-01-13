@@ -2,13 +2,15 @@ import { useState, useEffect } from 'react';
 import { cn } from '../../lib/utils';
 import { Lock, Plus, Play, Loader2, Trophy, ClipboardList, PenTool, User, Eye, EyeOff, DollarSign, CheckCircle2 } from 'lucide-react';
 import type { WeekDraft, Match, ParticipantEntry } from '../../types';
+import { toast } from 'sonner';
+import { Modal } from '../../components/ui/Modal';
 import { api } from '../../lib/api';
 
 export default function AdminPanel() {
     const [auth, setAuth] = useState(false);
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
-    const [tab, setTab] = useState<'create-week' | 'results' | 'participants'>('create-week');
+    const [tab, setTab] = useState<'create-week' | 'results' | 'participants' | 'manual-entry'>('create-week');
 
     // Create Week State
     const [weekName, setWeekName] = useState('Jornada 1');
@@ -16,12 +18,17 @@ export default function AdminPanel() {
     const [adminFee, setAdminFee] = useState(0);
     const [weekText, setWeekText] = useState('');
     const [draft, setDraft] = useState<WeekDraft | null>(null);
+    const [showPublishModal, setShowPublishModal] = useState(false);
 
     // Login Handler
     const handleLogin = (e: React.FormEvent) => {
         e.preventDefault();
-        if (password === 'admin123') setAuth(true);
-        else alert('Wrong password');
+        if (password === 'admin123') {
+            setAuth(true);
+            toast.success('Bienvenido Admin');
+        } else {
+            toast.error('Contraseña incorrecta');
+        }
     };
 
     // Parser Handler
@@ -32,7 +39,7 @@ export default function AdminPanel() {
             const result = await api.weeks.parse(weekText);
             setDraft(result);
         } catch (err: unknown) {
-            alert('Error: ' + String(err));
+            toast.error('Error al procesar: ' + String(err));
         } finally {
             setLoading(false);
         }
@@ -40,14 +47,15 @@ export default function AdminPanel() {
 
     const handlePublish = async () => {
         if (!draft) return;
-        if (!confirm('¿Publicar?')) return;
+        // Modal handles confirmation now
         setLoading(true);
         try {
             await api.weeks.create(weekName, draft.parsedMatches, price, adminFee);
-            alert('Publicado');
+            toast.success('Jornada Publicada Exitosamente');
             setWeekText('');
             setDraft(null);
-        } catch (err) { alert(String(err)); }
+            setShowPublishModal(false);
+        } catch (err) { toast.error(String(err)); }
         finally { setLoading(false); }
     };
 
@@ -88,6 +96,9 @@ export default function AdminPanel() {
                     </button>
                     <button onClick={() => setTab('participants')} className={cn("px-6 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center gap-2", tab === 'participants' ? "bg-pool-green text-[#020617] shadow-md" : "text-slate-400 hover:text-white hover:bg-white/5")}>
                         <User className="w-4 h-4" /> Participantes
+                    </button>
+                    <button onClick={() => setTab('manual-entry')} className={cn("px-6 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center gap-2", tab === 'manual-entry' ? "bg-pool-green text-[#020617] shadow-md" : "text-slate-400 hover:text-white hover:bg-white/5")}>
+                        <Plus className="w-4 h-4" /> Manual
                     </button>
                 </div>
 
@@ -131,7 +142,7 @@ export default function AdminPanel() {
                                             </div>
                                         ))}
                                     </div>
-                                    <button onClick={handlePublish} disabled={loading} className="w-full bg-pool-green text-[#020617] font-bold py-4 rounded-xl shadow-lg hover:bg-emerald-400 flex justify-center items-center gap-2 disabled:opacity-50 transition-all hover:scale-105">
+                                    <button onClick={() => setShowPublishModal(true)} disabled={loading} className="w-full bg-pool-green text-[#020617] font-bold py-4 rounded-xl shadow-lg hover:bg-emerald-400 flex justify-center items-center gap-2 disabled:opacity-50 transition-all hover:scale-105">
                                         {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Play className="w-5 h-5 fill-current" />} Publicar Jornada Ahora
                                     </button>
                                 </div>
@@ -146,7 +157,46 @@ export default function AdminPanel() {
 
                 {tab === 'results' && <ResultsEditor />}
                 {tab === 'participants' && <ParticipantsEditor />}
+                {tab === 'manual-entry' && <ManualEntryEditor />}
 
+                {/* Publish Confirmation Modal */}
+                <Modal
+                    isOpen={showPublishModal}
+                    onClose={() => setShowPublishModal(false)}
+                    title="Confirmar Publicación"
+                >
+                    <div className="space-y-4">
+                        <p className="text-slate-300 text-sm">
+                            Estás a punto de publicar la jornada <strong>"{weekName}"</strong> con {draft?.parsedMatches.length} partidos.
+                        </p>
+                        <div className="bg-black/20 p-4 rounded-lg border border-white/5 space-y-2">
+                            <div className="flex justify-between text-xs">
+                                <span className="text-slate-400">Precio:</span>
+                                <span className="font-bold text-white">${price}</span>
+                            </div>
+                            <div className="flex justify-between text-xs">
+                                <span className="text-slate-400">Gastos:</span>
+                                <span className="font-bold text-white">${adminFee}</span>
+                            </div>
+                        </div>
+                        <div className="flex gap-3 pt-2">
+                            <button
+                                onClick={() => setShowPublishModal(false)}
+                                className="flex-1 px-4 py-3 rounded-xl font-bold text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={handlePublish}
+                                disabled={loading}
+                                className="flex-1 bg-pool-green text-[#020617] font-bold px-4 py-3 rounded-xl hover:bg-emerald-400 transition-colors flex items-center justify-center gap-2"
+                            >
+                                {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+                                Confirmar y Publicar
+                            </button>
+                        </div>
+                    </div>
+                </Modal>
             </main>
         </div>
     );
@@ -195,7 +245,8 @@ function ResultsEditor() {
             // API Call
             await api.weeks.updateResult(weekId, matchId, home, away);
         } catch (e) {
-            alert('Error updating score: ' + String(e));
+            toast.error('Error actualizando marcador');
+            fetchData(); // Revert
         }
     };
 
@@ -205,7 +256,7 @@ function ResultsEditor() {
             setWeek((prev: any) => ({ ...prev, adminFee: newFee }));
             await api.weeks.update(weekId, { adminFee: newFee });
         } catch (e) {
-            alert('Error updating fee');
+            toast.error('Error actualizando fee');
             fetchData();
         }
     };
@@ -276,7 +327,7 @@ function ResultsEditor() {
                                         onBlur={(e) => handleUpdateScore(m.id, m.result?.homeScore || 0, parseInt(e.target.value) || 0)}
                                     />
                                 </div>
-                                <span className="font-bold text-white text-left">{m.homeTeam}</span>
+                                <span className="font-bold text-white text-left">{m.awayTeam}</span>
                             </div>
                         </div>
                     ))}
@@ -307,7 +358,7 @@ function ParticipantsEditor() {
                 // setParticipants(parts);
             }
         } catch (e) {
-            alert('Error loading participants');
+            toast.error('Error cargando participantes');
         } finally {
             setLoading(false);
         }
@@ -322,7 +373,7 @@ function ParticipantsEditor() {
             const updated = await api.picks.togglePayment(p.id);
             setParticipants(prev => prev.map(item => item.id === p.id ? { ...item, paymentStatus: updated.paymentStatus } : item));
         } catch (e) {
-            alert('Error updating payment status');
+            toast.error('Error cambiando estado de pago');
         }
     };
 
@@ -333,7 +384,7 @@ function ParticipantsEditor() {
             await api.weeks.toggleVisibility(weekId, newVal);
             setHideUnpaid(newVal);
         } catch (e) {
-            alert('Error updating visibility');
+            toast.error('Error cambiando visibilidad');
         }
     };
 
@@ -398,6 +449,114 @@ function ParticipantsEditor() {
                     ))
                 )}
             </div>
+        </div>
+    );
+}
+
+function ManualEntryEditor() {
+    const [name, setName] = useState("");
+    const [goals, setGoals] = useState<string>("");
+    const [picks, setPicks] = useState<Record<string, any>>({}); // any for MatchOutcome mapping
+    const [loading, setLoading] = useState(false);
+
+    // Data state
+    const [matches, setMatches] = useState<Match[]>([]);
+    const [weekID, setWeekID] = useState<string | null>(null);
+
+    useEffect(() => {
+        // Load latest week regardless of status (OPEN or CLOSED)
+        api.weeks.getAll().then(weeks => {
+            const sorted = weeks.sort((a, b) => b.createdAt - a.createdAt);
+            if (sorted.length > 0) {
+                const latest = sorted[0];
+                setWeekID(latest.id);
+                setMatches(latest.matches);
+            }
+        });
+    }, []);
+
+    const handleSelect = (matchId: string, selection: any) => {
+        setPicks(prev => ({ ...prev, [matchId]: selection }));
+    };
+
+    const isComplete = name.trim().length > 0 && goals !== "" && matches.every(m => picks[m.id]);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!isComplete || !weekID) return;
+
+        setLoading(true);
+        const picksArray = Object.entries(picks).map(([matchId, selection]) => ({ matchId, selection }));
+
+        try {
+            await api.picks.adminSubmit({
+                weekId: weekID,
+                participantName: name.trim(),
+                totalGoalsPrediction: parseInt(goals),
+                picks: picksArray
+            });
+            toast.success("Registro manual exitoso");
+            setName("");
+            setGoals("");
+            setPicks({});
+        } catch (err: unknown) {
+            toast.error("Error: " + String(err));
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (!weekID) return <div className="text-center py-12 text-slate-500">Cargando jornada...</div>;
+
+    return (
+        <div className="bg-[#1e293b] p-6 rounded-2xl border border-white/5 shadow-xl animate-in fade-in slide-in-from-bottom-4">
+            <h2 className="text-xs font-bold text-pool-accent uppercase mb-6 flex items-center gap-2">
+                <Plus className="w-4 h-4" />
+                Registro Manual (Admin)
+            </h2>
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-xs font-bold text-slate-400 mb-2 uppercase">Participante</label>
+                        <input value={name} onChange={e => setName(e.target.value)} className="w-full bg-[#0f172a] text-white p-3 rounded-lg border border-slate-700 focus:border-pool-green outline-none" placeholder="Nombre" />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold text-slate-400 mb-2 uppercase">Goles Totales</label>
+                        <input type="number" value={goals} onChange={e => setGoals(e.target.value)} className="w-full bg-[#0f172a] text-white p-3 rounded-lg border border-slate-700 focus:border-pool-green outline-none" placeholder="0" />
+                    </div>
+                </div>
+
+                <div className="space-y-2 max-h-[400px] overflow-y-auto custom-scrollbar pr-2 border border-white/5 rounded-xl p-2 bg-[#0f172a]/50">
+                    {matches.map(m => (
+                        <div key={m.id} className="flex justify-between items-center text-xs p-2 bg-[#0f172a] rounded border border-white/5">
+                            <span className="font-bold text-slate-300 w-1/3 text-right">{m.homeTeam}</span>
+                            <div className="flex gap-1">
+                                {(['L', 'E', 'V'] as const).map(opt => (
+                                    <button
+                                        type="button"
+                                        key={opt}
+                                        onClick={() => handleSelect(m.id, opt)}
+                                        className={cn(
+                                            "w-8 h-8 rounded font-black transition-colors border",
+                                            picks[m.id] === opt
+                                                ? "bg-pool-green text-black border-pool-green"
+                                                : "bg-slate-800 text-slate-500 border-slate-700 hover:bg-slate-700"
+                                        )}
+                                    >
+                                        {opt}
+                                    </button>
+                                ))}
+                            </div>
+                            <span className="font-bold text-slate-300 w-1/3 text-left">{m.awayTeam}</span>
+                        </div>
+                    ))}
+                </div>
+
+                <button disabled={!isComplete || loading} className="w-full bg-pool-green text-black font-black py-4 rounded-xl disabled:opacity-50 hover:bg-emerald-400 transition-colors">
+                    {loading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : "Registrar Quiniela"}
+                </button>
+            </form>
         </div>
     );
 }
