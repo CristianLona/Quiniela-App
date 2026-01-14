@@ -13,6 +13,7 @@ The goal of this project is to practice and demonstrate:
 -   **REST API design** and implementation
 -   **Frontend–backend communication**
 -   **Scalable and maintainable** project organization
+-   **Modern UI/UX** implementation
 
 This is a **personal project** built to strengthen my software engineering skills and prepare for professional environments.
 
@@ -31,7 +32,8 @@ This is a **personal project** built to strengthen my software engineering skill
 -   **Framework:** React 19 + Vite
 -   **Language:** TypeScript
 -   **Styling:** TailwindCSS 4
--   **Icons:** Lucide React
+-   **UI Components:** Custom Modals, Lucide React Icons
+-   **Notifications:** Sonner (Toasts)
 -   **Routing:** React Router DOM 7
 
 ### Backend
@@ -57,10 +59,17 @@ graph TD
 
 -   **RESTful API** built with NestJS and TypeScript
 -   **Frontend** developed with React and strongly typed components
+-   **Modern UI Experience**:
+    -   Elegant **Toast Notifications** (Sonner) for feedback
+    -   Responsive **Glassmorphism Modals** for confirmations
+    -   Fully responsive design (Mobile First)
 -   **Firebase authentication** and secure data handling
 -   **Modular and scalable** project structure
 -   **Admin panel** for match, score, and configuration management
--   **Sports prediction (quiniela) system** _(in progress)_
+-   **Sports prediction (quiniela) system**:
+    -   User-friendly filling flow
+    -   Live countdowns and validation
+    -   Interactive Scoreboard with auto-scaling tables
 
 ---
 
@@ -70,6 +79,7 @@ graph TD
 -   Built REST APIs following HTTP and REST principles
 -   Applied TypeScript to improve code safety and maintainability
 -   Integrated Firebase for authentication and data management
+-   Implemented a modern, polished UI using Tailwind CSS and React ecosystem best practices
 -   Structured the project with scalability and maintainability in mind
 
 ---
@@ -158,7 +168,7 @@ Follow these steps to run the project locally.
 ## 📌 Project Status
 
 **🚧 Active development**
-The quiniela prediction system and additional features are currently in progress.
+The core Quiniela flow (filling, submission, scoreboard, admin publishing) is complete and modernized. Additional features and refinements are ongoing.
 
 ---
 
@@ -167,4 +177,3 @@ The quiniela prediction system and additional features are currently in progress
 -   **GitHub:** [@cristianlona](https://github.com/cristianlona)
 -   **Linkedin:** [Cristian Lona](https://www.linkedin.com/in/cristian-josue-lona-avalos-3411b2218/)
 -   **Email:** cristianlonavalos@gmail.com
-   
