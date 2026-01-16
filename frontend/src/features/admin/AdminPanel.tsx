@@ -23,7 +23,7 @@ export default function AdminPanel() {
     // Login Handler
     const handleLogin = (e: React.FormEvent) => {
         e.preventDefault();
-        if (password === 'admin123') {
+        if (password === import.meta.env.VITE_ADMIN_PASSWORD) {
             setAuth(true);
             toast.success('Bienvenido Admin');
         } else {
