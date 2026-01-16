@@ -172,7 +172,7 @@ export default function Scoreboard() {
 
                 {/* Main Scoreboard Table - Full Width Auto-Scale */}
                 <div className="w-full max-w-[1400px]">
-                    <div className="pool-card bg-black/40 border border-zinc-800 backdrop-blur-sm overflow-hidden">
+                    <div className="pool-card bg-[#18181b] border border-zinc-800 backdrop-blur-sm overflow-hidden">
                         <div
                             ref={setContainer}
                             className="w-full overflow-hidden relative"
@@ -187,16 +187,16 @@ export default function Scoreboard() {
                             >
                                 <table ref={setTable} className="w-max">
                                     <thead>
-                                        <tr className="bg-[#151515]">
-                                            <th className="p-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider sticky left-0 bg-[#151515] z-10">Participante</th>
+                                        <tr className="bg-[#09090b]">
+                                            <th className="p-4 text-left text-xs font-bold text-zinc-500 uppercase tracking-wider sticky left-0 bg-[#09090b] z-10">Participante</th>
                                             {matches.map(m => (
                                                 <th key={m.id} className="p-2 min-w-[60px] text-center align-bottom relative group">
                                                     <div className="absolute inset-x-0 bottom-0 top-0 bg-white/0 group-hover:bg-white/5 -z-10 transition-colors pointer-events-none" />
 
                                                     <div className="flex flex-col items-center justify-between h-64 pb-2 pt-2">
                                                         <div className="flex-1 flex items-center justify-center">
-                                                            <span className="text-[11px] font-bold text-slate-400 uppercase whitespace-nowrap tracking-wider opacity-80 group-hover:opacity-100 transition-opacity" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>
-                                                                {m.homeTeam} <span className="text-slate-600 mx-1 font-normal">vs</span> {m.awayTeam}
+                                                            <span className="text-[11px] font-bold text-zinc-400 uppercase whitespace-nowrap tracking-wider opacity-80 group-hover:opacity-100 transition-opacity" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>
+                                                                {m.homeTeam} <span className="text-zinc-600 mx-1 font-normal">vs</span> {m.awayTeam}
                                                             </span>
                                                         </div>
 
@@ -205,14 +205,14 @@ export default function Scoreboard() {
                                                                 "w-8 h-8 rounded-lg text-xs flex items-center justify-center font-black shadow-md border-2 transition-transform group-hover:scale-110",
                                                                 m.status === 'FINISHED' ? (
                                                                     m.result?.outcome === 'L' ? 'bg-white border-white text-black' :
-                                                                        m.result?.outcome === 'E' ? 'bg-slate-700 border-slate-700 text-white' :
+                                                                        m.result?.outcome === 'E' ? 'bg-zinc-700 border-zinc-700 text-white' :
                                                                             'bg-[#22c55e] border-[#22c55e] text-black'
-                                                                ) : 'bg-[#151515] border-white/10 text-slate-700'
+                                                                ) : 'bg-[#09090b] border-white/10 text-zinc-700'
                                                             )}>
                                                                 {m.status === 'FINISHED' ? m.result?.outcome : '-'}
                                                             </div>
 
-                                                            <div className="h-5 text-[10px] font-mono font-bold text-slate-400">
+                                                            <div className="h-5 text-[10px] font-mono font-bold text-zinc-400">
                                                                 {m.status === 'FINISHED' && m.result
                                                                     ? `${m.result.homeScore}-${m.result.awayScore}`
                                                                     : ''}
@@ -221,22 +221,22 @@ export default function Scoreboard() {
                                                     </div>
                                                 </th>
                                             ))}
-                                            <th className="p-4 text-center text-sm font-black text-[#22c55e] uppercase bg-[#151515]">PTS</th>
-                                            <th className="p-4 text-center text-sm font-black text-slate-400 uppercase bg-[#151515]">GOL</th>
+                                            <th className="p-4 text-center text-sm font-black text-[#22c55e] uppercase bg-[#09090b]">PTS</th>
+                                            <th className="p-4 text-center text-sm font-black text-zinc-400 uppercase bg-[#09090b]">GOL</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-white/5">
                                         {sortedParticipants.map((p, idx) => (
                                             <tr key={p.id} className="hover:bg-white/5 transition-colors group">
-                                                <td className="p-4 whitespace-nowrap sticky left-0 bg-[#0A0A0A] z-10 border-r border-white/5 group-hover:bg-[#111]">
+                                                <td className="p-4 whitespace-nowrap sticky left-0 bg-[#09090b] z-10 border-r border-white/5 group-hover:bg-[#111]">
                                                     <div className="flex items-center gap-4">
                                                         <span className={cn(
                                                             "w-8 h-8 rounded-lg flex items-center justify-center text-sm font-black",
                                                             idx === 0 ? "bg-[#fbbf24] text-black" :
                                                                 idx === 1 ? "bg-slate-300 text-black" :
-                                                                    idx === 2 ? "bg-amber-700 text-white" : "text-slate-600 bg-white/5"
+                                                                    idx === 2 ? "bg-amber-700 text-white" : "text-zinc-600 bg-white/5"
                                                         )}>{idx + 1}</span>
-                                                        <span className={cn("font-bold text-base", idx < 3 ? "text-white" : "text-slate-300")}>{p.participantName}</span>
+                                                        <span className={cn("font-bold text-base", idx < 3 ? "text-white" : "text-zinc-300")}>{p.participantName}</span>
                                                         {p.paymentStatus === 'PAID' && (
                                                             <div title="Pagado" className="bg-[#22c55e]/10 border border-[#22c55e]/20 p-0.5 rounded-full">
                                                                 <CheckCircle2 className="w-3 h-3 text-[#22c55e]" />
@@ -253,7 +253,7 @@ export default function Scoreboard() {
                                                                 "w-8 h-8 mx-auto rounded-lg text-xs flex items-center justify-center font-bold transition-all border-2",
                                                                 isHit
                                                                     ? "bg-[#22c55e] border-[#22c55e] text-black shadow-[0_0_15px_rgba(34,197,94,0.3)] scale-110"
-                                                                    : "text-slate-500 bg-white/5 border-transparent"
+                                                                    : "text-zinc-500 bg-white/5 border-transparent"
                                                             )}>
                                                                 {pick?.selection || '-'}
                                                             </div>
@@ -261,16 +261,16 @@ export default function Scoreboard() {
                                                     )
                                                 })}
                                                 <td className="p-4 text-center font-black text-xl text-white">{p.score}</td>
-                                                <td className="p-4 text-center text-sm font-mono text-slate-400">{p.totalGoalsPrediction}</td>
+                                                <td className="p-4 text-center text-sm font-mono text-zinc-400">{p.totalGoalsPrediction}</td>
                                             </tr>
                                         ))}
                                     </tbody>
                                     <tfoot>
-                                        <tr className="bg-[#151515]/50 border-t-2 border-white/10">
-                                            <td className="p-4 text-right font-bold text-xs uppercase text-slate-500 sticky left-0 bg-[#0A0A0A]" colSpan={matches.length + 2}>
+                                        <tr className="bg-[#09090b]/50 border-t-2 border-white/10">
+                                            <td className="p-4 text-right font-bold text-xs uppercase text-zinc-500 sticky left-0 bg-[#09090b]" colSpan={matches.length + 2}>
                                                 Total Goles Real:
                                             </td>
-                                            <td className="p-4 text-center font-black text-xl text-white bg-[#151515]">
+                                            <td className="p-4 text-center font-black text-xl text-white bg-[#09090b]">
                                                 {totalGoals}
                                             </td>
                                         </tr>

@@ -61,15 +61,15 @@ export default function AdminPanel() {
 
     if (!auth) {
         return (
-            <div className="min-h-screen bg-[#0f172a] flex items-center justify-center p-4">
-                <form onSubmit={handleLogin} className="bg-[#1e293b] p-8 rounded-2xl shadow-2xl w-full max-w-sm border border-white/5">
+            <div className="min-h-screen bg-[#09090b] flex items-center justify-center p-4">
+                <form onSubmit={handleLogin} className="bg-[#18181b] p-8 rounded-2xl shadow-2xl w-full max-w-sm border border-white/5">
                     <div className="flex justify-center mb-6">
-                        <div className="w-16 h-16 bg-[#0f172a] rounded-full flex items-center justify-center text-pool-green border border-white/10 shadow-inner">
+                        <div className="w-16 h-16 bg-[#09090b] rounded-full flex items-center justify-center text-pool-green border border-white/10 shadow-inner">
                             <Lock className="w-8 h-8" />
                         </div>
                     </div>
                     <h2 className="text-center text-2xl font-bold text-white mb-8 tracking-tight">Admin Access</h2>
-                    <input type="password" placeholder="Contraseña" value={password} onChange={e => setPassword(e.target.value)} className="w-full bg-[#0f172a] text-white p-4 border border-slate-700 rounded-xl mb-4 focus:border-pool-green outline-none font-bold" />
+                    <input type="password" placeholder="Contraseña" value={password} onChange={e => setPassword(e.target.value)} className="w-full bg-[#09090b] text-white p-4 border border-zinc-800 rounded-xl mb-4 focus:border-pool-green outline-none font-bold" />
                     <button type="submit" className="w-full bg-pool-green text-[#020617] font-bold py-4 rounded-xl hover:bg-emerald-400 transition-colors shadow-lg shadow-pool-green/20">Entrar</button>
                 </form>
             </div>
@@ -77,27 +77,27 @@ export default function AdminPanel() {
     }
 
     return (
-        <div className="min-h-screen bg-[#0f172a] flex flex-col font-sans">
-            <header className="bg-[#020617] text-white p-6 sticky top-0 z-20 border-b border-white/5 shadow-xl">
+        <div className="min-h-screen bg-[#09090b] flex flex-col font-sans">
+            <header className="bg-black/40 backdrop-blur-md text-white p-6 sticky top-0 z-20 border-b border-white/5 shadow-xl">
                 <div className="flex justify-between items-center max-w-4xl mx-auto w-full">
                     <h1 className="font-bold text-xl flex items-center gap-2"><PenTool className="w-5 h-5 text-pool-accent" /> Panel Administrativo</h1>
-                    <button onClick={() => setAuth(false)} className="text-xs font-bold text-slate-500 hover:text-white bg-white/5 px-3 py-1.5 rounded-lg border border-white/5 transition-colors">Salir</button>
+                    <button onClick={() => setAuth(false)} className="text-xs font-bold text-zinc-500 hover:text-white bg-white/5 px-3 py-1.5 rounded-lg border border-white/5 transition-colors">Salir</button>
                 </div>
             </header>
 
             <main className="flex-1 p-6 max-w-4xl mx-auto w-full space-y-8">
                 {/* Tabs */}
-                <div className="flex gap-4 p-1 bg-[#1e293b] rounded-xl w-fit border border-white/5">
-                    <button onClick={() => setTab('create-week')} className={cn("px-6 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center gap-2", tab === 'create-week' ? "bg-pool-green text-[#020617] shadow-md" : "text-slate-400 hover:text-white hover:bg-white/5")}>
+                <div className="flex gap-4 p-1 bg-[#18181b] rounded-xl w-fit border border-white/5">
+                    <button onClick={() => setTab('create-week')} className={cn("px-6 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center gap-2", tab === 'create-week' ? "bg-pool-green text-[#020617] shadow-md" : "text-zinc-500 hover:text-white hover:bg-white/5")}>
                         <Plus className="w-4 h-4" /> Nueva Jornada
                     </button>
-                    <button onClick={() => setTab('results')} className={cn("px-6 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center gap-2", tab === 'results' ? "bg-pool-green text-[#020617] shadow-md" : "text-slate-400 hover:text-white hover:bg-white/5")}>
+                    <button onClick={() => setTab('results')} className={cn("px-6 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center gap-2", tab === 'results' ? "bg-pool-green text-[#020617] shadow-md" : "text-zinc-500 hover:text-white hover:bg-white/5")}>
                         <ClipboardList className="w-4 h-4" /> Capturar Resultados
                     </button>
-                    <button onClick={() => setTab('participants')} className={cn("px-6 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center gap-2", tab === 'participants' ? "bg-pool-green text-[#020617] shadow-md" : "text-slate-400 hover:text-white hover:bg-white/5")}>
+                    <button onClick={() => setTab('participants')} className={cn("px-6 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center gap-2", tab === 'participants' ? "bg-pool-green text-[#020617] shadow-md" : "text-zinc-500 hover:text-white hover:bg-white/5")}>
                         <User className="w-4 h-4" /> Participantes
                     </button>
-                    <button onClick={() => setTab('manual-entry')} className={cn("px-6 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center gap-2", tab === 'manual-entry' ? "bg-pool-green text-[#020617] shadow-md" : "text-slate-400 hover:text-white hover:bg-white/5")}>
+                    <button onClick={() => setTab('manual-entry')} className={cn("px-6 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center gap-2", tab === 'manual-entry' ? "bg-pool-green text-[#020617] shadow-md" : "text-zinc-500 hover:text-white hover:bg-white/5")}>
                         <Plus className="w-4 h-4" /> Manual
                     </button>
                 </div>
@@ -105,25 +105,25 @@ export default function AdminPanel() {
                 {tab === 'create-week' && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <div className="space-y-6">
-                            <div className="bg-[#1e293b] p-6 rounded-2xl shadow-lg border border-white/5">
-                                <h2 className="text-xs font-bold text-pool-accent uppercase mb-6 flex items-center gap-2"><span className="w-6 h-6 rounded bg-pool-accent/10 flex items-center justify-center text-[10px]">1</span> Configurar Jornada</h2>
+                            <div className="bg-[#18181b] p-6 rounded-2xl shadow-lg border border-white/5">
+                                <h2 className="text-xs font-bold text-zinc-500 uppercase mb-6 flex items-center gap-2"><span className="w-6 h-6 rounded bg-pool-accent/10 flex items-center justify-center text-[10px]">1</span> Configurar Jornada</h2>
                                 <div className="mb-6">
-                                    <label className="block text-xs font-bold text-slate-400 mb-2 uppercase">Nombre</label>
-                                    <input value={weekName} onChange={e => setWeekName(e.target.value)} className="w-full bg-[#0f172a] text-white text-sm font-bold border border-slate-700 rounded-lg p-3 focus:border-pool-green outline-none transition-colors" />
+                                    <label className="block text-xs font-bold text-zinc-500 mb-2 uppercase">Nombre</label>
+                                    <input value={weekName} onChange={e => setWeekName(e.target.value)} className="w-full bg-[#09090b] text-white text-sm font-bold border border-zinc-800 rounded-lg p-3 focus:border-pool-green outline-none transition-colors" />
                                 </div>
                                 <div className="grid grid-cols-2 gap-4 mb-6">
                                     <div>
-                                        <label className="block text-xs font-bold text-slate-400 mb-2 uppercase">Precio ($)</label>
-                                        <input type="number" value={price} onChange={e => setPrice(Number(e.target.value))} className="w-full bg-[#0f172a] text-white text-sm font-bold border border-slate-700 rounded-lg p-3 focus:border-pool-green outline-none" />
+                                        <label className="block text-xs font-bold text-zinc-500 mb-2 uppercase">Precio ($)</label>
+                                        <input type="number" value={price} onChange={e => setPrice(Number(e.target.value))} className="w-full bg-[#09090b] text-white text-sm font-bold border border-zinc-800 rounded-lg p-3 focus:border-pool-green outline-none" />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-bold text-slate-400 mb-2 uppercase">Gastos/Resta ($)</label>
-                                        <input type="number" value={adminFee} onChange={e => setAdminFee(Number(e.target.value))} className="w-full bg-[#0f172a] text-white text-sm font-bold border border-slate-700 rounded-lg p-3 focus:border-pool-green outline-none" />
+                                        <label className="block text-xs font-bold text-zinc-500 mb-2 uppercase">Gastos/Resta ($)</label>
+                                        <input type="number" value={adminFee} onChange={e => setAdminFee(Number(e.target.value))} className="w-full bg-[#09090b] text-white text-sm font-bold border border-zinc-800 rounded-lg p-3 focus:border-pool-green outline-none" />
                                     </div>
                                 </div>
-                                <label className="block text-xs font-bold text-slate-400 mb-2 uppercase">Pegar Partidos (Texto)</label>
-                                <textarea value={weekText} onChange={e => setWeekText(e.target.value)} placeholder={`Real Madrid vs Barcelona sábado 8:00pm...`} className="w-full h-48 bg-[#0f172a] p-4 text-sm text-slate-300 border border-slate-700 rounded-lg focus:border-pool-green outline-none font-mono resize-none mb-4" />
-                                <button onClick={handleParse} disabled={loading} className="w-full text-sm bg-slate-700 text-white font-bold px-4 py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-slate-600 disabled:opacity-50 transition-colors">
+                                <label className="block text-xs font-bold text-zinc-500 mb-2 uppercase">Pegar Partidos (Texto)</label>
+                                <textarea value={weekText} onChange={e => setWeekText(e.target.value)} placeholder={`Real Madrid vs Barcelona sábado 8:00pm...`} className="w-full h-48 bg-[#09090b] p-4 text-sm text-zinc-300 border border-zinc-800 rounded-lg focus:border-pool-green outline-none font-mono resize-none mb-4" />
+                                <button onClick={handleParse} disabled={loading} className="w-full text-sm bg-zinc-800 text-white font-bold px-4 py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-zinc-700 disabled:opacity-50 transition-colors">
                                     {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />} <span>Procesar Texto</span>
                                 </button>
                             </div>
@@ -131,14 +131,14 @@ export default function AdminPanel() {
 
                         <div className="space-y-6">
                             {draft ? (
-                                <div className="bg-[#1e293b] p-6 rounded-2xl shadow-lg border border-white/5 h-full flex flex-col">
-                                    <h2 className="text-xs font-bold text-pool-accent uppercase mb-6 flex items-center gap-2"><span className="w-6 h-6 rounded bg-pool-accent/10 flex items-center justify-center text-[10px]">2</span> Vista Previa</h2>
+                                <div className="bg-[#18181b] p-6 rounded-2xl shadow-lg border border-white/5 h-full flex flex-col">
+                                    <h2 className="text-xs font-bold text-zinc-500 uppercase mb-6 flex items-center gap-2"><span className="w-6 h-6 rounded bg-pool-accent/10 flex items-center justify-center text-[10px]">2</span> Vista Previa</h2>
                                     <div className="flex-1 space-y-3 mb-6 overflow-y-auto max-h-[400px] custom-scrollbar pr-2">
                                         {draft.parsedMatches.map((m, idx) => (
-                                            <div key={idx} className="flex justify-between items-center text-sm p-3 bg-[#0f172a] rounded-lg border border-white/5">
-                                                <span className="font-bold text-slate-200">{m.homeTeam}</span>
-                                                <span className="text-[10px] text-slate-500 font-bold bg-white/5 px-2 py-1 rounded">VS</span>
-                                                <span className="font-bold text-slate-200">{m.awayTeam}</span>
+                                            <div key={idx} className="flex justify-between items-center text-sm p-3 bg-[#09090b] rounded-lg border border-white/5">
+                                                <span className="font-bold text-zinc-200">{m.homeTeam}</span>
+                                                <span className="text-[10px] text-zinc-500 font-bold bg-white/5 px-2 py-1 rounded">VS</span>
+                                                <span className="font-bold text-zinc-200">{m.awayTeam}</span>
                                             </div>
                                         ))}
                                     </div>
@@ -147,7 +147,7 @@ export default function AdminPanel() {
                                     </button>
                                 </div>
                             ) : (
-                                <div className="h-full flex items-center justify-center text-slate-600 border-2 border-dashed border-slate-700 rounded-2xl p-8 text-center">
+                                <div className="h-full flex items-center justify-center text-zinc-600 border-2 border-dashed border-zinc-800 rounded-2xl p-8 text-center">
                                     <div className="max-w-[150px]"><Trophy className="w-12 h-12 mx-auto mb-4 opacity-20" /><p className="text-sm font-medium">Procesa el texto para ver la vista previa aquí</p></div>
                                 </div>
                             )}
@@ -166,23 +166,23 @@ export default function AdminPanel() {
                     title="Confirmar Publicación"
                 >
                     <div className="space-y-4">
-                        <p className="text-slate-300 text-sm">
+                        <p className="text-zinc-300 text-sm">
                             Estás a punto de publicar la jornada <strong>"{weekName}"</strong> con {draft?.parsedMatches.length} partidos.
                         </p>
                         <div className="bg-black/20 p-4 rounded-lg border border-white/5 space-y-2">
                             <div className="flex justify-between text-xs">
-                                <span className="text-slate-400">Precio:</span>
+                                <span className="text-zinc-500">Precio:</span>
                                 <span className="font-bold text-white">${price}</span>
                             </div>
                             <div className="flex justify-between text-xs">
-                                <span className="text-slate-400">Gastos:</span>
+                                <span className="text-zinc-500">Gastos:</span>
                                 <span className="font-bold text-white">${adminFee}</span>
                             </div>
                         </div>
                         <div className="flex gap-3 pt-2">
                             <button
                                 onClick={() => setShowPublishModal(false)}
-                                className="flex-1 px-4 py-3 rounded-xl font-bold text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+                                className="flex-1 px-4 py-3 rounded-xl font-bold text-zinc-500 hover:text-white hover:bg-white/5 transition-colors"
                             >
                                 Cancelar
                             </button>
@@ -261,7 +261,7 @@ function ResultsEditor() {
         }
     };
 
-    if (matches.length === 0) return <div className="text-center text-slate-500 py-12">No hay partidos cargados.</div>;
+    if (matches.length === 0) return <div className="text-center text-zinc-500 py-12">No hay partidos cargados.</div>;
 
     const totalPot = participantsCount * (week?.price || 0);
     const realPrize = totalPot - (week?.adminFee || 0);
@@ -269,23 +269,23 @@ function ResultsEditor() {
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
             {/* Prize Management Section */}
-            <div className="bg-[#1e293b] p-6 rounded-2xl border border-white/5 shadow-xl grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-[#18181b] p-6 rounded-2xl border border-white/5 shadow-xl grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
-                    <label className="block text-xs font-bold text-slate-400 mb-2 uppercase">Recaudado (Total: {participantsCount})</label>
-                    <div className="text-2xl font-black text-white bg-[#0f172a] p-3 rounded-lg border border-white/5 flex items-center gap-2">
-                        <span className="text-slate-500 text-base">$</span>
+                    <label className="block text-xs font-bold text-zinc-500 mb-2 uppercase">Recaudado (Total: {participantsCount})</label>
+                    <div className="text-2xl font-black text-white bg-[#09090b] p-3 rounded-lg border border-white/5 flex items-center gap-2">
+                        <span className="text-zinc-500 text-base">$</span>
                         {totalPot.toLocaleString()}
                     </div>
                 </div>
                 <div>
                     <label className="block text-xs font-bold text-pool-accent mb-2 uppercase">Ganancia / Gastos</label>
                     <div className="relative">
-                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold">$</span>
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 font-bold">$</span>
                         <input
                             type="number"
                             value={week?.adminFee || 0}
                             onChange={(e) => handleUpdateFee(parseFloat(e.target.value) || 0)}
-                            className="w-full bg-[#0f172a] text-white text-xl font-bold border border-pool-accent/50 rounded-lg p-3 pl-8 focus:border-pool-green outline-none transition-colors"
+                            className="w-full bg-[#09090b] text-white text-xl font-bold border border-pool-accent/50 rounded-lg p-3 pl-8 focus:border-pool-green outline-none transition-colors"
                         />
                     </div>
                 </div>
@@ -298,17 +298,17 @@ function ResultsEditor() {
                 </div>
             </div>
 
-            <div className="bg-[#1e293b] p-6 rounded-2xl border border-white/5 shadow-xl">
-                <h2 className="text-xs font-bold text-pool-accent uppercase mb-6 flex items-center gap-2">
+            <div className="bg-[#18181b] p-6 rounded-2xl border border-white/5 shadow-xl">
+                <h2 className="text-xs font-bold text-zinc-500 uppercase mb-6 flex items-center gap-2">
                     <ClipboardList className="w-4 h-4" />
                     Capturar Marcadores (Guardado Automático)
                 </h2>
                 <div className="space-y-4">
                     {matches.map(m => (
-                        <div key={m.id} className="bg-[#0f172a] p-4 rounded-xl border border-white/5 flex flex-col md:flex-row items-center justify-between gap-4">
+                        <div key={m.id} className="bg-[#09090b] p-4 rounded-xl border border-white/5 flex flex-col md:flex-row items-center justify-between gap-4">
                             <div className="flex items-center gap-4 flex-1 justify-end">
                                 <span className="font-bold text-white text-right">{m.homeTeam}</span>
-                                <div className="bg-slate-800 rounded-lg p-1 w-12 text-center">
+                                <div className="bg-zinc-800 rounded-lg p-1 w-12 text-center">
                                     <input
                                         type="number"
                                         className="w-full bg-transparent text-center text-white font-bold outline-none"
@@ -317,9 +317,9 @@ function ResultsEditor() {
                                     />
                                 </div>
                             </div>
-                            <span className="text-xs text-slate-600 font-bold px-2">VS</span>
+                            <span className="text-xs text-zinc-600 font-bold px-2">VS</span>
                             <div className="flex items-center gap-4 flex-1">
-                                <div className="bg-slate-800 rounded-lg p-1 w-12 text-center">
+                                <div className="bg-zinc-800 rounded-lg p-1 w-12 text-center">
                                     <input
                                         type="number"
                                         className="w-full bg-transparent text-center text-white font-bold outline-none"
@@ -390,12 +390,12 @@ function ParticipantsEditor() {
 
     if (loading && participants.length === 0) return <div className="p-8 flex justify-center"><Loader2 className="animate-spin text-pool-green" /></div>;
 
-    if (!weekId) return <div className="text-slate-500 text-center py-12">No hay jornada activa.</div>;
+    if (!weekId) return <div className="text-zinc-500 text-center py-12">No hay jornada activa.</div>;
 
     return (
-        <div className="bg-[#1e293b] p-6 rounded-2xl border border-white/5 shadow-xl animate-in fade-in slide-in-from-bottom-4">
+        <div className="bg-[#18181b] p-6 rounded-2xl border border-white/5 shadow-xl animate-in fade-in slide-in-from-bottom-4">
             <div className="flex items-center justify-between mb-8">
-                <h2 className="text-xs font-bold text-pool-accent uppercase flex items-center gap-2">
+                <h2 className="text-xs font-bold text-zinc-500 uppercase flex items-center gap-2">
                     <User className="w-4 h-4" />
                     Gestión de Participantes
                 </h2>
@@ -416,17 +416,17 @@ function ParticipantsEditor() {
 
             <div className="space-y-3">
                 {participants.length === 0 ? (
-                    <div className="text-center py-8 text-slate-500 text-sm">No hay participantes aún.</div>
+                    <div className="text-center py-8 text-zinc-500 text-sm">No hay participantes aún.</div>
                 ) : (
                     participants.map(p => (
-                        <div key={p.id} className="bg-[#0f172a] p-4 rounded-xl border border-white/5 flex items-center justify-between group hover:border-white/10 transition-colors">
+                        <div key={p.id} className="bg-[#09090b] p-4 rounded-xl border border-white/5 flex items-center justify-between group hover:border-white/10 transition-colors">
                             <div className="flex items-center gap-4">
-                                <div className={cn("w-10 h-10 rounded-full flex items-center justify-center font-bold text-white", p.paymentStatus === 'PAID' ? "bg-emerald-600" : "bg-slate-700")}>
+                                <div className={cn("w-10 h-10 rounded-full flex items-center justify-center font-bold text-white", p.paymentStatus === 'PAID' ? "bg-emerald-600" : "bg-zinc-800")}>
                                     {p.participantName.charAt(0).toUpperCase()}
                                 </div>
                                 <div>
                                     <p className="font-bold text-white text-sm">{p.participantName}</p>
-                                    <p className="text-[10px] text-slate-500 uppercase tracking-wider">{new Date(p.submittedAt).toLocaleDateString()}</p>
+                                    <p className="text-[10px] text-zinc-500 uppercase tracking-wider">{new Date(p.submittedAt).toLocaleDateString()}</p>
                                 </div>
                             </div>
 
@@ -436,7 +436,7 @@ function ParticipantsEditor() {
                                     "px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 transition-all border",
                                     p.paymentStatus === 'PAID'
                                         ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20"
-                                        : "bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700 hover:text-white"
+                                        : "bg-zinc-800 text-zinc-400 border-zinc-700 hover:bg-zinc-700 hover:text-white"
                                 )}
                             >
                                 {p.paymentStatus === 'PAID' ? (
@@ -506,11 +506,11 @@ function ManualEntryEditor() {
         }
     };
 
-    if (!weekID) return <div className="text-center py-12 text-slate-500">Cargando jornada...</div>;
+    if (!weekID) return <div className="text-center py-12 text-zinc-500">Cargando jornada...</div>;
 
     return (
-        <div className="bg-[#1e293b] p-6 rounded-2xl border border-white/5 shadow-xl animate-in fade-in slide-in-from-bottom-4">
-            <h2 className="text-xs font-bold text-pool-accent uppercase mb-6 flex items-center gap-2">
+        <div className="bg-[#18181b] p-6 rounded-2xl border border-white/5 shadow-xl animate-in fade-in slide-in-from-bottom-4">
+            <h2 className="text-xs font-bold text-zinc-500 uppercase mb-6 flex items-center gap-2">
                 <Plus className="w-4 h-4" />
                 Registro Manual (Admin)
             </h2>
@@ -518,19 +518,19 @@ function ManualEntryEditor() {
             <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label className="block text-xs font-bold text-slate-400 mb-2 uppercase">Participante</label>
-                        <input value={name} onChange={e => setName(e.target.value)} className="w-full bg-[#0f172a] text-white p-3 rounded-lg border border-slate-700 focus:border-pool-green outline-none" placeholder="Nombre" />
+                        <label className="block text-xs font-bold text-zinc-500 mb-2 uppercase">Participante</label>
+                        <input value={name} onChange={e => setName(e.target.value)} className="w-full bg-[#09090b] text-white p-3 rounded-lg border border-zinc-700 focus:border-pool-green outline-none" placeholder="Nombre" />
                     </div>
                     <div>
-                        <label className="block text-xs font-bold text-slate-400 mb-2 uppercase">Goles Totales</label>
-                        <input type="number" value={goals} onChange={e => setGoals(e.target.value)} className="w-full bg-[#0f172a] text-white p-3 rounded-lg border border-slate-700 focus:border-pool-green outline-none" placeholder="0" />
+                        <label className="block text-xs font-bold text-zinc-500 mb-2 uppercase">Goles Totales</label>
+                        <input type="number" value={goals} onChange={e => setGoals(e.target.value)} className="w-full bg-[#09090b] text-white p-3 rounded-lg border border-zinc-700 focus:border-pool-green outline-none" placeholder="0" />
                     </div>
                 </div>
 
-                <div className="space-y-2 max-h-[400px] overflow-y-auto custom-scrollbar pr-2 border border-white/5 rounded-xl p-2 bg-[#0f172a]/50">
+                <div className="space-y-2 max-h-[400px] overflow-y-auto custom-scrollbar pr-2 border border-white/5 rounded-xl p-2 bg-[#09090b]/50">
                     {matches.map(m => (
-                        <div key={m.id} className="flex justify-between items-center text-xs p-2 bg-[#0f172a] rounded border border-white/5">
-                            <span className="font-bold text-slate-300 w-1/3 text-right">{m.homeTeam}</span>
+                        <div key={m.id} className="flex justify-between items-center text-xs p-2 bg-[#09090b] rounded border border-white/5">
+                            <span className="font-bold text-zinc-300 w-1/3 text-right">{m.homeTeam}</span>
                             <div className="flex gap-1">
                                 {(['L', 'E', 'V'] as const).map(opt => (
                                     <button
@@ -541,14 +541,14 @@ function ManualEntryEditor() {
                                             "w-8 h-8 rounded font-black transition-colors border",
                                             picks[m.id] === opt
                                                 ? "bg-pool-green text-black border-pool-green"
-                                                : "bg-slate-800 text-slate-500 border-slate-700 hover:bg-slate-700"
+                                                : "bg-zinc-800 text-zinc-500 border-zinc-700 hover:bg-zinc-700"
                                         )}
                                     >
                                         {opt}
                                     </button>
                                 ))}
                             </div>
-                            <span className="font-bold text-slate-300 w-1/3 text-left">{m.awayTeam}</span>
+                            <span className="font-bold text-zinc-300 w-1/3 text-left">{m.awayTeam}</span>
                         </div>
                     ))}
                 </div>
