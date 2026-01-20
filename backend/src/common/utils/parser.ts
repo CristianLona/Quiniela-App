@@ -11,7 +11,19 @@ export function parseLineToMatchDraft(line: string, refDate: Date = new Date()):
     if (vsSplit.length < 2) return null;
 
     const homeTeam = vsSplit[0].trim();
-    const restOfLine = vsSplit[1].trim();
+
+    let restOfLine = vsSplit[1].trim();
+
+    // 1.5 Extract Positions (trailing numbers)
+    let homePosition: number | undefined;
+    let awayPosition: number | undefined;
+
+    const posMatch = restOfLine.match(/\s+(\d+)\s+(\d+)$/);
+    if (posMatch) {
+        homePosition = parseInt(posMatch[1], 10);
+        awayPosition = parseInt(posMatch[2], 10);
+        restOfLine = restOfLine.substring(0, posMatch.index).trim();
+    }
 
     // 2. Find Day of Week to split AwayTeam
     const dayMatch = restOfLine.match(DAYS_REGEX);
@@ -32,6 +44,8 @@ export function parseLineToMatchDraft(line: string, refDate: Date = new Date()):
         date: new Date(timestamp).toISOString(),
         timestamp,
         status: 'SCHEDULED',
+        homePosition,
+        awayPosition,
     };
 }
 

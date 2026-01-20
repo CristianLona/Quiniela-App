@@ -19,6 +19,8 @@ export interface Match {
     timestamp: number; // Unix timestamp for efficient sorting/filtering
     status: MatchStatus;
     result?: MatchResult;
+    homePosition?: number;
+    awayPosition?: number;
 }
 
 export interface Week {

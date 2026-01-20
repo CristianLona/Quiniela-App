@@ -4,6 +4,7 @@ import { cn } from '../../lib/utils';
 import { Trophy, Loader2, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { api } from '../../lib/api';
+import { getShortName } from '../../lib/teams';
 import { useNavigate } from 'react-router-dom';
 
 export default function Scoreboard() {
@@ -196,7 +197,7 @@ export default function Scoreboard() {
                                                     <div className="flex flex-col items-center justify-between h-64 pb-2 pt-2">
                                                         <div className="flex-1 flex items-center justify-center">
                                                             <span className="text-[11px] font-bold text-zinc-400 uppercase whitespace-nowrap tracking-wider opacity-80 group-hover:opacity-100 transition-opacity" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>
-                                                                {m.homeTeam} <span className="text-zinc-600 mx-1 font-normal">vs</span> {m.awayTeam}
+                                                                {getShortName(m.homeTeam)} <span className="text-zinc-600 mx-1 font-normal">vs</span> {getShortName(m.awayTeam)}
                                                             </span>
                                                         </div>
 

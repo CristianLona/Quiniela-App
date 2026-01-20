@@ -25,7 +25,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
     const awayLogo = match.awayLogo || getTeamLogo(match.awayTeam);
 
     return (
-        <div className="pool-card p-0 overflow-hidden group border border-neutral-800 hover:border-[#22c55e]/50 transition-all bg-black/40 backdrop-blur-md shadow-sm hover:shadow-[#22c55e]/10">
+        <div className="rounded-2xl p-0 overflow-hidden group border border-neutral-800 hover:border-[#22c55e]/50 transition-all bg-black/40 backdrop-blur-md shadow-sm hover:shadow-[#22c55e]/10">
             <div className="flex">
                 {/* Date Side-Strip */}
                 <div className="w-6 md:w-8 bg-black/60 border-r border-white/5 flex flex-col items-center justify-center py-2 text-center shrink-0">
@@ -41,9 +41,13 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                         <span className="text-[100px] font-black text-white/5 italic -rotate-12 translate-y-4">VS</span>
                     </div>
 
-                    {/* Home Team */}
                     <div className="flex flex-col items-center gap-2 w-1/4 relative z-10">
-                        <div className="w-14 h-14 md:w-20 md:h-20 drop-shadow-2xl transition-transform hover:scale-110 duration-200">
+                        <div className="w-14 h-14 md:w-20 md:h-20 drop-shadow-2xl transition-transform hover:scale-110 duration-200 relative">
+                            {match.homePosition && (
+                                <div className="absolute -top-2 -right-2 w-6 h-6 bg-yellow-500 text-black font-black text-xs rounded-full flex items-center justify-center border-2 border-zinc-900 z-20 shadow-lg">
+                                    {match.homePosition}
+                                </div>
+                            )}
                             {homeLogo ? (
                                 <img
                                     src={homeLogo}
@@ -99,9 +103,13 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                         </div>
                     </div>
 
-                    {/* Away Team */}
                     <div className="flex flex-col items-center gap-2 w-1/4 relative z-10">
-                        <div className="w-14 h-14 md:w-20 md:h-20 drop-shadow-2xl transition-transform hover:scale-110 duration-200">
+                        <div className="w-14 h-14 md:w-20 md:h-20 drop-shadow-2xl transition-transform hover:scale-110 duration-200 relative">
+                            {match.awayPosition && (
+                                <div className="absolute -top-2 -right-2 w-6 h-6 bg-yellow-500 text-black font-black text-xs rounded-full flex items-center justify-center border-2 border-zinc-900 z-20 shadow-lg">
+                                    {match.awayPosition}
+                                </div>
+                            )}
                             {awayLogo ? (
                                 <img
                                     src={awayLogo}
