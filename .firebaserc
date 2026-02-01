@@ -1,6 +1,6 @@
 {
   "projects": {
-    "QuinielaApp": "quinielaapp-d8fed"
+    "default": "quinielaapp-d8fed"
   },
   "targets": {},
   "etags": {}

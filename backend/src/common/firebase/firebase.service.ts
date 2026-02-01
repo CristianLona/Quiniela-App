@@ -36,12 +36,14 @@ export class FirebaseService implements OnModuleInit {
             }
 
             if (!serviceAccount) {
-                throw new Error('No Firebase credentials found (File or Env Var)');
+                // Fallback to Application Default Credentials (for Cloud Functions/Run)
+                console.log('No explicit credentials found. Using Application Default Credentials.');
+                admin.initializeApp();
+            } else {
+                admin.initializeApp({
+                    credential: admin.credential.cert(serviceAccount)
+                });
             }
-
-            admin.initializeApp({
-                credential: admin.credential.cert(serviceAccount)
-            });
 
             this.db = admin.firestore();
             console.log('Firebase Initialized Successfully');

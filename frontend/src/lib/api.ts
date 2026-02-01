@@ -1,6 +1,6 @@
 import type { Week, WeekDraft, ParticipantEntry, PickSelection, MatchOutcome } from '../types';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '/api' : 'http://localhost:3000/api');
 
 async function fetchJson<T>(endpoint: string, options?: RequestInit): Promise<T> {
     const res = await fetch(`${API_URL}${endpoint}`, {
@@ -27,10 +27,10 @@ export const api = {
         create: (name: string, matches: any[], price: number = 50, adminFee: number = 0) =>
             fetchJson<Week>('/weeks', { method: 'POST', body: JSON.stringify({ name, matches, price, adminFee }) }),
 
-        updateResult: (weekId: string, matchId: string, homeScore: number, awayScore: number) =>
+        updateResult: (weekId: string, matchId: string, homeScore: number, awayScore: number, status?: string) =>
             fetchJson<MatchOutcome>(`/weeks/${weekId}/matches/${matchId}`, {
                 method: 'PATCH', // Changed to PATCH as it's an update
-                body: JSON.stringify({ homeScore, awayScore })
+                body: JSON.stringify({ homeScore, awayScore, status })
             }),
 
         getAll: () => fetchJson<Week[]>('/weeks'),

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { cn } from '../../lib/utils';
-import { Lock, Plus, Play, Loader2, Trophy, ClipboardList, PenTool, User, Eye, EyeOff, DollarSign, CheckCircle2 } from 'lucide-react';
+import { Lock, Plus, Play, Loader2, Trophy, ClipboardList, PenTool, User, Eye, EyeOff, DollarSign, CheckCircle2, Circle, History, ArrowRight } from 'lucide-react';
 import type { WeekDraft, Match, ParticipantEntry } from '../../types';
 import { toast } from 'sonner';
 import { Modal } from '../../components/ui/Modal';
@@ -10,7 +10,7 @@ export default function AdminPanel() {
     const [auth, setAuth] = useState(false);
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
-    const [tab, setTab] = useState<'create-week' | 'results' | 'participants' | 'manual-entry'>('create-week');
+    const [tab, setTab] = useState<'create-week' | 'results' | 'participants' | 'manual-entry' | 'history'>('create-week');
 
     // Create Week State
     const [weekName, setWeekName] = useState('Jornada 1');
@@ -100,6 +100,9 @@ export default function AdminPanel() {
                     <button onClick={() => setTab('manual-entry')} className={cn("px-6 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center gap-2", tab === 'manual-entry' ? "bg-pool-green text-[#020617] shadow-md" : "text-zinc-500 hover:text-white hover:bg-white/5")}>
                         <Plus className="w-4 h-4" /> Manual
                     </button>
+                    <button onClick={() => setTab('history')} className={cn("px-6 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center gap-2", tab === 'history' ? "bg-pool-green text-[#020617] shadow-md" : "text-zinc-500 hover:text-white hover:bg-white/5")}>
+                        <History className="w-4 h-4" /> Historial
+                    </button>
                 </div>
 
                 {tab === 'create-week' && (
@@ -158,6 +161,7 @@ export default function AdminPanel() {
                 {tab === 'results' && <ResultsEditor />}
                 {tab === 'participants' && <ParticipantsEditor />}
                 {tab === 'manual-entry' && <ManualEntryEditor />}
+                {tab === 'history' && <HistoryViewer />}
 
                 {/* Publish Confirmation Modal */}
                 <Modal
@@ -250,6 +254,25 @@ function ResultsEditor() {
         }
     };
 
+    const handleToggleStatus = async (m: Match) => {
+        if (!weekId) return;
+        const newStatus = m.status === 'FINISHED' ? 'SCHEDULED' : 'FINISHED';
+
+        try {
+            setMatches(prev => prev.map(match => {
+                if (match.id === m.id) {
+                    return { ...match, status: newStatus as any };
+                }
+                return match;
+            }));
+
+            await api.weeks.updateResult(weekId, m.id, m.result?.homeScore || 0, m.result?.awayScore || 0, newStatus);
+        } catch (e) {
+            toast.error('Error actualizando estado');
+            fetchData();
+        }
+    };
+
     const handleUpdateFee = async (newFee: number) => {
         if (!weekId) return;
         try {
@@ -317,7 +340,17 @@ function ResultsEditor() {
                                     />
                                 </div>
                             </div>
-                            <span className="text-xs text-zinc-600 font-bold px-2">VS</span>
+                            <button
+                                onClick={() => handleToggleStatus(m)}
+                                className="focus:outline-none hover:scale-110 transition-transform p-1"
+                                title={m.status === 'FINISHED' ? 'Marcar como Pendiente' : 'Marcar como Finalizado'}
+                            >
+                                {m.status === 'FINISHED' ? (
+                                    <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                                ) : (
+                                    <Circle className="w-5 h-5 text-zinc-600" />
+                                )}
+                            </button>
                             <div className="flex items-center gap-4 flex-1">
                                 <div className="bg-zinc-800 rounded-lg p-1 w-12 text-center">
                                     <input
@@ -337,25 +370,34 @@ function ResultsEditor() {
     )
 }
 
-function ParticipantsEditor() {
+function ParticipantsEditor({ weekId: propWeekId }: { weekId?: string }) {
     const [participants, setParticipants] = useState<ParticipantEntry[]>([]);
-    const [weekId, setWeekId] = useState<string | null>(null);
+    const [weekId, setWeekId] = useState<string | null>(propWeekId || null);
     const [hideUnpaid, setHideUnpaid] = useState(false);
     const [loading, setLoading] = useState(false);
 
     const fetchData = async () => {
         setLoading(true);
         try {
-            const weeks = await api.weeks.getAll();
-            const sorted = weeks.sort((a, b) => b.createdAt - a.createdAt);
-            if (sorted.length > 0) {
-                const active = sorted.find(w => w.status === 'OPEN') || sorted[0];
-                setWeekId(active.id);
-                setHideUnpaid(!!active.hideUnpaid);
-
-                const parts = await api.picks.getByWeek(active.id);
+            if (propWeekId) {
+                // Load specific week logic
+                setWeekId(propWeekId);
+                const week = await api.weeks.getOne(propWeekId);
+                setHideUnpaid(!!week.hideUnpaid);
+                const parts = await api.picks.getByWeek(propWeekId);
                 setParticipants(parts.sort((a, b) => b.submittedAt - a.submittedAt));
-                // setParticipants(parts);
+            } else {
+                // Load active/latest week logic 
+                const weeks = await api.weeks.getAll();
+                const sorted = weeks.sort((a, b) => b.createdAt - a.createdAt);
+                if (sorted.length > 0) {
+                    const active = sorted.find(w => w.status === 'OPEN') || sorted[0];
+                    setWeekId(active.id);
+                    setHideUnpaid(!!active.hideUnpaid);
+
+                    const parts = await api.picks.getByWeek(active.id);
+                    setParticipants(parts.sort((a, b) => b.submittedAt - a.submittedAt));
+                }
             }
         } catch (e) {
             toast.error('Error cargando participantes');
@@ -365,8 +407,9 @@ function ParticipantsEditor() {
     };
 
     useEffect(() => {
+        // Re-fetch when prop changes
         fetchData();
-    }, []);
+    }, [propWeekId]);
 
     const togglePayment = async (p: ParticipantEntry) => {
         try {
@@ -557,6 +600,96 @@ function ManualEntryEditor() {
                     {loading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : "Registrar Quiniela"}
                 </button>
             </form>
+        </div>
+    );
+}
+
+function HistoryViewer() {
+    const [weeks, setWeeks] = useState<any[]>([]);
+    const [selectedWeekId, setSelectedWeekId] = useState<string | null>(null);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        const fetchWeeks = async () => {
+            setLoading(true);
+            try {
+                const data = await api.weeks.getAll();
+                setWeeks(data.sort((a, b) => b.createdAt - a.createdAt));
+            } catch (e) {
+                toast.error('Error cargando historial');
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchWeeks();
+    }, []);
+
+    if (selectedWeekId) {
+        return (
+            <div className="space-y-4 animate-in fade-in slide-in-from-right-4">
+                <button
+                    onClick={() => setSelectedWeekId(null)}
+                    className="flex items-center gap-2 text-xs font-bold text-zinc-500 hover:text-white transition-colors"
+                >
+                    <ArrowRight className="w-4 h-4 rotate-180" /> Volver al Historial
+                </button>
+                <div className="bg-[#18181b] p-4 rounded-xl border border-white/5 mb-4">
+                    <h2 className="text-xl font-black text-white">{weeks.find(w => w.id === selectedWeekId)?.name}</h2>
+                </div>
+                <ParticipantsEditor weekId={selectedWeekId} />
+            </div>
+        );
+    }
+
+    return (
+        <div className="bg-[#18181b] p-6 rounded-2xl border border-white/5 shadow-xl animate-in fade-in slide-in-from-bottom-4">
+            <h2 className="text-xs font-bold text-zinc-500 uppercase mb-6 flex items-center gap-2">
+                <History className="w-4 h-4" />
+                Historial de Jornadas
+            </h2>
+
+            {loading ? (
+                <div className="flex justify-center py-8"><Loader2 className="animate-spin text-pool-green" /></div>
+            ) : (
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                        <thead>
+                            <tr className="border-b border-white/5 text-xs text-zinc-500 uppercase">
+                                <th className="p-4">Jornada</th>
+                                <th className="p-4">Fecha</th>
+                                <th className="p-4">Estado</th>
+                                <th className="p-4 text-center">Partidos</th>
+                                <th className="p-4 text-right">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-white/5 text-sm">
+                            {weeks.map(week => (
+                                <tr key={week.id} className="group hover:bg-white/5 transition-colors">
+                                    <td className="p-4 font-bold text-white">{week.name}</td>
+                                    <td className="p-4 text-zinc-400">{new Date(week.createdAt).toLocaleDateString()}</td>
+                                    <td className="p-4">
+                                        <span className={cn(
+                                            "px-2 py-1 rounded text-[10px] font-black uppercase tracking-wider",
+                                            week.status === 'OPEN' ? "bg-emerald-500/10 text-emerald-400" : "bg-zinc-800 text-zinc-500"
+                                        )}>
+                                            {week.status}
+                                        </span>
+                                    </td>
+                                    <td className="p-4 text-center text-zinc-400 font-mono">{week.matches?.length || 0}</td>
+                                    <td className="p-4 text-right">
+                                        <button
+                                            onClick={() => setSelectedWeekId(week.id)}
+                                            className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg text-xs font-bold transition-colors"
+                                        >
+                                            Ver Participantes
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
         </div>
     );
 }

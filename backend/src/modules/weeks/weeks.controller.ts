@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Patch } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Patch, Header } from '@nestjs/common';
 import { WeeksService } from './weeks.service';
 import { WeekDraft } from '../../common/types';
 
@@ -17,11 +17,13 @@ export class WeeksController {
     }
 
     @Get()
+    @Header('Cache-Control', 'public, max-age=300, s-maxage=300')
     findAll() {
         return this.weeksService.findAll();
     }
 
     @Get(':id')
+    @Header('Cache-Control', 'public, max-age=300, s-maxage=300')
     findOne(@Param('id') id: string) {
         return this.weeksService.findOne(id);
     }
@@ -30,9 +32,9 @@ export class WeeksController {
     updateMatch(
         @Param('id') weekId: string,
         @Param('matchId') matchId: string,
-        @Body() body: { homeScore: number; awayScore: number }
+        @Body() body: { homeScore: number; awayScore: number; status?: string }
     ) {
-        return this.weeksService.updateMatch(weekId, matchId, body.homeScore, body.awayScore);
+        return this.weeksService.updateMatch(weekId, matchId, body.homeScore, body.awayScore, body.status);
     }
 
     @Patch(':id/visibility')

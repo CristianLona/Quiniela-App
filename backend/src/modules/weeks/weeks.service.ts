@@ -59,7 +59,7 @@ export class WeeksService {
         return doc.exists ? (doc.data() as Week) : undefined;
     }
 
-    async updateMatch(weekId: string, matchId: string, homeScore: number, awayScore: number): Promise<Week> {
+    async updateMatch(weekId: string, matchId: string, homeScore: number, awayScore: number, status?: string): Promise<Week> {
         const week = await this.findOne(weekId);
         if (!week) throw new BadRequestException('Week not found');
 
@@ -71,7 +71,12 @@ export class WeeksService {
             awayScore,
             outcome: homeScore > awayScore ? 'L' : awayScore > homeScore ? 'V' : 'E'
         };
-        match.status = 'FINISHED';
+
+        if (status) {
+            match.status = status as any;
+        } else {
+            match.status = 'FINISHED';
+        }
 
         // Update the entire week document for simplicity (since matches are nested)
         await this.firebaseService.getDb().collection('weeks').doc(weekId).set(week);

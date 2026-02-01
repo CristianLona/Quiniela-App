@@ -65,7 +65,10 @@ graph TD
     -   Fully responsive design (Mobile First)
 -   **Firebase authentication** and secure data handling
 -   **Modular and scalable** project structure
--   **Admin panel** for match, score, and configuration management
+-   **Admin panel** for comprehensive management:
+    -   **Match & Score Management**: Real-time updates with status toggling.
+    -   **History Tab**: View past weeks and participant records.
+    -   **Manual Entry**: Register offline participants directly.
 -   **Sports prediction (quiniela) system**:
     -   User-friendly filling flow
     -   Live countdowns and validation
@@ -157,8 +160,6 @@ Follow these steps to run the project locally.
 
 ### Backend
 
-| Script               | Description                        |
-| :------------------- | :--------------------------------- |
 | `npm run start:dev`  | Starts NestJS in watch mode        |
 | `npm run build`      | Builds the backend application     |
 | `npm run start:prod` | Runs the production build          |
@@ -176,4 +177,4 @@ The core Quiniela flow (filling, submission, scoreboard, admin publishing) is co
 
 -   **GitHub:** [@cristianlona](https://github.com/cristianlona)
 -   **Linkedin:** [Cristian Lona](https://www.linkedin.com/in/cristian-josue-lona-avalos-3411b2218/)
--   **Email:** cristianlonavalos@gmail.com
+-   **Email:** [EMAIL_ADDRESS]
