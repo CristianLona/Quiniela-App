@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { Modal } from '../../components/ui/Modal';
 import { cn } from "../../lib/utils";
 import { api } from "../../lib/api";
+import { getShortName } from "../../lib/teams";
 import { useNavigate } from "react-router-dom";
 
 export default function FillQuiniela() {
@@ -23,6 +24,7 @@ export default function FillQuiniela() {
     const [price, setPrice] = useState<number>(0);
     const [closeDate, setCloseDate] = useState<number | string>(0);
     const [timeLeft, setTimeLeft] = useState("");
+    const [teamsPositionsMap, setTeamsPositionsMap] = useState<Record<string, number>>({});
 
     useEffect(() => {
         api.weeks.getAll()
@@ -50,6 +52,42 @@ export default function FillQuiniela() {
                 toast.error("Error cargando la jornada activa");
             })
             .finally(() => setFetching(false));
+
+        // Background fetch for standings
+        const fetchPositions = async () => {
+            try {
+                console.log("[fetchPositions] Fetching positions for leagues...");
+                const leagues = ['liga-mx', 'premier-league', 'champions-league'];
+                const results = await Promise.all(
+                    leagues.map(l => api.scraper.getStandings(l).catch((err) => {
+                        console.error(`Error fetching ${l}:`, err);
+                        return null;
+                    }))
+                );
+
+                console.log("[fetchPositions] API Results:", JSON.parse(JSON.stringify(results)));
+
+                const map: Record<string, number> = {};
+                results.forEach((res: any) => {
+                    if (res && res.league && res.league.standings && res.league.standings[0]) {
+                        res.league.standings[0].forEach((teamBlock: any) => {
+                            if (teamBlock.team && teamBlock.team.name) {
+                                const short = getShortName(teamBlock.team.name);
+                                map[short] = teamBlock.rank;
+                                map[teamBlock.team.name] = teamBlock.rank;
+                                map[teamBlock.team.name.toLowerCase()] = teamBlock.rank;
+                            }
+                        });
+                    }
+                });
+
+                console.log("[fetchPositions] Final Teams Map:", map);
+                setTeamsPositionsMap(map);
+            } catch (err) {
+                console.error("Failed to load standings for positions", err);
+            }
+        };
+        fetchPositions();
     }, []);
 
     /* Countdown Logic */
@@ -57,12 +95,11 @@ export default function FillQuiniela() {
         if (!closeDate) return;
 
         const targetTime = new Date(closeDate).getTime();
-        console.log("Countdown Debug:", { closeDate, targetTime, now: Date.now() }); // Debug log
+        console.log("Countdown Debug:", { closeDate, targetTime, now: Date.now() });
 
         const timer = setInterval(() => {
             const now = Date.now();
             const diff = targetTime - now;
-            // ... (rest is same)
 
             if (diff <= 0) {
                 setTimeLeft("Cerrada");
@@ -74,7 +111,6 @@ export default function FillQuiniela() {
             const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
 
-            // Optional: Format with leading zeros
             const h = hours < 10 ? `0${hours}` : hours;
             const m = minutes < 10 ? `0${minutes}` : minutes;
 
@@ -296,14 +332,25 @@ export default function FillQuiniela() {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 md:gap-6">
-                            {matches.map((match) => (
-                                <MatchCard
-                                    key={match.id}
-                                    match={match}
-                                    selection={picks[match.id]}
-                                    onSelect={handleSelect}
-                                />
-                            ))}
+                            {matches.map((match) => {
+                                const mapHome = getShortName(match.homeTeam);
+                                const mapAway = getShortName(match.awayTeam);
+
+                                const hydratedMatch = {
+                                    ...match,
+                                    homePosition: teamsPositionsMap[mapHome] || teamsPositionsMap[match.homeTeam.toLowerCase()] || undefined,
+                                    awayPosition: teamsPositionsMap[mapAway] || teamsPositionsMap[match.awayTeam.toLowerCase()] || undefined
+                                };
+
+                                return (
+                                    <MatchCard
+                                        key={match.id}
+                                        match={hydratedMatch}
+                                        selection={picks[match.id]}
+                                        onSelect={handleSelect}
+                                    />
+                                );
+                            })}
                         </div>
                     </div>
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import type { Match, MatchOutcome } from '../types';
 import { cn } from '../lib/utils';
-import { getTeamLogo } from '../lib/teams';
+import { getTeamLogo, getShortName } from '../lib/teams';
 
 interface MatchCardProps {
     match: Match;
@@ -68,7 +68,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                                 {match.homeTeam.substring(0, 2).toUpperCase()}
                             </div>
                         </div>
-                        <span className="text-[10px] md:text-xs font-black text-neutral-200 text-center uppercase leading-tight">{match.homeTeam}</span>
+                        <span className="text-[10px] md:text-xs font-black text-neutral-200 text-center uppercase leading-tight">{getShortName(match.homeTeam)}</span>
                     </div>
 
                     {/* Controls */}
@@ -130,7 +130,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                                 {match.awayTeam.substring(0, 2).toUpperCase()}
                             </div>
                         </div>
-                        <span className="text-[10px] md:text-xs font-black text-neutral-200 text-center uppercase leading-tight">{match.awayTeam}</span>
+                        <span className="text-[10px] md:text-xs font-black text-neutral-200 text-center uppercase leading-tight">{getShortName(match.awayTeam)}</span>
                     </div>
 
                 </div>

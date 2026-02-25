@@ -3,7 +3,8 @@ import { ConfigModule } from '@nestjs/config';
 import { FirebaseModule } from './common/firebase/firebase.module';
 import { WeeksModule } from './modules/weeks/weeks.module';
 import { PicksModule } from './modules/picks/picks.module';
-// import { AdminModule } from './modules/admin/admin.module';
+import { StandingsModule } from './standings/standings.module';
+import { ScraperModule } from './scraper/scraper.module';
 
 @Module({
     imports: [
@@ -11,7 +12,8 @@ import { PicksModule } from './modules/picks/picks.module';
         FirebaseModule,
         WeeksModule,
         PicksModule,
-        // AdminModule,
+        StandingsModule,
+        ScraperModule,
     ],
     controllers: [],
     providers: [],

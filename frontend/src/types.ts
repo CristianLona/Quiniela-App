@@ -33,6 +33,7 @@ export interface Week {
     price?: number; // Cost to enter the pool
     adminFee?: number; // Amount subtracted from the total pot
     hideUnpaid?: boolean; // Toggle to hide unpaid participants
+    league?: string; // e.g. 'liga-mx', 'champions', 'premier-league'
     createdAt: number;
 }
 

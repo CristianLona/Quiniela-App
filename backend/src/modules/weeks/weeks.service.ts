@@ -22,7 +22,7 @@ export class WeeksService {
         };
     }
 
-    async createWeek(name: string, matchDrafts: any[], price: number = 50, adminFee: number = 0): Promise<Week> {
+    async createWeek(name: string, matchDrafts: any[], price: number = 50, adminFee: number = 0, league: string = 'liga-mx'): Promise<Week> {
         const sortedDates = matchDrafts
             .map((m) => new Date(m.date).getTime())
             .sort((a, b) => a - b);
@@ -36,6 +36,7 @@ export class WeeksService {
             closeDate,
             price,
             adminFee,
+            league,
             createdAt: Date.now(),
             matches: matchDrafts.map((m) => ({
                 ...m,
@@ -60,41 +61,92 @@ export class WeeksService {
     }
 
     async updateMatch(weekId: string, matchId: string, homeScore: number, awayScore: number, status?: string): Promise<Week> {
-        const week = await this.findOne(weekId);
-        if (!week) throw new BadRequestException('Week not found');
+        return this.firebaseService.getDb().runTransaction(async (t) => {
+            const ref = this.firebaseService.getDb().collection('weeks').doc(weekId);
+            const doc = await t.get(ref);
 
-        const match = week.matches.find(m => m.id === matchId);
-        if (!match) throw new BadRequestException('Match not found');
+            if (!doc.exists) {
+                throw new BadRequestException('Week not found');
+            }
 
-        match.result = {
-            homeScore,
-            awayScore,
-            outcome: homeScore > awayScore ? 'L' : awayScore > homeScore ? 'V' : 'E'
-        };
+            const week = doc.data() as Week;
+            const match = week.matches.find(m => m.id === matchId);
 
-        if (status) {
-            match.status = status as any;
-        } else {
-            match.status = 'FINISHED';
-        }
+            if (!match) {
+                throw new BadRequestException('Match not found');
+            }
 
-        // Update the entire week document for simplicity (since matches are nested)
-        await this.firebaseService.getDb().collection('weeks').doc(weekId).set(week);
-        return week;
+            match.result = {
+                homeScore,
+                awayScore,
+                outcome: homeScore > awayScore ? 'L' : awayScore > homeScore ? 'V' : 'E'
+            };
+
+            if (status) {
+                match.status = status as any;
+            } else {
+                match.status = 'FINISHED';
+            }
+
+            t.set(ref, week);
+            return week;
+        });
     }
 
     async toggleVisibility(id: string, hide: boolean): Promise<Week> {
-        const week = await this.findOne(id);
-        if (!week) throw new BadRequestException('Week not found');
+        return this.firebaseService.getDb().runTransaction(async (t) => {
+            const ref = this.firebaseService.getDb().collection('weeks').doc(id);
+            const doc = await t.get(ref);
 
-        week.hideUnpaid = hide;
-        await this.firebaseService.getDb().collection('weeks').doc(id).set(week);
-        return week;
+            if (!doc.exists) throw new BadRequestException('Week not found');
+
+            const week = doc.data() as Week;
+            week.hideUnpaid = hide;
+
+            t.set(ref, week);
+            return week;
+        });
     }
 
     async updateWeek(id: string, data: Partial<Week>): Promise<Week> {
-        // We use merge: true to avoid overwriting the whole document if we are just updating fields
         await this.firebaseService.getDb().collection('weeks').doc(id).set(data, { merge: true });
         return this.findOne(id);
+    }
+    async updateMatches(weekId: string, matches: { matchId: string; homeScore: number; awayScore: number; status?: string }[]): Promise<Week> {
+        return this.firebaseService.getDb().runTransaction(async (t) => {
+            const ref = this.firebaseService.getDb().collection('weeks').doc(weekId);
+            const doc = await t.get(ref);
+
+            if (!doc.exists) {
+                throw new BadRequestException('Week not found');
+            }
+
+            const week = doc.data() as Week;
+
+            matches.forEach(update => {
+                const match = week.matches.find(m => m.id === update.matchId);
+                if (match) {
+                    match.result = {
+                        homeScore: update.homeScore,
+                        awayScore: update.awayScore,
+                        outcome: update.homeScore > update.awayScore ? 'L' : update.awayScore > update.homeScore ? 'V' : 'E'
+                    };
+
+                    if (update.status) {
+                        match.status = update.status as any;
+                    } else {
+                        match.status = 'FINISHED';
+                    }
+                }
+            });
+
+            t.set(ref, week);
+            return week;
+        });
+    }
+
+    async deleteWeek(id: string): Promise<{ success: boolean }> {
+        await this.firebaseService.getDb().collection('weeks').doc(id).delete();
+        return { success: true };
     }
 }

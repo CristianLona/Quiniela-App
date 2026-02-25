@@ -72,8 +72,44 @@ export const TEAMS_LOGOS: Record<string, string> = {
     "Manchester United": "/teams/manchester-united.png",
     "Everton": "/teams/everton.png",
     "Luton": "/teams/luton.png",
+    "Luton Town": "/teams/luton.png",
     "Sheffield": "/teams/sheffield.png",
     "Sheffield United": "/teams/sheffield.png",
+    "Leicester City": "/teams/leicester.png",
+    "Southampton": "/teams/southampton.png",
+    "Ipswich Town": "/teams/ipswich.png",
+
+    // Champions League / Rest of Europe
+    "Paris Saint-Germain": "/teams/psg.png",
+    "Internazionale": "/teams/inter.png",
+    "Inter Milan": "/teams/inter.png",
+    "Borussia Dortmund": "/teams/dortmund.png",
+    "Bayer Leverkusen": "/teams/leverkusen.png",
+    "Atlético Madrid": "/teams/atletico-madrid.png",
+    "Atletico Madrid": "/teams/atletico-madrid.png",
+    "Real Madrid": "/teams/real-madrid.png",
+    "FC Barcelona": "/teams/barcelona.png",
+    "Barcelona": "/teams/barcelona.png",
+    "Bayern Munich": "/teams/bayern-munich.png",
+    "Club Brugge": "/teams/brugge.png",
+    "AS Monaco": "/teams/monaco.png",
+    "FK Qarabag": "/teams/qarabag.png",
+    "Sporting CP": "/teams/sporting.png",
+    "Sporting Lisbon": "/teams/sporting.png",
+    "RB Leipzig": "/teams/leipzig.png",
+    "Red Bull Salzburg": "/teams/salzburg.png",
+    "Shakhtar Donetsk": "/teams/shakhtar.png",
+    "BSC Young Boys": "/teams/young-boys.png",
+    "Crvena Zvezda": "/teams/estrella-roja.png",
+    "Red Star Belgrade": "/teams/estrella-roja.png",
+    "Galatasaray": "/teams/galatasaray.png",
+    "Juventus": "/teams/juventus.png",
+    "Atalanta": "/teams/atalanta.png",
+    "Bodo/Glimt": "/teams/bodo-glimt.png",
+    "PSV Eindhoven": "/teams/psv.png",
+    "Feyenoord": "/teams/feyenoord.png",
+    "Girona": "/teams/girona.png",
+    "Stuttgart": "/teams/stuttgart.png",
 };
 
 export function getTeamLogo(teamName: string): string | null {
@@ -107,6 +143,38 @@ export const SHORT_NAMES: Record<string, string> = {
     "Bournemouth": "Bournemouth",
     "Brentford": "Brentford",
 
+    // Champions League / Rest of Europe
+    "Paris Saint-Germain": "PSG",
+    "Internazionale": "Inter",
+    "Inter Milan": "Inter",
+    "Borussia Dortmund": "Dortmund",
+    "Bayer Leverkusen": "Leverkusen",
+    "Atlético Madrid": "Atlético",
+    "Atletico Madrid": "Atlético",
+    "Real Madrid": "R. Madrid",
+    "FC Barcelona": "Barça",
+    "Barcelona": "Barça",
+    "Bayern Munich": "Bayern",
+    "Club Brugge": "Brugge",
+    "AS Monaco": "Monaco",
+    "FK Qarabag": "Qarabag",
+    "Sporting CP": "Sporting",
+    "Sporting Lisbon": "Sporting",
+    "RB Leipzig": "Leipzig",
+    "Red Bull Salzburg": "Salzburg",
+    "Shakhtar Donetsk": "Shakhtar",
+    "BSC Young Boys": "Young Boys",
+    "Crvena Zvezda": "Estrella Roja",
+    "Red Star Belgrade": "Estrella Roja",
+    "Galatasaray": "Galatasaray",
+    "Juventus": "Juve",
+    "Atalanta": "Atalanta",
+    "Bodo/Glimt": "Bodo/Glimt",
+    "PSV Eindhoven": "PSV",
+    "Feyenoord": "Feyenoord",
+    "Girona": "Girona",
+    "Stuttgart": "Stuttgart",
+
     // Liga MX
     "Pumas UNAM": "Pumas",
     "Club América": "América",
@@ -121,5 +189,10 @@ export const SHORT_NAMES: Record<string, string> = {
 };
 
 export function getShortName(name: string): string {
-    return SHORT_NAMES[name] || name;
+    if (SHORT_NAMES[name]) return SHORT_NAMES[name];
+
+    const normalizedKey = name.toLowerCase().replace(/ & /g, ' and ');
+    const key = Object.keys(SHORT_NAMES).find(k => k.toLowerCase() === normalizedKey);
+
+    return key ? SHORT_NAMES[key] : name;
 }

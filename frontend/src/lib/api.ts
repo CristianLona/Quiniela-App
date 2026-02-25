@@ -24,8 +24,8 @@ export const api = {
         parse: (text: string) =>
             fetchJson<WeekDraft>('/weeks/parse', { method: 'POST', body: JSON.stringify({ text }) }),
 
-        create: (name: string, matches: any[], price: number = 50, adminFee: number = 0) =>
-            fetchJson<Week>('/weeks', { method: 'POST', body: JSON.stringify({ name, matches, price, adminFee }) }),
+        create: (name: string, matches: any[], price: number = 50, adminFee: number = 0, league: string = 'liga-mx') =>
+            fetchJson<Week>('/weeks', { method: 'POST', body: JSON.stringify({ name, matches, price, adminFee, league }) }),
 
         updateResult: (weekId: string, matchId: string, homeScore: number, awayScore: number, status?: string) =>
             fetchJson<MatchOutcome>(`/weeks/${weekId}/matches/${matchId}`, {
@@ -33,7 +33,15 @@ export const api = {
                 body: JSON.stringify({ homeScore, awayScore, status })
             }),
 
-        getAll: () => fetchJson<Week[]>('/weeks'),
+        updateMatches: (weekId: string, matches: { matchId: string; homeScore: number; awayScore: number; status?: string }[]) =>
+            fetchJson<Week>(`/weeks/${weekId}/matches`, {
+                method: 'PATCH',
+                body: JSON.stringify({ matches })
+            }),
+
+        delete: (id: string) => fetchJson<{ success: boolean }>(`/weeks/${id}`, { method: 'DELETE' }),
+
+        getAll: () => fetchJson<Week[]>(`/weeks?t=${Date.now()}`),
 
         getOne: (id: string) => fetchJson<Week>(`/weeks/${id}`),
 
@@ -54,5 +62,19 @@ export const api = {
         getByWeek: (weekId: string) => fetchJson<ParticipantEntry[]>(`/picks/week/${weekId}`),
 
         togglePayment: (id: string) => fetchJson<ParticipantEntry>(`/picks/${id}/payment`, { method: 'PATCH' }),
+
+        delete: (weekId: string, participantId: string) =>
+            fetchJson<{ success: boolean }>(`/picks/${weekId}/${participantId}`, { method: 'DELETE' }),
+    },
+
+    scraper: {
+        getMatches: (league: string = 'liga-mx') =>
+            fetchJson<any[]>(`/scraper/matches?league=${league}`),
+
+        getResults: (league: string = 'liga-mx') =>
+            fetchJson<any[]>(`/scraper/results?league=${league}`),
+
+        getStandings: (league: string = 'liga-mx') =>
+            fetchJson<any>(`/standings?league=${league}`),
     }
 };

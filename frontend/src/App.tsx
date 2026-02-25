@@ -15,7 +15,7 @@ function App() {
   return (
     <BrowserRouter>
       <Toaster richColors position="top-center" theme="dark" />
-      <div className="max-h-screen bg-slate-50 text-slate-900 font-sans">
+      <div className="min-h-screen bg-black text-white font-sans">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/fill" element={<FillQuiniela />} />

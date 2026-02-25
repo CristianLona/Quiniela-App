@@ -35,11 +35,9 @@ export function sortLeaderboard(
     weekTotalGoals: number
 ): ParticipantEntry[] {
     return [...participants].sort((a, b) => {
-        // 1. Primary: Score (Descending)
         const scoreDiff = (b.score || 0) - (a.score || 0);
         if (scoreDiff !== 0) return scoreDiff;
 
-        // 2. Secondary: Total Goals Difference (Ascending)
         const diffA = Math.abs((a.totalGoalsPrediction || 0) - weekTotalGoals);
         const diffB = Math.abs((b.totalGoalsPrediction || 0) - weekTotalGoals);
 

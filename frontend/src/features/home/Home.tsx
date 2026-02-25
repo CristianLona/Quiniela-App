@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Trophy, ChevronRight, Loader2, Play, Activity, Timer } from 'lucide-react';
 import { api } from '../../lib/api';
+import StandingsTable from './StandingsTable';
 
 export default function Home() {
     const navigate = useNavigate();
@@ -9,6 +10,7 @@ export default function Home() {
     const [loading, setLoading] = useState(true);
     const [closeDate, setCloseDate] = useState<number | string | null>(null);
     const [timeLeft, setTimeLeft] = useState("");
+    const [activeLeague, setActiveLeague] = useState<string>("liga-mx");
 
     useEffect(() => {
         api.weeks.getAll()
@@ -24,6 +26,7 @@ export default function Home() {
                     } else {
                         setCloseDate(active.closeDate); // Fallback
                     }
+                    if (active.league) setActiveLeague(active.league);
                 } else {
                     setWeekName("Sin Jornada Activa");
                 }
@@ -73,16 +76,18 @@ export default function Home() {
     );
 
     return (
-        <div className="min-h-screen bg-[#09090b] overflow-hidden font-sans relative flex items-center justify-center">
+        <div className="min-h-screen bg-[#09090b] font-sans relative flex flex-col items-center py-6 sm:py-12 md:py-24">
 
             {/* Background Texture - Dot Pattern */}
-            <div className="absolute inset-0 z-0 opacity-20"
+            <div className="absolute inset-0 z-0 opacity-20 pointer-events-none"
                 style={{ backgroundImage: 'radial-gradient(#3f3f46 1px, transparent 1px)', backgroundSize: '32px 32px' }}>
             </div>
 
-            {/* Gradient Orbs */}
-            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#22c55e]/10 blur-[120px] rounded-full pointer-events-none translate-x-1/3 -translate-y-1/3" />
-            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-zinc-800/20 blur-[100px] rounded-full pointer-events-none -translate-x-1/3 translate-y-1/3" />
+            {/* Gradient Orbs Container - Evita que el blur/translate rompa el scroll */}
+            <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#22c55e]/10 blur-[120px] rounded-full translate-x-1/3 -translate-y-1/3" />
+                <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-zinc-800/20 blur-[100px] rounded-full -translate-x-1/3 translate-y-1/3" />
+            </div>
 
             {/* Main Responsive Container */}
             <div className="w-full max-w-6xl p-6 md:p-12 z-10 grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-24 items-center">
@@ -231,6 +236,10 @@ export default function Home() {
 
                 </div>
 
+                {/* Standings Table Full Width Container */}
+                <div className="md:col-span-2 w-full mt-8 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-500">
+                    <StandingsTable league={activeLeague} />
+                </div>
             </div>
         </div>
     );

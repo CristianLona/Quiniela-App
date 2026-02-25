@@ -13,27 +13,26 @@ const createNestServer = async (expressInstance) => {
         new ExpressAdapter(expressInstance),
     );
 
-    // Replicate configuration from main.ts
-    // Enable CORS for frontend
     app.enableCors({
         origin: '*',
         methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     });
 
-    // Global Validation
     app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true }));
-
-    // Global Prefix
     app.setGlobalPrefix('api');
-
-    // Force Deploy: v2
-    console.log('Initializing NestJS with Global Prefix: api');
 
     return app.init();
 };
+let appReady = false;
+const initPromise = createNestServer(server).then(() => {
+    appReady = true;
+}).catch(err => {
+    console.error('Nest Broken', err);
+});
 
-createNestServer(server)
-    .then(v => console.log('Nest Ready'))
-    .catch(err => console.error('Nest Broken', err));
-
-export const api = onRequest({ maxInstances: 10 }, server);
+export const api = onRequest({ maxInstances: 10 }, async (req, res) => {
+    if (!appReady) {
+        await initPromise;
+    }
+    server(req, res);
+});

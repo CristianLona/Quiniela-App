@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Patch, Header } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Patch, Header, Delete } from '@nestjs/common';
 import { WeeksService } from './weeks.service';
 import { WeekDraft } from '../../common/types';
 
@@ -12,8 +12,8 @@ export class WeeksController {
     }
 
     @Post()
-    create(@Body() body: { name: string; matches: any[]; price?: number; adminFee?: number }) {
-        return this.weeksService.createWeek(body.name, body.matches, body.price, body.adminFee);
+    create(@Body() body: { name: string; matches: any[]; price?: number; adminFee?: number; league?: string }) {
+        return this.weeksService.createWeek(body.name, body.matches, body.price, body.adminFee, body.league);
     }
 
     @Get()
@@ -51,5 +51,16 @@ export class WeeksController {
         @Body() body: { adminFee?: number; price?: number }
     ) {
         return this.weeksService.updateWeek(id, body);
+    }
+    @Patch(':id/matches')
+    updateMatches(
+        @Param('id') weekId: string,
+        @Body() body: { matches: { matchId: string; homeScore: number; awayScore: number; status?: string }[] }
+    ) {
+        return this.weeksService.updateMatches(weekId, body.matches);
+    }
+    @Delete(':id')
+    delete(@Param('id') id: string) {
+        return this.weeksService.deleteWeek(id);
     }
 }

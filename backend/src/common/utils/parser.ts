@@ -14,7 +14,6 @@ export function parseLineToMatchDraft(line: string, refDate: Date = new Date()):
 
     let restOfLine = vsSplit[1].trim();
 
-    // 1.5 Extract Positions (trailing numbers)
     let homePosition: number | undefined;
     let awayPosition: number | undefined;
 
@@ -25,7 +24,6 @@ export function parseLineToMatchDraft(line: string, refDate: Date = new Date()):
         restOfLine = restOfLine.substring(0, posMatch.index).trim();
     }
 
-    // 2. Find Day of Week to split AwayTeam
     const dayMatch = restOfLine.match(DAYS_REGEX);
     let awayTeam = restOfLine;
     let datePart = '';
@@ -35,7 +33,6 @@ export function parseLineToMatchDraft(line: string, refDate: Date = new Date()):
         datePart = restOfLine.substring(dayMatch.index).trim();
     }
 
-    // 3. Simple Date Parser
     const timestamp = parseSpanishDateString(datePart, refDate);
 
     return {
@@ -52,15 +49,12 @@ export function parseLineToMatchDraft(line: string, refDate: Date = new Date()):
 function parseSpanishDateString(dateString: string, refDate: Date): number {
     if (!dateString) return refDate.getTime();
 
-    // Extract Day Name
     const dayMatch = dateString.match(DAYS_REGEX);
     if (!dayMatch) return refDate.getTime();
 
     const dayName = dayMatch[0].toLowerCase();
-
-    // Extract Time: 08:15am or 8:15
     const timeMatch = dateString.match(/(\d{1,2}):(\d{2})\s?(am|pm)?/i);
-    let hours = 12; // default noon if failed
+    let hours = 12;
     let minutes = 0;
 
     if (timeMatch) {
@@ -72,26 +66,21 @@ function parseSpanishDateString(dateString: string, refDate: Date): number {
         if (meridiem === 'am' && hours === 12) hours = 0;
     }
 
-    // Calculate target date
     const targetDate = new Date(refDate);
-    const currentDay = targetDate.getDay(); // 0 = Sun, 1 = Mon...
+    const currentDay = targetDate.getDay();
     const targetDayIndex = spanishDayToIndex(dayName);
 
     let dayDiff = targetDayIndex - currentDay;
-    if (dayDiff < 0) dayDiff += 7; // Next occurrence
+    if (dayDiff < 0) dayDiff += 7;
 
     targetDate.setDate(targetDate.getDate() + dayDiff);
     targetDate.setHours(hours, minutes, 0, 0);
-
-    // Get current date components
     const y = targetDate.getFullYear();
     const m = targetDate.getMonth();
     const d = targetDate.getDate();
 
-    // Force Mexico Timezone Interpretation (UTC-6)
     const mexicoOffsetHours = 6;
 
-    // Construct UTC date
     const utcDate = new Date(Date.UTC(y, m, d, hours + mexicoOffsetHours, minutes, 0));
 
     return utcDate.getTime();
@@ -102,7 +91,6 @@ function spanishDayToIndex(day: string): number {
         'domingo': 0, 'lunes': 1, 'martes': 2, 'miércoles': 3,
         'jueves': 4, 'viernes': 5, 'sábado': 6
     };
-    // Normalize
     if (day.includes('dom')) return 0;
     if (day.includes('lun')) return 1;
     if (day.includes('mar')) return 2;

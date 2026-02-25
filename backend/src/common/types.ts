@@ -1,5 +1,5 @@
 export type MatchStatus = 'SCHEDULED' | 'IN_PLAY' | 'FINISHED' | 'POSTPONED';
-export type MatchOutcome = 'L' | 'E' | 'V'; // Local, Empate, Visita
+export type MatchOutcome = 'L' | 'E' | 'V'; 
 export type PaymentStatus = 'PENDING' | 'PAID';
 
 export interface MatchResult {
@@ -13,10 +13,10 @@ export interface Match {
     weekId: string;
     homeTeam: string;
     awayTeam: string;
-    homeLogo?: string; // URL or placeholder mapping key
+    homeLogo?: string; 
     awayLogo?: string;
-    date: string; // ISO String for storage
-    timestamp: number; // Unix timestamp for efficient sorting/filtering
+    date: string; 
+    timestamp: number; 
     status: MatchStatus;
     result?: MatchResult;
     homePosition?: number;
@@ -24,15 +24,16 @@ export interface Match {
 }
 
 export interface Week {
-    id: string; // e.g., "S24-W01"
-    name: string; // "Jornada 1"
+    id: string;
+    name: string;
     status: 'OPEN' | 'CLOSED' | 'FINISHED';
-    closeDate: number; // Timestamp of the first match start
-    matches: Match[]; // Array of matches in this week
-    totalGoalsResult?: number; // Sum of all goals (valid only when all matches finished)
+    closeDate: number;
+    matches: Match[];
+    totalGoalsResult?: number;
     price?: number;
     adminFee?: number;
-    hideUnpaid?: boolean; // Toggle to hide unpaid participants from public
+    hideUnpaid?: boolean;
+    league?: string;
     createdAt: number;
 }
 
@@ -42,21 +43,19 @@ export interface PickSelection {
 }
 
 export interface ParticipantEntry {
-    id: string; // Auto-generated UUID
+    id: string;     
     weekId: string;
-    participantName: string; // "Carlos Lona"
-    totalGoalsPrediction: number; // Tiebreaker input by user
+    participantName: string;
+    totalGoalsPrediction: number;
     picks: PickSelection[];
     paymentStatus: PaymentStatus;
 
-    // Computed fields (for Leaderboard performance)
-    score?: number; // Number of correct picks
-    hits?: string[]; // IDs of matches guessed correctly
-    pointsDistance?: number; // Abs(totalGoalsPrediction - Week.totalGoalsResult) for tiebreak
+    score?: number; 
+    hits?: string[]; 
+    pointsDistance?: number; 
     submittedAt: number;
 }
 
-// Helper types for Admin UI
 export interface WeekDraft {
     rawText: string;
     parsedMatches: Omit<Match, 'id' | 'weekId' | 'status'>[];
