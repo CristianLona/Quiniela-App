@@ -1,7 +1,7 @@
 import type { Week, WeekDraft, ParticipantEntry, PickSelection, MatchOutcome } from '../types';
 
-const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '/api' : 'http://localhost:3000/api');
-export const SOCKET_URL = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace(/\/api$/, '') : (import.meta.env.PROD ? '/' : 'http://localhost:3000');
+const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '/api' : `http://${window.location.hostname}:3000/api`);
+export const SOCKET_URL = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace(/\/api$/, '') : (import.meta.env.PROD ? '/' : `http://${window.location.hostname}:3000`);
 
 let authToken: string | null = null;
 export const setAuthToken = (token: string | null) => {

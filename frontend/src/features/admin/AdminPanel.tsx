@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { cn } from '../../lib/utils';
-import { Lock, Plus, Play, Loader2, Trophy, ClipboardList, PenTool, User, Eye, EyeOff, DollarSign, CheckCircle2, Circle, History, ArrowRight, Trash2, Edit2 } from 'lucide-react';
+import { Lock, Plus, Play, Loader2, Trophy, ClipboardList, PenTool, User, Eye, EyeOff, DollarSign, CheckCircle2, Circle, History, ArrowRight, Trash2} from 'lucide-react';
 import type { WeekDraft, Match, ParticipantEntry, Week } from '../../types';
 import { toast } from 'sonner';
 import { Modal } from '../../components/ui/Modal';
