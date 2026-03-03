@@ -220,4 +220,4 @@ The core Quiniela flow (filling, submission, scoreboard, admin publishing) is co
 
 -   **GitHub:** [@cristianlona](https://github.com/cristianlona)
 -   **Linkedin:** [Cristian Lona](https://www.linkedin.com/in/cristian-josue-lona-avalos-3411b2218/)
--   **Email:** [Cristian.lonadev@gmail.com]
+-   **Email:** Cristian.lonadev@gmail.com
