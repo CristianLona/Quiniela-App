@@ -72,4 +72,18 @@ export class PicksService {
         await docRef.update({ paymentStatus: newStatus });
         return { ...entry, paymentStatus: newStatus };
     }
+
+    async updatePick(id: string, updateData: Partial<ParticipantEntry>): Promise<ParticipantEntry> {
+        const docRef = this.firebaseService.getDb().collection('picks').doc(id);
+        const doc = await docRef.get();
+        if (!doc.exists) throw new NotFoundException('Entry not found');
+
+        await docRef.update(updateData);
+        return { ...(doc.data() as ParticipantEntry), ...updateData };
+    }
+
+    async deletePick(id: string): Promise<{ success: boolean }> {
+        await this.firebaseService.getDb().collection('picks').doc(id).delete();
+        return { success: true };
+    }
 }

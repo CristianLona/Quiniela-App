@@ -1,14 +1,32 @@
 import type { Week, WeekDraft, ParticipantEntry, PickSelection, MatchOutcome } from '../types';
 
 const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '/api' : 'http://localhost:3000/api');
+export const SOCKET_URL = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace(/\/api$/, '') : (import.meta.env.PROD ? '/' : 'http://localhost:3000');
+
+let authToken: string | null = null;
+export const setAuthToken = (token: string | null) => {
+    authToken = token;
+    if (token) localStorage.setItem('adminToken', token);
+    else localStorage.removeItem('adminToken');
+};
+
+// Intenta recuperar al inicio
+const savedToken = localStorage.getItem('adminToken');
+if (savedToken) authToken = savedToken;
 
 async function fetchJson<T>(endpoint: string, options?: RequestInit): Promise<T> {
+    const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        ...options?.headers as Record<string, string>,
+    };
+
+    if (authToken) {
+        headers['Authorization'] = `Bearer ${authToken}`;
+    }
+
     const res = await fetch(`${API_URL}${endpoint}`, {
         ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options?.headers,
-        },
+        headers,
     });
 
     if (!res.ok) {
@@ -20,6 +38,9 @@ async function fetchJson<T>(endpoint: string, options?: RequestInit): Promise<T>
 }
 
 export const api = {
+    auth: {
+        login: (password: string) => fetchJson<{ access_token: string }>('/auth/login', { method: 'POST', body: JSON.stringify({ password }) }),
+    },
     weeks: {
         parse: (text: string) =>
             fetchJson<WeekDraft>('/weeks/parse', { method: 'POST', body: JSON.stringify({ text }) }),
@@ -63,8 +84,11 @@ export const api = {
 
         togglePayment: (id: string) => fetchJson<ParticipantEntry>(`/picks/${id}/payment`, { method: 'PATCH' }),
 
-        delete: (weekId: string, participantId: string) =>
-            fetchJson<{ success: boolean }>(`/picks/${weekId}/${participantId}`, { method: 'DELETE' }),
+        update: (id: string, data: Partial<ParticipantEntry>) =>
+            fetchJson<ParticipantEntry>(`/picks/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+
+        delete: (id: string) =>
+            fetchJson<{ success: boolean }>(`/picks/${id}`, { method: 'DELETE' }),
     },
 
     scraper: {

@@ -269,114 +269,127 @@ export default function FillQuiniela() {
                 </div>
 
                 {/* Progress Bar (Sticky under header approx) */}
-                <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 mb-8 flex items-center justify-between shadow-lg relative overflow-hidden">
-                    <div className="absolute top-0 left-0 h-1 bg-[#22c55e] transition-all duration-500" style={{ width: `${(Object.keys(picks).length / matches.length) * 100}%` }}></div>
+                {timeLeft !== 'Cerrada' && (
+                    <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 mb-8 flex items-center justify-between shadow-lg relative overflow-hidden">
+                        <div className="absolute top-0 left-0 h-1 bg-[#22c55e] transition-all duration-500" style={{ width: `${(Object.keys(picks).length / matches.length) * 100}%` }}></div>
 
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-zinc-800 rounded-lg">
-                            <Clock className="w-5 h-5 text-[#22c55e]" />
-                        </div>
-                        <div>
-                            <p className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">Tu Progreso</p>
-                            <p className="text-white font-bold text-sm">
-                                {Object.keys(picks).length} <span className="text-zinc-600">/</span> {matches.length} Seleccionados
-                            </p>
-                        </div>
-                    </div>
-                    <div className="text-right">
-                        <span className="text-2xl font-black text-[#22c55e]">{Math.round((Object.keys(picks).length / matches.length) * 100)}%</span>
-                    </div>
-                </div>
-
-                <form onSubmit={handlePreSubmit} className="space-y-8">
-
-                    {/* Section: User Info */}
-                    <div className="space-y-4">
-                        <div className="flex items-center gap-2 mb-2">
-                            <User className="w-4 h-4 text-[#22c55e]" />
-                            <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Tus Datos</span>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-2xl p-4 focus-within:border-[#22c55e] focus-within:ring-1 focus-within:ring-[#22c55e]/50 transition-all hover:bg-zinc-900">
-                                <label className="block text-[10px] text-zinc-500 font-bold uppercase mb-1">Nombre</label>
-                                <input
-                                    type="text"
-                                    value={name}
-                                    onChange={e => setName(e.target.value)}
-                                    placeholder="Tu Apodo"
-                                    className="w-full bg-transparent text-white font-bold text-lg outline-none placeholder:text-zinc-700"
-                                />
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-zinc-800 rounded-lg">
+                                <Clock className="w-5 h-5 text-[#22c55e]" />
                             </div>
-                            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 focus-within:border-[#22c55e] focus-within:ring-1 focus-within:ring-[#22c55e]/50 transition-all">
-                                <label className="block text-[10px] text-zinc-500 font-bold uppercase mb-1 flex items-center justify-between w-full">
-                                    Goles Totales
-                                    <span className="text-[#fbbf24] text-[8px] bg-[#fbbf24]/10 px-1.5 py-0.5 rounded ml-2">Desempate</span>
-                                </label>
-                                <input
-                                    type="number"
-                                    value={goals}
-                                    onChange={e => setGoals(e.target.value)}
-                                    placeholder="0"
-                                    className="w-full bg-transparent text-white font-bold text-lg outline-none placeholder:text-zinc-700"
-                                />
+                            <div>
+                                <p className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">Tu Progreso</p>
+                                <p className="text-white font-bold text-sm">
+                                    {Object.keys(picks).length} <span className="text-zinc-600">/</span> {matches.length} Seleccionados
+                                </p>
                             </div>
                         </div>
-                    </div>
-
-                    {/* Section: Matches */}
-                    <div className="space-y-4">
-                        <div className="flex items-center gap-2 mb-2 sticky top-[72px] bg-[#09090b]/95 backdrop-blur-sm py-2 z-40 border-b border-zinc-800/50">
-                            <Target className="w-4 h-4 text-[#22c55e]" />
-                            <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Partidos de la Jornada</span>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 md:gap-6">
-                            {matches.map((match) => {
-                                const mapHome = getShortName(match.homeTeam);
-                                const mapAway = getShortName(match.awayTeam);
-
-                                const hydratedMatch = {
-                                    ...match,
-                                    homePosition: teamsPositionsMap[mapHome] || teamsPositionsMap[match.homeTeam.toLowerCase()] || undefined,
-                                    awayPosition: teamsPositionsMap[mapAway] || teamsPositionsMap[match.awayTeam.toLowerCase()] || undefined
-                                };
-
-                                return (
-                                    <MatchCard
-                                        key={match.id}
-                                        match={hydratedMatch}
-                                        selection={picks[match.id]}
-                                        onSelect={handleSelect}
-                                    />
-                                );
-                            })}
+                        <div className="text-right">
+                            <span className="text-2xl font-black text-[#22c55e]">{Math.round((Object.keys(picks).length / matches.length) * 100)}%</span>
                         </div>
                     </div>
+                )}
 
-                    {/* Submit Button Floating */}
-                    <div className="bottom-6 left-0 right-0 px-6 max-w-xl mx-auto z-50">
-                        <button
-                            type="submit"
-                            disabled={!isComplete || loading}
-                            className={cn(
-                                "w-full py-4 rounded-2xl font-black text-lg uppercase tracking-wider flex items-center justify-center gap-3 transition-all transform shadow-2xl backdrop-blur-md border border-white/5",
-                                isComplete
-                                    ? "bg-[#22c55e] text-black shadow-[#22c55e]/20 hover:scale-[1.02] active:scale-[0.98]"
-                                    : "bg-zinc-900/90 text-zinc-600 border-zinc-800"
-                            )}
-                        >
-                            {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : (
-                                <>
-                                    {isComplete && <CheckCircle2 className="w-5 h-5" />}
-                                    {isComplete ? "Enviar Quiniela" : "Completa los campos"}
-                                    {!isComplete && <div className="w-2 h-2 rounded-full bg-zinc-700 animate-pulse" />}
-                                </>
-                            )}
+                {timeLeft === 'Cerrada' ? (
+                    <div className="bg-[#18181b] border border-red-500/50 rounded-2xl p-8 py-16 text-center space-y-4 shadow-2xl animate-in fade-in zoom-in-95 duration-500">
+                        <Clock className="w-16 h-16 text-red-500 mx-auto opacity-80" />
+                        <h2 className="text-3xl font-black text-white uppercase tracking-tight drop-shadow-[0_0_15px_rgba(239,68,68,0.4)]">Jornada Cerrada</h2>
+                        <p className="text-zinc-400 max-w-sm mx-auto text-sm">El tiempo límite para enviar tu quiniela ha expirado. El primer partido ya ha comenzado y no se aceptan más participaciones.</p>
+                        <button onClick={() => navigate('/')} className="mt-8 bg-red-500 text-white font-bold px-8 py-4 rounded-xl hover:bg-red-600 transition-colors uppercase tracking-widest text-sm mx-auto block shadow-lg shadow-red-500/20">
+                            Volver a Resultados
                         </button>
                     </div>
+                ) : (
+                    <form onSubmit={handlePreSubmit} className="space-y-8">
 
-                </form>
+                        {/* Section: User Info */}
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-2 mb-2">
+                                <User className="w-4 h-4 text-[#22c55e]" />
+                                <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Tus Datos</span>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-2xl p-4 focus-within:border-[#22c55e] focus-within:ring-1 focus-within:ring-[#22c55e]/50 transition-all hover:bg-zinc-900">
+                                    <label className="block text-[10px] text-zinc-500 font-bold uppercase mb-1">Nombre</label>
+                                    <input
+                                        type="text"
+                                        value={name}
+                                        onChange={e => setName(e.target.value)}
+                                        placeholder="Tu Apodo"
+                                        className="w-full bg-transparent text-white font-bold text-lg outline-none placeholder:text-zinc-700"
+                                    />
+                                </div>
+                                <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 focus-within:border-[#22c55e] focus-within:ring-1 focus-within:ring-[#22c55e]/50 transition-all">
+                                    <label className="block text-[10px] text-zinc-500 font-bold uppercase mb-1 flex items-center justify-between w-full">
+                                        Goles Totales
+                                        <span className="text-[#fbbf24] text-[8px] bg-[#fbbf24]/10 px-1.5 py-0.5 rounded ml-2">Desempate</span>
+                                    </label>
+                                    <input
+                                        type="number"
+                                        value={goals}
+                                        onChange={e => setGoals(e.target.value)}
+                                        placeholder="0"
+                                        className="w-full bg-transparent text-white font-bold text-lg outline-none placeholder:text-zinc-700"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Section: Matches */}
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-2 mb-2 sticky top-[72px] bg-[#09090b]/95 backdrop-blur-sm py-2 z-40 border-b border-zinc-800/50">
+                                <Target className="w-4 h-4 text-[#22c55e]" />
+                                <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Partidos de la Jornada</span>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 md:gap-6">
+                                {matches.map((match) => {
+                                    const mapHome = getShortName(match.homeTeam);
+                                    const mapAway = getShortName(match.awayTeam);
+
+                                    const hydratedMatch = {
+                                        ...match,
+                                        homePosition: teamsPositionsMap[mapHome] || teamsPositionsMap[match.homeTeam.toLowerCase()] || undefined,
+                                        awayPosition: teamsPositionsMap[mapAway] || teamsPositionsMap[match.awayTeam.toLowerCase()] || undefined
+                                    };
+
+                                    return (
+                                        <MatchCard
+                                            key={match.id}
+                                            match={hydratedMatch}
+                                            selection={picks[match.id]}
+                                            onSelect={handleSelect}
+                                        />
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Submit Button Floating */}
+                        <div className="bottom-6 left-0 right-0 px-6 max-w-xl mx-auto z-50">
+                            <button
+                                type="submit"
+                                disabled={!isComplete || loading}
+                                className={cn(
+                                    "w-full py-4 rounded-2xl font-black text-lg uppercase tracking-wider flex items-center justify-center gap-3 transition-all transform shadow-2xl backdrop-blur-md border border-white/5",
+                                    isComplete
+                                        ? "bg-[#22c55e] text-black shadow-[#22c55e]/20 hover:scale-[1.02] active:scale-[0.98]"
+                                        : "bg-zinc-900/90 text-zinc-600 border-zinc-800"
+                                )}
+                            >
+                                {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : (
+                                    <>
+                                        {isComplete && <CheckCircle2 className="w-5 h-5" />}
+                                        {isComplete ? "Enviar Quiniela" : "Completa los campos"}
+                                        {!isComplete && <div className="w-2 h-2 rounded-full bg-zinc-700 animate-pulse" />}
+                                    </>
+                                )}
+                            </button>
+                        </div>
+
+                    </form>
+                )}
 
 
                 {/* Confirm Modal */}
@@ -426,6 +439,6 @@ export default function FillQuiniela() {
                     </div>
                 </Modal>
             </div>
-        </div>
+        </div >
     );
 }

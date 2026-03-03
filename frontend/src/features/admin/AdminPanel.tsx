@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { cn } from '../../lib/utils';
-import { Lock, Plus, Play, Loader2, Trophy, ClipboardList, PenTool, User, Eye, EyeOff, DollarSign, CheckCircle2, Circle, History, ArrowRight } from 'lucide-react';
+import { Lock, Plus, Play, Loader2, Trophy, ClipboardList, PenTool, User, Eye, EyeOff, DollarSign, CheckCircle2, Circle, History, ArrowRight, Trash2, Edit2 } from 'lucide-react';
 import type { WeekDraft, Match, ParticipantEntry, Week } from '../../types';
 import { toast } from 'sonner';
 import { Modal } from '../../components/ui/Modal';
-import { api } from '../../lib/api';
+import { api, setAuthToken } from '../../lib/api';
 
 export default function AdminPanel() {
-    const [auth, setAuth] = useState(false);
+    const [auth, setAuth] = useState(() => !!localStorage.getItem('adminToken'));
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [tab, setTab] = useState<'create-week' | 'results' | 'participants' | 'manual-entry' | 'history'>('create-week');
@@ -42,13 +42,18 @@ export default function AdminPanel() {
     };
 
     // Login Handler
-    const handleLogin = (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (password === import.meta.env.VITE_ADMIN_PASSWORD) {
+        setLoading(true);
+        try {
+            const res = await api.auth.login(password);
+            setAuthToken(res.access_token);
             setAuth(true);
             toast.success('Bienvenido Admin');
-        } else {
+        } catch (err) {
             toast.error('Contraseña incorrecta');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -681,6 +686,11 @@ function ParticipantsEditor({ weekId: propWeekId }: { weekId?: string }) {
     const [hideUnpaid, setHideUnpaid] = useState(false);
     const [loading, setLoading] = useState(false);
 
+    const [editingPart, setEditingPart] = useState<ParticipantEntry | null>(null);
+    const [editName, setEditName] = useState('');
+    const [editGoals, setEditGoals] = useState('');
+    const [savingEdit, setSavingEdit] = useState(false);
+
     const fetchData = async () => {
         setLoading(true);
         try {
@@ -733,6 +743,35 @@ function ParticipantsEditor({ weekId: propWeekId }: { weekId?: string }) {
             setHideUnpaid(newVal);
         } catch (e) {
             toast.error('Error cambiando visibilidad');
+        }
+    };
+
+    const deleteParticipant = async (id: string) => {
+        if (!confirm('¿Estás seguro de que deseas eliminar este participante permanentemente?')) return;
+        try {
+            await api.picks.delete(id);
+            setParticipants(prev => prev.filter(p => p.id !== id));
+            toast.success('Participante eliminado con éxito');
+        } catch (e) {
+            toast.error('Error eliminando participante');
+        }
+    };
+
+    const handleSaveEdit = async () => {
+        if (!editingPart || !editName.trim()) return;
+        setSavingEdit(true);
+        try {
+            const updated = await api.picks.update(editingPart.id, {
+                participantName: editName.trim(),
+                totalGoalsPrediction: parseInt(editGoals) || 0
+            });
+            setParticipants(prev => prev.map(p => p.id === updated.id ? { ...p, ...updated } : p));
+            toast.success('Participante actualizado');
+            setEditingPart(null);
+        } catch (e) {
+            toast.error('Error al actualizar participante');
+        } finally {
+            setSavingEdit(false);
         }
     };
 
@@ -793,11 +832,72 @@ function ParticipantsEditor({ weekId: propWeekId }: { weekId?: string }) {
                                     <><DollarSign className="w-3 h-3" /> Pendiente</>
                                 )}
                             </button>
+
+                            <button
+                                onClick={() => {
+                                    setEditingPart(p);
+                                    setEditName(p.participantName);
+                                    setEditGoals(String(p.totalGoalsPrediction || 0));
+                                }}
+                                className="p-2 ml-2 rounded-lg text-zinc-400 hover:text-white hover:bg-white/5 transition-colors"
+                                title="Editar Participante"
+                            >
+                                <PenTool className="w-4 h-4" />
+                            </button>
+
+                            <button
+                                onClick={() => deleteParticipant(p.id)}
+                                className="p-2 ml-1 rounded-lg text-red-500 hover:bg-red-500/10 transition-colors"
+                                title="Eliminar Participante"
+                            >
+                                <Trash2 className="w-4 h-4" />
+                            </button>
                         </div>
                     ))
                 )}
             </div>
-        </div>
+
+            <Modal
+                isOpen={!!editingPart}
+                onClose={() => setEditingPart(null)}
+                title="Editar Participante"
+            >
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-xs font-bold text-zinc-500 uppercase mb-2">Nombre</label>
+                        <input
+                            value={editName}
+                            onChange={(e) => setEditName(e.target.value)}
+                            className="w-full bg-[#09090b] text-white p-3 border border-zinc-800 rounded-xl focus:border-pool-green outline-none"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold text-zinc-500 uppercase mb-2">Goles Totales (Desempate)</label>
+                        <input
+                            type="number"
+                            value={editGoals}
+                            onChange={(e) => setEditGoals(e.target.value)}
+                            className="w-full bg-[#09090b] text-white p-3 border border-zinc-800 rounded-xl focus:border-pool-green outline-none"
+                        />
+                    </div>
+                    <div className="flex gap-3 pt-4">
+                        <button
+                            onClick={() => setEditingPart(null)}
+                            className="flex-1 px-4 py-3 rounded-xl font-bold text-zinc-500 hover:text-white hover:bg-white/5 transition-colors border border-white/5"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            onClick={handleSaveEdit}
+                            disabled={savingEdit || !editName.trim()}
+                            className="flex-1 bg-pool-green text-[#020617] font-bold px-4 py-3 rounded-xl hover:bg-emerald-400 transition-colors flex items-center justify-center gap-2"
+                        >
+                            {savingEdit ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Guardar'}
+                        </button>
+                    </div>
+                </div>
+            </Modal>
+        </div >
     );
 }
 

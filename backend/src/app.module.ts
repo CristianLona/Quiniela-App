@@ -1,19 +1,26 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { AuthModule } from './modules/auth/auth.module';
 import { FirebaseModule } from './common/firebase/firebase.module';
 import { WeeksModule } from './modules/weeks/weeks.module';
 import { PicksModule } from './modules/picks/picks.module';
 import { StandingsModule } from './standings/standings.module';
 import { ScraperModule } from './scraper/scraper.module';
+import { EventsModule } from './events/events.module';
 
 @Module({
     imports: [
-        ConfigModule.forRoot({ isGlobal: true }),
+        ConfigModule.forRoot({
+            isGlobal: true,
+            envFilePath: ['../frontend/.env', '.env'],
+        }),
+        AuthModule,
         FirebaseModule,
         WeeksModule,
         PicksModule,
         StandingsModule,
         ScraperModule,
+        EventsModule,
     ],
     controllers: [],
     providers: [],

@@ -3,10 +3,14 @@ import { Week, WeekDraft } from '../../common/types';
 import { parseLineToMatchDraft } from '../../common/utils/parser';
 import * as crypto from 'crypto';
 import { FirebaseService } from '../../common/firebase/firebase.service';
+import { EventsGateway } from '../../events/events.gateway';
 
 @Injectable()
 export class WeeksService {
-    constructor(private readonly firebaseService: FirebaseService) { }
+    constructor(
+        private readonly firebaseService: FirebaseService,
+        private readonly eventsGateway: EventsGateway
+    ) { }
 
     parseWeekText(text: string): WeekDraft {
         if (!text) throw new BadRequestException('Text input required');
@@ -89,6 +93,10 @@ export class WeeksService {
             }
 
             t.set(ref, week);
+
+            // Emit WS event
+            this.eventsGateway.emitMatchUpdate(weekId, matchId, match);
+
             return week;
         });
     }
@@ -141,6 +149,15 @@ export class WeeksService {
             });
 
             t.set(ref, week);
+
+            // Emit WS events for all updated matches
+            matches.forEach(update => {
+                const match = week.matches.find(m => m.id === update.matchId);
+                if (match) {
+                    this.eventsGateway.emitMatchUpdate(weekId, match.id, match);
+                }
+            });
+
             return week;
         });
     }

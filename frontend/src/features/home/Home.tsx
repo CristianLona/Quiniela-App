@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Trophy, ChevronRight, Loader2, Play, Activity, Timer } from 'lucide-react';
+import { Trophy, ChevronRight, Loader2, Play, Activity, Timer, HelpCircle } from 'lucide-react';
 import { api } from '../../lib/api';
 import StandingsTable from './StandingsTable';
+import { Modal } from '../../components/ui/Modal';
 
 export default function Home() {
     const navigate = useNavigate();
@@ -11,6 +12,7 @@ export default function Home() {
     const [closeDate, setCloseDate] = useState<number | string | null>(null);
     const [timeLeft, setTimeLeft] = useState("");
     const [activeLeague, setActiveLeague] = useState<string>("liga-mx");
+    const [showRules, setShowRules] = useState(false);
 
     useEffect(() => {
         api.weeks.getAll()
@@ -82,6 +84,15 @@ export default function Home() {
             <div className="absolute inset-0 z-0 opacity-20 pointer-events-none"
                 style={{ backgroundImage: 'radial-gradient(#3f3f46 1px, transparent 1px)', backgroundSize: '32px 32px' }}>
             </div>
+
+            {/* Rules Button */}
+            <button
+                onClick={() => setShowRules(true)}
+                className="absolute top-4 right-4 md:top-8 md:right-8 z-50 flex items-center gap-2 px-4 py-2 bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 rounded-full backdrop-blur-md transition-all group"
+            >
+                <HelpCircle className="w-4 h-4 text-zinc-400 group-hover:text-white transition-colors" />
+                <span className="text-[10px] font-bold text-zinc-400 group-hover:text-white uppercase tracking-widest hidden sm:block">Reglas</span>
+            </button>
 
             {/* Gradient Orbs Container - Evita que el blur/translate rompa el scroll */}
             <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
@@ -241,6 +252,35 @@ export default function Home() {
                     <StandingsTable league={activeLeague} />
                 </div>
             </div>
+
+            <Modal
+                isOpen={showRules}
+                onClose={() => setShowRules(false)}
+                title="Reglas de la Quiniela"
+            >
+                <div className="space-y-6 text-sm text-zinc-300">
+                    <div className="bg-[#22c55e]/10 border border-[#22c55e]/20 rounded-xl p-4">
+                        <h4 className="font-bold text-[#22c55e] mb-2 uppercase tracking-wide text-xs">La Dinámica</h4>
+                        <p>Para participar en la quiniela debes pronosticar el resultado de los partidos de la jornada (Local, Empate o Visita).</p>
+                    </div>
+
+                    <div className="space-y-3">
+                        <h4 className="font-bold text-white uppercase tracking-wide text-xs">Puntuación</h4>
+                        <ul className="list-disc pl-5 space-y-2">
+                            <li>Llevarás <strong className="text-[#22c55e]">1 punto</strong> por cada resultado correcto que aciertes.</li>
+                            <li>El ganador será el participante que acumule la mayor cantidad de puntos al final de la jornada.</li>
+                        </ul>
+                    </div>
+
+                    <div className="space-y-3">
+                        <h4 className="font-bold text-white uppercase tracking-wide text-xs">Criterio de Desempate</h4>
+                        <p>
+                            En caso de empate en puntos, se utilizará el <strong className="text-white">Total de Goles</strong> pronosticado al inicio de la quiniela.
+                            Ganará quien más se acerque al número exacto de goles anotados en todos los partidos de la jornada conjunta, ya sea por arriba o por abajo.
+                        </p>
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 }

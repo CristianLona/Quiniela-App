@@ -3,13 +3,14 @@ import type { Match, ParticipantEntry } from '../../types';
 import { cn } from '../../lib/utils';
 import { Trophy, Loader2, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { api } from '../../lib/api';
+import { api, SOCKET_URL } from '../../lib/api';
 import { getShortName } from '../../lib/teams';
+import { io } from 'socket.io-client';
 import { useNavigate } from 'react-router-dom';
 
 export default function Scoreboard() {
     const navigate = useNavigate();
-    const [participants, setParticipants] = useState<ParticipantEntry[]>([]);
+    const [rawParticipants, setRawParticipants] = useState<ParticipantEntry[]>([]);
     const [matches, setMatches] = useState<Match[]>([]);
     const [loading, setLoading] = useState(true);
     const [weekName, setWeekName] = useState('Cargando...');
@@ -58,19 +59,7 @@ export default function Scoreboard() {
                         ? parts.filter(p => p.paymentStatus === 'PAID')
                         : parts;
 
-                    const scoredParticipants = visibleParts.map(p => {
-                        let score = 0;
-                        const hits: string[] = [];
-                        p.picks.forEach(pick => {
-                            const match = currentWeek.matches.find(m => m.id === pick.matchId);
-                            if (match && match.status === 'FINISHED' && match.result?.outcome === pick.selection) {
-                                score++;
-                                hits.push(match.id);
-                            }
-                        });
-                        return { ...p, score, hits };
-                    });
-                    setParticipants(scoredParticipants);
+                    setRawParticipants(visibleParts);
                 } else {
                     setWeekName('Sin Jornadas');
                 }
@@ -83,6 +72,53 @@ export default function Scoreboard() {
         };
         fetchData();
     }, []);
+
+    // Websocket Connection
+    useEffect(() => {
+        if (!currentWeekData) return;
+
+        const socket = io(SOCKET_URL);
+
+        socket.on('connect', () => {
+            console.log('Connected to live scores socket');
+        });
+
+        socket.on('match_updated', (payload: any) => {
+            if (payload.weekId === currentWeekData.id) {
+                setMatches(prev => {
+                    const idx = prev.findIndex(m => m.id === payload.matchId);
+                    if (idx > -1) {
+                        const newMatches = [...prev];
+                        newMatches[idx] = { ...newMatches[idx], ...payload };
+                        return newMatches;
+                    }
+                    return prev;
+                });
+                toast.success(`Marcador actualizado: ${getShortName(payload.homeTeam)} vs ${getShortName(payload.awayTeam)}`, { position: 'top-center' });
+            }
+        });
+
+        return () => {
+            socket.off('match_updated');
+            socket.disconnect();
+        };
+    }, [currentWeekData]);
+
+    const participants = useMemo(() => {
+        return rawParticipants.map(p => {
+            let score = 0;
+            const hits: string[] = [];
+            p.picks.forEach(pick => {
+                const match = matches.find(m => m.id === pick.matchId);
+                // Note: We use matches state which is updated by WS
+                if (match && match.status === 'FINISHED' && match.result?.outcome === pick.selection) {
+                    score++;
+                    hits.push(match.id);
+                }
+            });
+            return { ...p, score, hits };
+        });
+    }, [rawParticipants, matches]);
 
     const sortedParticipants = useMemo(() => {
         return [...participants].sort((a, b) => (b.score || 0) - (a.score || 0));
