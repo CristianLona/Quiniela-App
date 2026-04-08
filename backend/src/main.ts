@@ -6,7 +6,7 @@ async function bootstrap() {
     const app = await NestFactory.create(AppModule);
 
     app.enableCors({
-        origin: '*',
+        origin: 'https://quinielaapp-d8fed.firebaseapp.com',
         methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     });
 

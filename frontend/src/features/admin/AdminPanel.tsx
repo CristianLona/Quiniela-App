@@ -4,11 +4,16 @@ import { Lock, Plus, Play, Loader2, Trophy, ClipboardList, PenTool, User, Eye, E
 import type { WeekDraft, Match, ParticipantEntry, Week } from '../../types';
 import { toast } from 'sonner';
 import { Modal } from '../../components/ui/Modal';
-import { api, setAuthToken } from '../../lib/api';
+import { api } from '../../lib/api';
+import { useAuth } from '../../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 export default function AdminPanel() {
-    const [auth, setAuth] = useState(() => !!localStorage.getItem('adminToken'));
-    const [password, setPassword] = useState('');
+    const { user, signOut } = useAuth();
+    const navigate = useNavigate();
+    const adminEmail = import.meta.env.VITE_ADMIN_EMAIL || '';
+    const isAdmin = user?.email?.toLowerCase() === adminEmail.toLowerCase();
+
     const [loading, setLoading] = useState(false);
     const [tab, setTab] = useState<'create-week' | 'results' | 'participants' | 'manual-entry' | 'history'>('create-week');
 
@@ -39,22 +44,6 @@ export default function AdminPanel() {
         if (!isoString) return '';
         const dateObj = new Date(isoString);
         return dateObj.toLocaleDateString('es-ES', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }).replace('.', '');
-    };
-
-    // Login Handler
-    const handleLogin = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
-        try {
-            const res = await api.auth.login(password);
-            setAuthToken(res.access_token);
-            setAuth(true);
-            toast.success('Bienvenido Admin');
-        } catch (err) {
-            toast.error('Contraseña incorrecta');
-        } finally {
-            setLoading(false);
-        }
     };
 
     // Parser Handler
@@ -123,15 +112,12 @@ export default function AdminPanel() {
                 return;
             }
 
-            // Limit matches to a standard amount per matchday to prevent overflow from next weeks
             const limit = autoLeague === 'liga-mx' ? 9 : (autoLeague === 'premier-league' ? 10 : 15);
             const limitedMatches = matches.slice(0, limit);
 
-            // Process text via backend parser to ensure ISO strings
             const rawTextLines = limitedMatches.map((m: any) => `${m.homeTeam} vs ${m.awayTeam} ${m.date}`);
             const newText = rawTextLines.join('\n');
 
-            // Append to existing bank (and parse to ensure ISO strings)
             const result = await api.weeks.parse(newText);
             setBankMatches(prev => [...prev, ...result.parsedMatches]);
             toast.success(`Se agregaron ${result.parsedMatches.length} partidos al Banco`);
@@ -145,7 +131,6 @@ export default function AdminPanel() {
 
     const handlePublish = async () => {
         if (!draft) return;
-        // Modal handles confirmation now
         setLoading(true);
         try {
             await api.weeks.create(weekName, draft.parsedMatches, price, adminFee, autoLeague);
@@ -158,19 +143,15 @@ export default function AdminPanel() {
         finally { setLoading(false); }
     };
 
-    if (!auth) {
+    if (!isAdmin) {
         return (
             <div className="min-h-screen bg-[#09090b] flex items-center justify-center p-4">
-                <form onSubmit={handleLogin} className="bg-[#18181b] p-8 rounded-2xl shadow-2xl w-full max-w-sm border border-white/5">
-                    <div className="flex justify-center mb-6">
-                        <div className="w-16 h-16 bg-[#09090b] rounded-full flex items-center justify-center text-pool-green border border-white/10 shadow-inner">
-                            <Lock className="w-8 h-8" />
-                        </div>
-                    </div>
-                    <h2 className="text-center text-2xl font-bold text-white mb-8 tracking-tight">Admin Access</h2>
-                    <input type="password" placeholder="Contraseña" value={password} onChange={e => setPassword(e.target.value)} className="w-full bg-[#09090b] text-white p-4 border border-zinc-800 rounded-xl mb-4 focus:border-pool-green outline-none font-bold" />
-                    <button type="submit" className="w-full bg-pool-green text-[#020617] font-bold py-4 rounded-xl hover:bg-emerald-400 transition-colors shadow-lg shadow-pool-green/20">Entrar</button>
-                </form>
+                <div className="bg-[#18181b] p-8 rounded-2xl shadow-2xl w-full max-w-sm border border-red-500/20 text-center animate-in fade-in zoom-in-95">
+                    <Lock className="w-12 h-12 text-red-500 mx-auto mb-4" />
+                    <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">Acceso Denegado</h2>
+                    <p className="text-zinc-500 text-sm mb-6">Esta área está restringida exclusivamente para el administrador.</p>
+                    <button onClick={() => navigate('/')} className="w-full bg-zinc-800 text-white font-bold py-3 rounded-xl hover:bg-zinc-700 transition-colors">Volver al Inicio</button>
+                </div>
             </div>
         );
     }
@@ -180,7 +161,20 @@ export default function AdminPanel() {
             <header className="bg-black/40 backdrop-blur-md text-white p-6 sticky top-0 z-20 border-b border-white/5 shadow-xl">
                 <div className="flex justify-between items-center max-w-4xl mx-auto w-full">
                     <h1 className="font-bold text-xl flex items-center gap-2"><PenTool className="w-5 h-5 text-pool-accent" /> Panel Administrativo</h1>
-                    <button onClick={() => setAuth(false)} className="text-xs font-bold text-zinc-500 hover:text-white bg-white/5 px-3 py-1.5 rounded-lg border border-white/5 transition-colors">Salir</button>
+                    <div className="flex items-center gap-3">
+                        <button 
+                            onClick={() => navigate('/')} 
+                            className="text-xs font-bold text-zinc-500 hover:text-white bg-white/5 px-3 py-1.5 rounded-lg border border-white/5 transition-colors"
+                        >
+                            Volver al Inicio
+                        </button>
+                        <button 
+                            onClick={() => { signOut(); navigate('/'); }} 
+                            className="text-xs font-bold text-zinc-500 hover:text-white bg-white/5 px-3 py-1.5 rounded-lg border border-white/5 transition-colors"
+                        >
+                            Cerrar Sesión
+                        </button>
+                    </div>
                 </div>
             </header>
 
@@ -345,7 +339,7 @@ export default function AdminPanel() {
                                     )}
                                 </div>
 
-                                <button onClick={() => setShowPublishModal(true)} disabled={selectedMatches.length === 0 || loading} className="shrink-0 mt-4 w-full bg-pool-green text-[#020617] font-black py-4 rounded-xl shadow-[0_0_20px_rgba(34,197,94,0.2)] hover:shadow-[0_0_30px_rgba(34,197,94,0.4)] flex justify-center items-center gap-2 disabled:opacity-50 disabled:shadow-none transition-all hover:scale-[1.02] active:scale-[0.98]">
+                                <button onClick={() => setShowPublishModal(true)} disabled={selectedMatches.length === 0 || loading} className="shrink-0 mt-4 w-full bg-pool-green text-zinc-500 font-black py-4 rounded-xl shadow-[0_0_20px_rgba(34,197,94,0.2)] hover:text-zinc-100 hover:shadow-[0_0_30px_rgba(34,197,94,0.4)] flex justify-center items-center gap-2 disabled:opacity-50 disabled:shadow-none transition-all hover:scale-[1.02] active:scale-[0.98]">
                                     {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Play className="w-5 h-5 fill-current" />} Publicar {selectedMatches.length} Partidos
                                 </button>
                             </div>
@@ -388,7 +382,7 @@ export default function AdminPanel() {
                             <button
                                 onClick={handlePublish}
                                 disabled={loading}
-                                className="flex-1 bg-pool-green text-[#020617] font-bold px-4 py-3 rounded-xl hover:bg-emerald-400 transition-colors flex items-center justify-center gap-2"
+                                className="flex-1 bg-pool-green text-zinc-500 font-bold px-4 py-3 rounded-xl hover:bg-emerald-400 hover:text-black transition-colors flex items-center justify-center gap-2"
                             >
                                 {loading && <Loader2 className="w-4 h-4 animate-spin" />}
                                 Confirmar y Publicar

@@ -1,9 +1,9 @@
 import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { ScraperService, ScrapedMatch } from './scraper.service';
-import { JwtAuthGuard } from '../modules/auth/jwt-auth.guard';
+import { AdminGuard } from '../modules/auth/admin.guard';
 
 @Controller('scraper')
-@UseGuards(JwtAuthGuard)
+@UseGuards(AdminGuard)
 export class ScraperController {
     constructor(private readonly scraperService: ScraperService) { }
 

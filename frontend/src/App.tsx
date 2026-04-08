@@ -3,12 +3,8 @@ import FillQuiniela from './features/fill-pool/FillQuiniela';
 import Scoreboard from './features/scoreboard/Scoreboard';
 import AdminPanel from './features/admin/AdminPanel';
 import Home from './features/home/Home';
-
-// Placeholders for views
-// const FillQuiniela = () => <div className="p-8 text-center text-2xl">Llenar Quiniela (Coming Soon)</div>;
-// const Scoreboard = () => <div className="p-8 text-center text-2xl">Tabla General (Coming Soon)</div>;
-// const AdminPanel = () => <div className="p-8 text-center text-2xl">Admin Panel (Coming Soon)</div>;
-
+import Login from './features/auth/Login';
+import ProtectedRoute from './components/ProtectedRoute';
 import { Toaster } from 'sonner';
 
 function App() {
@@ -17,10 +13,14 @@ function App() {
       <Toaster richColors position="top-center" theme="dark" />
       <div className="min-h-screen bg-black text-white font-sans">
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/fill" element={<FillQuiniela />} />
-          <Route path="/scoreboard" element={<Scoreboard />} />
-          <Route path="/admin" element={<AdminPanel />} />
+          {/* Public route */}
+          <Route path="/login" element={<Login />} />
+          
+          {/* Protected routes */}
+          <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+          <Route path="/fill" element={<ProtectedRoute><FillQuiniela /></ProtectedRoute>} />
+          <Route path="/scoreboard" element={<ProtectedRoute><Scoreboard /></ProtectedRoute>} />
+          <Route path="/admin" element={<ProtectedRoute><AdminPanel /></ProtectedRoute>} />
         </Routes>
       </div>
     </BrowserRouter>

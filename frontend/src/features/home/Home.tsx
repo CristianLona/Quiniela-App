@@ -1,12 +1,17 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Trophy, ChevronRight, Loader2, Play, Activity, Timer, HelpCircle } from 'lucide-react';
+import { Trophy, ChevronRight, Loader2, Play, Activity, Timer, HelpCircle, LogOut, User, AlertTriangle, ShieldCheck, Target, Calculator } from 'lucide-react';
 import { api } from '../../lib/api';
 import StandingsTable from './StandingsTable';
 import { Modal } from '../../components/ui/Modal';
+import { useAuth } from '../../context/AuthContext';
 
 export default function Home() {
     const navigate = useNavigate();
+    const { user, signOut } = useAuth();
+    const adminEmail = import.meta.env.VITE_ADMIN_EMAIL || '';
+    const isAdmin = adminEmail && user?.email?.toLowerCase() === adminEmail.toLowerCase();
+    
     const [weekName, setWeekName] = useState<string>("Cargando...");
     const [loading, setLoading] = useState(true);
     const [closeDate, setCloseDate] = useState<number | string | null>(null);
@@ -21,12 +26,11 @@ export default function Home() {
                 const active = sorted.find(w => w.status === 'OPEN') || sorted[0];
                 if (active) {
                     setWeekName(active.name);
-                    // Use earliest match date for countdown to ensure accuracy
                     if (active.matches && active.matches.length > 0) {
                         const earliest = [...active.matches].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0];
                         setCloseDate(earliest.date);
                     } else {
-                        setCloseDate(active.closeDate); // Fallback
+                        setCloseDate(active.closeDate);
                     }
                     if (active.league) setActiveLeague(active.league);
                 } else {
@@ -57,7 +61,6 @@ export default function Home() {
             const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
 
-            // Format with leading zeros
             const h = hours < 10 ? `0${hours}` : hours;
             const m = minutes < 10 ? `0${minutes}` : minutes;
 
@@ -85,14 +88,48 @@ export default function Home() {
                 style={{ backgroundImage: 'radial-gradient(#3f3f46 1px, transparent 1px)', backgroundSize: '32px 32px' }}>
             </div>
 
-            {/* Rules Button */}
-            <button
-                onClick={() => setShowRules(true)}
-                className="absolute top-4 right-4 md:top-8 md:right-8 z-50 flex items-center gap-2 px-4 py-2 bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 rounded-full backdrop-blur-md transition-all group"
-            >
-                <HelpCircle className="w-4 h-4 text-zinc-400 group-hover:text-white transition-colors" />
-                <span className="text-[10px] font-bold text-zinc-400 group-hover:text-white uppercase tracking-widest hidden sm:block">Reglas</span>
-            </button>
+            {/* Top Bar (User Profile + Rules) */}
+            <div className="absolute top-4 w-full px-4 md:top-8 md:px-8 z-50 flex items-center justify-between">
+                {/* User Profile */}
+                <div className="flex items-center gap-3 bg-zinc-900/80 border border-zinc-800 rounded-full px-3 py-1.5 backdrop-blur-md">
+                    {user?.photoURL ? (
+                        <img src={user.photoURL} alt="User" className="w-6 h-6 rounded-full" />
+                    ) : (
+                        <div className="p-1 bg-zinc-800 rounded-full"><User className="w-4 h-4 text-zinc-400" /></div>
+                    )}
+                    <span className="text-xs font-bold text-zinc-300 max-w-[100px] sm:max-w-xs truncate">
+                        {user?.displayName || user?.email || 'Usuario'}
+                    </span>
+                    <div className="h-4 w-px bg-zinc-800 mx-1"></div>
+                    <button 
+                        onClick={() => signOut()}
+                        className="text-zinc-500 hover:text-red-500 transition-colors"
+                        title="Cerrar sesión"
+                    >
+                        <LogOut className="w-4 h-4" />
+                    </button>
+                </div>
+
+                {/* Right side buttons */}
+                <div className="flex items-center gap-2">
+                    {isAdmin && (
+                        <button
+                            onClick={() => navigate('/admin')}
+                            className="flex items-center gap-2 px-4 py-2 bg-pool-green/10 hover:bg-pool-green/20 border border-pool-green/30 rounded-full backdrop-blur-md transition-all group"
+                        >
+                            <Trophy className="w-4 h-4 text-pool-green" />
+                            <span className="text-[10px] font-bold text-pool-green uppercase tracking-widest hidden sm:block">Admin</span>
+                        </button>
+                    )}
+                    <button
+                        onClick={() => setShowRules(true)}
+                        className="flex items-center gap-2 px-4 py-2 bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 rounded-full backdrop-blur-md transition-all group"
+                    >
+                        <HelpCircle className="w-4 h-4 text-zinc-400 group-hover:text-white transition-colors" />
+                        <span className="text-[10px] font-bold text-zinc-400 group-hover:text-white uppercase tracking-widest hidden sm:block">Reglas</span>
+                    </button>
+                </div>
+            </div>
 
             {/* Gradient Orbs Container - Evita que el blur/translate rompa el scroll */}
             <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
@@ -256,28 +293,53 @@ export default function Home() {
             <Modal
                 isOpen={showRules}
                 onClose={() => setShowRules(false)}
-                title="Reglas de la Quiniela"
+                title="Cómo Jugar la Quiniela"
             >
-                <div className="space-y-6 text-sm text-zinc-300">
-                    <div className="bg-[#22c55e]/10 border border-[#22c55e]/20 rounded-xl p-4">
-                        <h4 className="font-bold text-[#22c55e] mb-2 uppercase tracking-wide text-xs">La Dinámica</h4>
-                        <p>Para participar en la quiniela debes pronosticar el resultado de los partidos de la jornada (Local, Empate o Visita).</p>
+                <div className="space-y-4 text-sm text-zinc-300 pb-2">
+                    {/* Alerta de Pago Importante */}
+                    <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-5 flex gap-4 relative overflow-hidden shadow-lg shadow-red-500/5">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/20 blur-3xl rounded-full translate-x-1/2 -translate-y-1/2"></div>
+                        <AlertTriangle className="w-7 h-7 text-red-500 shrink-0 relative z-10" />
+                        <div className="relative z-10">
+                            <h4 className="font-black text-red-500 uppercase tracking-widest text-sm mb-2">Advertencia de Pago</h4>
+                            <p className="text-red-200/90 leading-relaxed font-medium">
+                                Toda quiniela <strong className="text-white bg-red-500/30 px-1.5 py-0.5 rounded ml-1">sin pagar</strong> antes del silbatazo inicial del primer partido <strong className="text-white underline decoration-red-500 decoration-2">quedará automáticamente fuera de participación</strong>, sin excepciones. Es tu responsabilidad reportar el pago a tiempo al administrador.
+                            </p>
+                        </div>
                     </div>
 
-                    <div className="space-y-3">
-                        <h4 className="font-bold text-white uppercase tracking-wide text-xs">Puntuación</h4>
-                        <ul className="list-disc pl-5 space-y-2">
-                            <li>Llevarás <strong className="text-[#22c55e]">1 punto</strong> por cada resultado correcto que aciertes.</li>
-                            <li>El ganador será el participante que acumule la mayor cantidad de puntos al final de la jornada.</li>
-                        </ul>
-                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 flex flex-col gap-3 group hover:border-[#22c55e]/30 transition-colors">
+                            <div className="w-10 h-10 rounded-full bg-[#22c55e]/10 flex items-center justify-center">
+                                <Target className="w-5 h-5 text-[#22c55e]" />
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-white uppercase tracking-wide text-xs mb-2">1. La Dinámica</h4>
+                                <p className="text-zinc-400 text-xs leading-relaxed">Predice de manera sencilla el resultado de todos los partidos semanales: <span className="text-white">Local, Empate o Visita</span>.</p>
+                            </div>
+                        </div>
 
-                    <div className="space-y-3">
-                        <h4 className="font-bold text-white uppercase tracking-wide text-xs">Criterio de Desempate</h4>
-                        <p>
-                            En caso de empate en puntos, se utilizará el <strong className="text-white">Total de Goles</strong> pronosticado al inicio de la quiniela.
-                            Ganará quien más se acerque al número exacto de goles anotados en todos los partidos de la jornada conjunta, ya sea por arriba o por abajo.
-                        </p>
+                        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 flex flex-col gap-3 group hover:border-blue-500/30 transition-colors">
+                            <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center">
+                                <ShieldCheck className="w-5 h-5 text-blue-500" />
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-white uppercase tracking-wide text-xs mb-2">2. Puntuación</h4>
+                                <p className="text-zinc-400 text-xs leading-relaxed">Sumarás <strong className="text-blue-400">1 punto</strong> exacto por cada predicción correcta. Quien logre sumar más puntos en total, se lleva la bolsa.</p>
+                            </div>
+                        </div>
+
+                        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 flex flex-col gap-3 sm:col-span-2 group hover:border-purple-500/30 transition-colors">
+                            <div className="flex items-center gap-3 mb-1">
+                                <div className="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center shrink-0">
+                                    <Calculator className="w-5 h-5 text-purple-500" />
+                                </div>
+                                <h4 className="font-bold text-white uppercase tracking-wide text-xs">3. Criterio de Desempate (Goles)</h4>
+                            </div>
+                            <p className="text-zinc-400 text-xs leading-relaxed">
+                                Si hay un empate en primer lugar, se decidirá utilizando el <strong className="text-white">Total de Goles de toda la Jornada</strong>. Quien se haya acercado más al número total de goles reales anotados en conjunto (no importa si se pasó o le faltaron) será el gran ganador.
+                            </p>
+                        </div>
                     </div>
                 </div>
             </Modal>

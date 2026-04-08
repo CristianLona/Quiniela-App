@@ -64,6 +64,7 @@ graph TD
 -   **Real-time Updates** via WebSockets for instant data rendering across clients
 -   **Frontend** developed with React and strongly typed components
 -   **Modern UI Experience**:
+    -   **Premium Dark Mode & Glassmorphism** aesthetics with smooth Tailwind animations
     -   Elegant **Toast Notifications** (Sonner) for feedback
     -   Responsive **Glassmorphism Modals** for confirmations
     -   Fully responsive design (Mobile First)
@@ -76,7 +77,7 @@ graph TD
     -   **Manual Entry**: Register offline participants directly.
     -   **Secure JWT Authentication** for administrative access.
 -   **Sports prediction (quiniela) system**:
-    -   User-friendly filling flow
+    -   User-friendly filling flow with **Strict Firebase Auth ID Tracking**
     -   Live countdowns and validation
     -   Interactive Scoreboard with auto-scaling tables
 
@@ -129,7 +130,7 @@ Follow these steps to run the project locally.
     - Add your Firebase service account credentials (`serviceAccountKey.json`) inside the backend root or set up Google Application Default Credentials.
     - Create a `.env` file in the `backend` directory with:
       ```env
-      VITE_ADMIN_PASSWORD=your_secure_password
+      ADMIN_EMAIL=tu_correo_de_administrador@gmail.com
       ```
 
 4.  Start the development server:
@@ -158,7 +159,7 @@ Follow these steps to run the project locally.
     - Create a `.env` file in the `frontend` directory with:
       ```env
       VITE_API_URL=http://localhost:3000/api
-      VITE_ADMIN_PASSWORD=your_secure_password
+      VITE_ADMIN_EMAIL=tu_correo_de_administrador@gmail.com
       ```
 
 4.  Start the development server:

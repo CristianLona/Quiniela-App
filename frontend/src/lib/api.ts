@@ -3,16 +3,13 @@ import type { Week, WeekDraft, ParticipantEntry, PickSelection, MatchOutcome } f
 const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '/api' : `http://${window.location.hostname}:3000/api`);
 export const SOCKET_URL = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace(/\/api$/, '') : (import.meta.env.PROD ? '/' : `http://${window.location.hostname}:3000`);
 
-let authToken: string | null = null;
+import { auth } from './firebase';
+
+// Legacy compatibility
 export const setAuthToken = (token: string | null) => {
-    authToken = token;
     if (token) localStorage.setItem('adminToken', token);
     else localStorage.removeItem('adminToken');
 };
-
-// Intenta recuperar al inicio
-const savedToken = localStorage.getItem('adminToken');
-if (savedToken) authToken = savedToken;
 
 async function fetchJson<T>(endpoint: string, options?: RequestInit): Promise<T> {
     const headers: Record<string, string> = {
@@ -20,8 +17,16 @@ async function fetchJson<T>(endpoint: string, options?: RequestInit): Promise<T>
         ...options?.headers as Record<string, string>,
     };
 
-    if (authToken) {
-        headers['Authorization'] = `Bearer ${authToken}`;
+    try {
+        const firebaseToken = auth.currentUser ? await auth.currentUser.getIdToken() : null;
+        const savedToken = localStorage.getItem('adminToken');
+        const finalToken = firebaseToken || savedToken;
+
+        if (finalToken) {
+            headers['Authorization'] = `Bearer ${finalToken}`;
+        }
+    } catch (error) {
+        console.error("Error getting Firebase token", error);
     }
 
     const res = await fetch(`${API_URL}${endpoint}`, {

@@ -49,6 +49,7 @@ export interface ParticipantEntry {
     totalGoalsPrediction: number;
     picks: PickSelection[];
     paymentStatus: PaymentStatus;
+    userEmail?: string;
 
     score?: number; 
     hits?: string[]; 

@@ -16,6 +16,7 @@ export class PicksService {
         participantName: string;
         totalGoalsPrediction: number;
         picks: PickSelection[];
+        userEmail?: string;
     }, isAdmin = false): Promise<ParticipantEntry> {
         const week = await this.weeksService.findOne(data.weekId);
         if (!week) throw new NotFoundException('Week not found');
@@ -49,6 +50,7 @@ export class PicksService {
             submittedAt: Date.now(),
             score: 0,
             hits: [],
+            ...(data.userEmail && { userEmail: data.userEmail })
         };
 
         await this.firebaseService.getDb().collection('picks').doc(id).set(newEntry);

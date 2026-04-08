@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import type { Match, ParticipantEntry } from '../../types';
 import { cn } from '../../lib/utils';
-import { Trophy, Loader2, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { Trophy, Loader2, ArrowLeft, CheckCircle2, User } from 'lucide-react';
 import { toast } from 'sonner';
 import { api, SOCKET_URL } from '../../lib/api';
 import { getShortName } from '../../lib/teams';
@@ -171,9 +171,9 @@ export default function Scoreboard() {
                 </div>
 
                 {/* Dashboard Ribbon */}
-                <div className="w-full max-w-[1400px] grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 md:mb-8 ">
+                <div className="w-full max-w-[1400px] grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 md:mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
                     {/* 1. Week Info */}
-                    <div className="pool-card p-6 bg-linear-to-br from-zinc-900 to-black relative overflow-hidden flex flex-col justify-center">
+                    <div className="pool-card p-6 bg-linear-to-br from-zinc-900 to-black relative overflow-hidden flex flex-col justify-center shadow-lg border border-white/5">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-[#22c55e]/10 rounded-full blur-3xl -mr-10 -mt-10"></div>
                         <div className="relative z-10">
                             <p className="text-neutral-500 text-xs font-bold uppercase mb-1">Jornada Actual</p>
@@ -183,33 +183,33 @@ export default function Scoreboard() {
                     </div>
 
                     {/* 2. Prize Display */}
-                    <div className="pool-card p-6 bg-linear-to-br from-zinc-900 to-black relative overflow-hidden flex flex-col justify-center ">
+                    <div className="pool-card p-6 bg-linear-to-br from-zinc-900 to-black relative overflow-hidden flex flex-col justify-center shadow-lg border border-white/5 group">
                         <div className="absolute inset-0 bg-[#22c55e]/5 group-hover:bg-[#22c55e]/10 transition-colors"></div>
                         <p className="text-[10px] text-neutral-500 font-bold uppercase mb-1 tracking-widest relative z-10">Premio a Repartir</p>
-                        <div className="text-4xl md:text-5xl font-black text-[#22c55e] drop-shadow-[0_0_15px_rgba(34,197,94,0.4)] relative z-10">
+                        <div className="text-4xl md:text-5xl font-black text-[#22c55e] drop-shadow-[0_0_15px_rgba(34,197,94,0.4)] relative z-10 transition-transform group-hover:scale-105 duration-300 transform origin-left">
                             ${prizePot.toLocaleString()}
                         </div>
-                        <p className="text-[10px] text-neutral-600 font-bold uppercase mt-2 relative z-10">
-                            ({participants.length} Participantes)
+                        <p className="text-[10px] text-neutral-600 font-bold uppercase mt-2 relative z-10 flex items-center gap-2">
+                            <User className="w-3 h-3" /> {participants.length} Participantes
                         </p>
                     </div>
 
                     {/* 3. Total Goals */}
-                    <div className="pool-card p-4 md:p-6 bg-black/40 border border-zinc-800 flex items-center justify-between relative overflow-hidden backdrop-blur-sm bg-linear-to-br from-zinc-900 to-black">
+                    <div className="pool-card p-4 md:p-6 bg-black/40 border border-zinc-800 flex items-center justify-between relative overflow-hidden backdrop-blur-sm bg-linear-to-br from-zinc-900 to-black shadow-lg">
                         <div className="absolute -left-6 -bottom-6 w-24 h-24 bg-white/5 rounded-full blur-xl"></div>
                         <div className="relative z-10">
                             <p className="text-xs text-neutral-500 font-bold uppercase mb-1">Total Goles (Real)</p>
-                            <div className="text-3xl font-black text-white">{totalGoals}</div>
+                            <div className="text-3xl font-black text-white drop-shadow-md">{totalGoals}</div>
                         </div>
-                        <div className="p-3 bg-white/5 rounded-full">
+                        <div className="p-3 bg-white/5 rounded-full border border-white/5 shadow-inner">
                             <Trophy className="w-6 h-6 text-neutral-400" />
                         </div>
                     </div>
                 </div>
 
                 {/* Main Scoreboard Table - Full Width Auto-Scale */}
-                <div className="w-full max-w-[1400px]">
-                    <div className="pool-card bg-[#18181b] border border-zinc-800 backdrop-blur-sm overflow-hidden">
+                <div className="w-full max-w-[1400px] animate-in fade-in zoom-in-95 duration-700 delay-150 fill-mode-both">
+                    <div className="pool-card bg-[#18181b]/80 border border-white/10 backdrop-blur-xl overflow-hidden shadow-2xl">
                         <div
                             ref={setContainer}
                             className="w-full overflow-hidden relative"

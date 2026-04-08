@@ -8,10 +8,15 @@ import { cn } from "../../lib/utils";
 import { api } from "../../lib/api";
 import { getShortName } from "../../lib/teams";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 export default function FillQuiniela() {
     const navigate = useNavigate();
-    const [name, setName] = useState("");
+    const { user } = useAuth();
+    
+    // Extraemos solo el primer nombre
+    const defaultName = user?.displayName ? user.displayName.split(' ')[0] : (user?.email?.split('@')[0] || "");
+    const [name, setName] = useState(defaultName);
     const [goals, setGoals] = useState<string>("");
     const [picks, setPicks] = useState<Record<string, MatchOutcome>>({});
     const [loading, setLoading] = useState(false);
@@ -25,6 +30,13 @@ export default function FillQuiniela() {
     const [closeDate, setCloseDate] = useState<number | string>(0);
     const [timeLeft, setTimeLeft] = useState("");
     const [teamsPositionsMap, setTeamsPositionsMap] = useState<Record<string, number>>({});
+
+    useEffect(() => {
+        if (user && !name) {
+            const firstName = user.displayName ? user.displayName.split(' ')[0] : (user.email?.split('@')[0] || "");
+            setName(firstName);
+        }
+    }, [user]);
 
     useEffect(() => {
         api.weeks.getAll()

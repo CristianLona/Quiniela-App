@@ -29,7 +29,7 @@ export function Modal({ isOpen, onClose, title, children, className }: ModalProp
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
             <div
                 className={cn(
-                    "bg-[#1e293b] w-full max-w-md rounded-2xl border border-white/10 shadow-2xl relative animate-in zoom-in-95 duration-200",
+                    "w-full max-w-md rounded-2xl border border-white/10 shadow-2xl relative animate-in zoom-in-95 duration-200",
                     className
                 )}
             >
