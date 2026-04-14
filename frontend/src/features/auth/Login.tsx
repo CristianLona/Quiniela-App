@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { signInWithRedirect, getRedirectResult, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth, googleProvider } from '../../lib/firebase';
 import { useAuth } from '../../context/AuthContext';
 import { LogIn, Mail, Trophy, Loader2, ArrowRight, UserPlus, User, Lock as LockIcon } from 'lucide-react';
@@ -16,6 +16,14 @@ const Login: React.FC = () => {
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
 
+    // Capturar posibles errores del redirect al regresar a la app
+    useEffect(() => {
+        getRedirectResult(auth).catch((error) => {
+            console.error("Redirect Error:", error);
+            toast.error('Ocurrió un error al volver de Google');
+        });
+    }, []);
+
     // If already logged in, redirect to home
     if (user) {
         return <Navigate to="/" replace />;
@@ -24,13 +32,11 @@ const Login: React.FC = () => {
     const handleGoogleSignIn = async () => {
         setLoading(true);
         try {
-            await signInWithPopup(auth, googleProvider);
-            toast.success('Sesión iniciada correctamente');
-            navigate('/');
+            // Se usa Redirect en lugar de Popup para saltar bloqueadores
+            await signInWithRedirect(auth, googleProvider);
         } catch (error: any) {
             console.error(error);
-            toast.error('Error al iniciar sesión con Google');
-        } finally {
+            toast.error('Error al redirigir a Google');
             setLoading(false);
         }
     };

@@ -9,6 +9,9 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['Logo.svg'],
+      workbox: {
+        navigateFallbackDenylist: [/^\/__/],
+      },
       manifest: {
         name: 'ProQuiniela App',
         short_name: 'Quiniela',
