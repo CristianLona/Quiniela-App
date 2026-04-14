@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Trophy, ChevronRight, Loader2, Play, Activity, Timer, HelpCircle, LogOut, User, AlertTriangle, ShieldCheck, Target, Calculator } from 'lucide-react';
+import { Trophy, ChevronRight, Loader2, Play, Activity, Timer, HelpCircle, LogOut, User, AlertTriangle, ShieldCheck, Target, Calculator, Banknote, Bell } from 'lucide-react';
 import { api } from '../../lib/api';
 import StandingsTable from './StandingsTable';
 import { Modal } from '../../components/ui/Modal';
+import PaymentInfoModal from '../../components/PaymentInfoModal';
 import { useAuth } from '../../context/AuthContext';
+import { requestNotificationPermission } from '../../lib/notifications';
+import { toast } from 'sonner';
 
 export default function Home() {
     const navigate = useNavigate();
@@ -18,6 +21,22 @@ export default function Home() {
     const [timeLeft, setTimeLeft] = useState("");
     const [activeLeague, setActiveLeague] = useState<string>("liga-mx");
     const [showRules, setShowRules] = useState(false);
+    const [showPayment, setShowPayment] = useState(false);
+
+    const handleEnableNotifications = async () => {
+        if ('Notification' in window && Notification.permission !== 'granted') {
+            const token = await requestNotificationPermission();
+            if (token) {
+                toast.success('Notificaciones activadas', { description: 'Te avisaremos cuando haya nuevas jornadas.' });
+            } else {
+                toast.error('No se pudo activar', { description: 'Verifica los permisos en el candado de tu navegador.' });
+            }
+        } else if ('Notification' in window && Notification.permission === 'granted') {
+            toast.info('Ya tienes las notificaciones activas');
+            // Try to refetch token silently just to be sure it's in backend
+            requestNotificationPermission();
+        }
+    };
 
     useEffect(() => {
         api.weeks.getAll()
@@ -121,6 +140,21 @@ export default function Home() {
                             <span className="text-[10px] font-bold text-pool-green uppercase tracking-widest hidden sm:block">Admin</span>
                         </button>
                     )}
+                    <button
+                        onClick={() => setShowPayment(true)}
+                        className="flex items-center gap-2 px-4 py-2 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 rounded-full backdrop-blur-md transition-all group"
+                    >
+                        <Banknote className="w-4 h-4 text-amber-400 group-hover:text-amber-300 transition-colors" />
+                        <span className="text-[10px] font-bold text-amber-400 group-hover:text-amber-300 uppercase tracking-widest hidden sm:block">Pagar</span>
+                    </button>
+                    <button
+                        onClick={handleEnableNotifications}
+                        className="flex items-center gap-2 px-4 py-2 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 rounded-full backdrop-blur-md transition-all group"
+                        title="Activar o verificar notificaciones"
+                    >
+                        <Bell className="w-4 h-4 text-blue-400 group-hover:text-blue-300 transition-colors" />
+                        <span className="text-[10px] font-bold text-blue-400 group-hover:text-blue-300 uppercase tracking-widest hidden sm:block">Alertas</span>
+                    </button>
                     <button
                         onClick={() => setShowRules(true)}
                         className="flex items-center gap-2 px-4 py-2 bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 rounded-full backdrop-blur-md transition-all group"
@@ -343,6 +377,8 @@ export default function Home() {
                     </div>
                 </div>
             </Modal>
+
+            <PaymentInfoModal isOpen={showPayment} onClose={() => setShowPayment(false)} />
         </div>
     );
 }

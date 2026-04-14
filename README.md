@@ -34,10 +34,10 @@ This is a **personal project** built to strengthen my software engineering skill
 -   **Language:** TypeScript
 -   **Styling:** TailwindCSS 4
 -   **UI Components:** Custom Modals, Lucide React Icons
--   **Notifications:** Sonner (Toasts)
+-   **Notifications:** Sonner (Toasts) + Firebase Cloud Messaging (Web Push)
 -   **Routing:** React Router DOM 7
 -   **Real-time:** Socket.io-client
--   **Auth:** Firebase Authentication (Google Sign-In via popup)
+-   **Auth:** Firebase Authentication (Google Sign-In)
 
 ### Backend
 
@@ -91,6 +91,7 @@ The application implements **defense in depth** with multiple security layers:
 | **Rate Limiting** | `@nestjs/throttler` | 60 req/min global, 5 login attempts per 5 minutes |
 | **Data Filtering** | Controller-level | Sensitive fields (`userEmail`) stripped from API responses |
 | **Input Validation** | Service-level | Name length limits, field sanitization on updates |
+| **Payment Privacy**| Secure Modal Component | Bank details (CLABE) obfuscated and gated behind authentication |
 
 > **Note:** `VITE_ADMIN_EMAIL` in the frontend `.env` is intentionally public — it only controls UI visibility of the admin button. Actual admin authorization is enforced server-side by the `AdminGuard`.
 
@@ -112,11 +113,13 @@ The application implements **defense in depth** with multiple security layers:
 
 -   **RESTful API** built with NestJS and TypeScript
 -   **Real-time Updates** via authenticated WebSockets for instant scoreboard rendering
--   **Premium Dark UI Experience**:
-    -   Glassmorphism aesthetics with smooth Tailwind animations
+-   **Balatro-Style UI / Premium Dark Experience**:
+    -   Vibrant, high-contrast visual style with chunky borders and custom background patterns
+    -   "Juicy" animations (squash & stretch, bouncy interactions, dynamic hover states)
     -   Toast notifications (Sonner) for user feedback
     -   Fully responsive design (Mobile First)
--   **Firebase Authentication** (Google Sign-In) for user tracking
+-   **Web Push Notifications**: Firebase Cloud Messaging auto-triggers alerts for all registered devices when an admin opens a new week.
+-   **Firebase Authentication** (Google Sign-In) for user tracking and securing sensitive data (like the payment modal).
 -   **Automated Match Scraping** from ESPN (Liga MX, Champions League, Premier League)
 -   **Admin panel** for comprehensive management:
     -   Match & Score Management with real-time updates
@@ -235,7 +238,14 @@ quiniela-app/
     VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
     VITE_FIREBASE_APP_ID=your_app_id
     VITE_FIREBASE_MEASUREMENT_ID=your_measurement_id
+    VITE_FIREBASE_VAPID_KEY=your_vapid_key_for_fcm
+    
     VITE_ADMIN_EMAIL=your_admin_email@gmail.com
+    
+    # Secure Payment Details
+    VITE_PAYMENT_BENEFICIARY="John Doe"
+    VITE_PAYMENT_BANK="Bank Name"
+    VITE_PAYMENT_CLABE="012345678901234567"
     ```
 
 4.  Start the development server:

@@ -8,6 +8,7 @@ import { PicksModule } from './modules/picks/picks.module';
 import { StandingsModule } from './standings/standings.module';
 import { ScraperModule } from './scraper/scraper.module';
 import { EventsModule } from './events/events.module';
+import { UsersModule } from './modules/users/users.module';
 
 @Module({
     imports: [
@@ -31,6 +32,7 @@ import { EventsModule } from './events/events.module';
         StandingsModule,
         ScraperModule,
         EventsModule,
+        UsersModule,
     ],
     controllers: [],
     providers: [],

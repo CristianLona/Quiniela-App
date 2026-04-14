@@ -4,6 +4,7 @@ import { parseLineToMatchDraft } from '../../common/utils/parser';
 import * as crypto from 'crypto';
 import { FirebaseService } from '../../common/firebase/firebase.service';
 import { EventsGateway } from '../../events/events.gateway';
+import { UsersService } from '../users/users.service';
 
 interface CacheEntry<T> {
     data: T;
@@ -19,7 +20,8 @@ export class WeeksService {
 
     constructor(
         private readonly firebaseService: FirebaseService,
-        private readonly eventsGateway: EventsGateway
+        private readonly eventsGateway: EventsGateway,
+        private readonly usersService: UsersService
     ) { }
 
     private invalidateCache() {
@@ -66,6 +68,14 @@ export class WeeksService {
 
         await this.firebaseService.getDb().collection('weeks').doc(id).set(newWeek);
         this.invalidateCache();
+        
+        // Broadcast push notification to everyone in the background
+        this.usersService.broadcastNotification(
+            '¡Nueva Jornada Abierta!',
+            `Se ha abierto la quiniela para ${name}. ¡Llena tus pronósticos antes del cierre!`,
+            { url: '/fill' }
+        ).catch(e => this.logger.error("Error sending push notifications", e));
+
         return newWeek;
     }
 

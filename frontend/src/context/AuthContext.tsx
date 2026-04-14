@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { onAuthStateChanged, signOut as firebaseSignOut, type User } from 'firebase/auth';
 import { auth } from '../lib/firebase';
+import { onForegroundMessage } from '../lib/notifications';
 
 interface AuthContextType {
   user: User | null;
@@ -28,6 +29,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setLoading(false);
+
+      if (currentUser) {
+        // Only initialize foreground messages, do not auto-request permission
+        try {
+            onForegroundMessage();
+        } catch (e) {
+            console.error(e)
+        }
+      }
     });
 
     return () => unsubscribe();

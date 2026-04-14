@@ -13,9 +13,9 @@ const firebaseConfig = {
 export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 
-// Es un buen lugar para asegurar que la sesión sobrevive a recargas
 setPersistence(auth, browserLocalPersistence)
   .catch((error) => console.error("Error setting persistence", error));
 
 export const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: 'select_account' });
+

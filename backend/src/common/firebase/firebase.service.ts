@@ -53,4 +53,8 @@ export class FirebaseService implements OnModuleInit {
         }
         return this.db;
     }
+
+    getMessaging() {
+        return admin.messaging();
+    }
 }

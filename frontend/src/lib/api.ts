@@ -105,5 +105,10 @@ export const api = {
 
         getStandings: (league: string = 'liga-mx') =>
             fetchJson<any>(`/standings?league=${league}`),
+    },
+
+    users: {
+        saveFcmToken: (token: string) => 
+            fetchJson<{ success: boolean }>('/users/fcm-token', { method: 'POST', body: JSON.stringify({ token }) }),
     }
 };
