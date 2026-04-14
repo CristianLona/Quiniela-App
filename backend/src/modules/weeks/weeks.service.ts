@@ -1,16 +1,30 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { Week, WeekDraft } from '../../common/types';
 import { parseLineToMatchDraft } from '../../common/utils/parser';
 import * as crypto from 'crypto';
 import { FirebaseService } from '../../common/firebase/firebase.service';
 import { EventsGateway } from '../../events/events.gateway';
 
+interface CacheEntry<T> {
+    data: T;
+    expiresAt: number;
+}
+
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutos
+
 @Injectable()
 export class WeeksService {
+    private readonly logger = new Logger(WeeksService.name);
+    private weeksCache: CacheEntry<Week[]> | null = null;
+
     constructor(
         private readonly firebaseService: FirebaseService,
         private readonly eventsGateway: EventsGateway
     ) { }
+
+    private invalidateCache() {
+        this.weeksCache = null;
+    }
 
     parseWeekText(text: string): WeekDraft {
         if (!text) throw new BadRequestException('Text input required');
@@ -51,12 +65,40 @@ export class WeeksService {
         };
 
         await this.firebaseService.getDb().collection('weeks').doc(id).set(newWeek);
+        this.invalidateCache();
         return newWeek;
     }
 
-    async findAll(): Promise<Week[]> {
-        const snapshot = await this.firebaseService.getDb().collection('weeks').get();
-        return snapshot.docs.map(doc => doc.data() as Week);
+    async findAll(limit?: number, offset?: number): Promise<Week[]> {
+        // Revisar caché
+        if (this.weeksCache && Date.now() < this.weeksCache.expiresAt) {
+            this.logger.debug('Weeks cache HIT');
+            const allWeeks = this.weeksCache.data;
+            if (limit !== undefined && offset !== undefined) {
+                return allWeeks.slice(offset, offset + limit);
+            }
+            return allWeeks;
+        }
+
+        this.logger.debug('Weeks cache MISS — fetching from Firestore');
+        const snapshot = await this.firebaseService.getDb()
+            .collection('weeks')
+            .get();
+
+        const allWeeks = snapshot.docs
+            .map(doc => doc.data() as Week)
+            .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+        // Guardar en caché
+        this.weeksCache = {
+            data: allWeeks,
+            expiresAt: Date.now() + CACHE_TTL_MS,
+        };
+
+        if (limit !== undefined && offset !== undefined) {
+            return allWeeks.slice(offset, offset + limit);
+        }
+        return allWeeks;
     }
 
     async findOne(id: string): Promise<Week | undefined> {
@@ -65,7 +107,7 @@ export class WeeksService {
     }
 
     async updateMatch(weekId: string, matchId: string, homeScore: number, awayScore: number, status?: string): Promise<Week> {
-        return this.firebaseService.getDb().runTransaction(async (t) => {
+        const result = await this.firebaseService.getDb().runTransaction(async (t) => {
             const ref = this.firebaseService.getDb().collection('weeks').doc(weekId);
             const doc = await t.get(ref);
 
@@ -99,10 +141,13 @@ export class WeeksService {
 
             return week;
         });
+
+        this.invalidateCache();
+        return result;
     }
 
     async toggleVisibility(id: string, hide: boolean): Promise<Week> {
-        return this.firebaseService.getDb().runTransaction(async (t) => {
+        const result = await this.firebaseService.getDb().runTransaction(async (t) => {
             const ref = this.firebaseService.getDb().collection('weeks').doc(id);
             const doc = await t.get(ref);
 
@@ -114,14 +159,19 @@ export class WeeksService {
             t.set(ref, week);
             return week;
         });
+
+        this.invalidateCache();
+        return result;
     }
 
     async updateWeek(id: string, data: Partial<Week>): Promise<Week> {
         await this.firebaseService.getDb().collection('weeks').doc(id).set(data, { merge: true });
+        this.invalidateCache();
         return this.findOne(id);
     }
+
     async updateMatches(weekId: string, matches: { matchId: string; homeScore: number; awayScore: number; status?: string }[]): Promise<Week> {
-        return this.firebaseService.getDb().runTransaction(async (t) => {
+        const result = await this.firebaseService.getDb().runTransaction(async (t) => {
             const ref = this.firebaseService.getDb().collection('weeks').doc(weekId);
             const doc = await t.get(ref);
 
@@ -160,10 +210,15 @@ export class WeeksService {
 
             return week;
         });
+
+        this.invalidateCache();
+        return result;
     }
 
     async deleteWeek(id: string): Promise<{ success: boolean }> {
         await this.firebaseService.getDb().collection('weeks').doc(id).delete();
+        this.invalidateCache();
         return { success: true };
     }
 }
+

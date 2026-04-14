@@ -1,12 +1,28 @@
-import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import { Injectable, CanActivate, ExecutionContext, UnauthorizedException, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
-    constructor(private jwtService: JwtService) { }
+    private readonly logger = new Logger(JwtAuthGuard.name);
+    private readonly jwtSecret: string;
+
+    constructor(
+        private jwtService: JwtService,
+        private configService: ConfigService,
+    ) {
+        this.jwtSecret = this.configService.get<string>('JWT_SECRET');
+        if (!this.jwtSecret) {
+            this.logger.error('JWT_SECRET no está configurado. El guard JWT no funcionará.');
+        }
+    }
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
+        if (!this.jwtSecret) {
+            throw new UnauthorizedException('Configuración de seguridad incompleta en el servidor');
+        }
+
         const request = context.switchToHttp().getRequest();
         const token = this.extractTokenFromHeader(request);
         if (!token) {
@@ -14,9 +30,8 @@ export class JwtAuthGuard implements CanActivate {
         }
         try {
             const payload = await this.jwtService.verifyAsync(token, {
-                secret: process.env.JWT_SECRET || 'fallback-secret-gaston-1234'
+                secret: this.jwtSecret,
             });
-            // Assign payload to request object
             request['user'] = payload;
         } catch {
             throw new UnauthorizedException('Token inválido o expirado');

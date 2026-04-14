@@ -46,6 +46,7 @@ export interface ParticipantEntry {
     id: string;     
     weekId: string;
     participantName: string;
+    participantNameNormalized?: string;
     totalGoalsPrediction: number;
     picks: PickSelection[];
     paymentStatus: PaymentStatus;

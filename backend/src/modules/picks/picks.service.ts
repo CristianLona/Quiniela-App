@@ -18,6 +18,14 @@ export class PicksService {
         picks: PickSelection[];
         userEmail?: string;
     }, isAdmin = false): Promise<ParticipantEntry> {
+        // Validación de input
+        if (!data.participantName || data.participantName.trim().length < 2) {
+            throw new BadRequestException('El nombre debe tener al menos 2 caracteres.');
+        }
+        if (data.participantName.length > 50) {
+            throw new BadRequestException('El nombre no puede tener más de 50 caracteres.');
+        }
+
         const week = await this.weeksService.findOne(data.weekId);
         if (!week) throw new NotFoundException('Week not found');
 
@@ -27,15 +35,15 @@ export class PicksService {
             }
         }
 
+        // Buscar duplicados de forma optimizada con campo normalizado
+        const normalizedName = data.participantName.trim().toLowerCase();
         const snapshot = await this.firebaseService.getDb().collection('picks')
             .where('weekId', '==', data.weekId)
+            .where('participantNameNormalized', '==', normalizedName)
+            .limit(1)
             .get();
 
-        const existing = snapshot.docs.find(
-            doc => (doc.data() as ParticipantEntry).participantName.toLowerCase() === data.participantName.toLowerCase()
-        );
-
-        if (existing) {
+        if (!snapshot.empty) {
             throw new BadRequestException(`Name "${data.participantName}" is already taken for this week. Please use a variation.`);
         }
 
@@ -43,7 +51,8 @@ export class PicksService {
         const newEntry: ParticipantEntry = {
             id,
             weekId: data.weekId,
-            participantName: data.participantName,
+            participantName: data.participantName.trim(),
+            participantNameNormalized: normalizedName,
             totalGoalsPrediction: data.totalGoalsPrediction,
             picks: data.picks,
             paymentStatus: isAdmin ? 'PAID' : 'PENDING',
@@ -58,7 +67,10 @@ export class PicksService {
     }
 
     async findAllByWeek(weekId: string): Promise<ParticipantEntry[]> {
-        const snapshot = await this.firebaseService.getDb().collection('picks').where('weekId', '==', weekId).get();
+        const snapshot = await this.firebaseService.getDb()
+            .collection('picks')
+            .where('weekId', '==', weekId)
+            .get();
         return snapshot.docs.map(doc => doc.data() as ParticipantEntry);
     }
 
@@ -80,12 +92,20 @@ export class PicksService {
         const doc = await docRef.get();
         if (!doc.exists) throw new NotFoundException('Entry not found');
 
-        await docRef.update(updateData);
-        return { ...(doc.data() as ParticipantEntry), ...updateData };
+        // Sanitizar: no permitir actualizar campos sensibles directamente
+        const { id: _id, weekId: _weekId, userEmail: _email, ...safeUpdate } = updateData;
+        
+        await docRef.update(safeUpdate);
+        return { ...(doc.data() as ParticipantEntry), ...safeUpdate };
     }
 
     async deletePick(id: string): Promise<{ success: boolean }> {
-        await this.firebaseService.getDb().collection('picks').doc(id).delete();
+        const docRef = this.firebaseService.getDb().collection('picks').doc(id);
+        const doc = await docRef.get();
+        if (!doc.exists) throw new NotFoundException('Entry not found');
+
+        await docRef.delete();
         return { success: true };
     }
 }
+

@@ -21,8 +21,10 @@ export class PicksController {
     }
 
     @Get('week/:weekId')
-    getByWeek(@Param('weekId') weekId: string) {
-        return this.picksService.findAllByWeek(weekId);
+    async getByWeek(@Param('weekId') weekId: string) {
+        const picks = await this.picksService.findAllByWeek(weekId);
+        // Eliminar emails y campo normalizado de la respuesta — datos sensibles/internos
+        return picks.map(({ userEmail, participantNameNormalized, ...rest }) => rest);
     }
 
     @Patch(':id/payment')
@@ -43,3 +45,4 @@ export class PicksController {
         return this.picksService.deletePick(id);
     }
 }
+

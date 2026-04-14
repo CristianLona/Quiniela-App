@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { AuthModule } from './modules/auth/auth.module';
 import { FirebaseModule } from './common/firebase/firebase.module';
 import { WeeksModule } from './modules/weeks/weeks.module';
@@ -14,6 +15,15 @@ import { EventsModule } from './events/events.module';
             isGlobal: true,
             envFilePath: ['../frontend/.env', '.env'],
         }),
+        ThrottlerModule.forRoot([{
+            name: 'default',
+            ttl: 60000,  
+            limit: 60,   
+        }, {
+            name: 'login',
+            ttl: 300000, 
+            limit: 5,    
+        }]),
         AuthModule,
         FirebaseModule,
         WeeksModule,
@@ -26,3 +36,4 @@ import { EventsModule } from './events/events.module';
     providers: [],
 })
 export class AppModule { }
+

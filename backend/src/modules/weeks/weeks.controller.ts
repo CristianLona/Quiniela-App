@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Patch, Header, Delete, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Patch, Header, Delete, UseGuards, Query } from '@nestjs/common';
 import { WeeksService } from './weeks.service';
 import { WeekDraft } from '../../common/types';
 import { AdminGuard } from '../auth/admin.guard';
@@ -21,8 +21,10 @@ export class WeeksController {
 
     @Get()
     @Header('Cache-Control', 'public, max-age=300, s-maxage=300')
-    findAll() {
-        return this.weeksService.findAll();
+    findAll(@Query('limit') limit?: string, @Query('offset') offset?: string) {
+        const l = limit ? parseInt(limit, 10) : undefined;
+        const o = offset ? parseInt(offset, 10) : undefined;
+        return this.weeksService.findAll(l, o);
     }
 
     @Get(':id')

@@ -7,10 +7,17 @@ import {
 } from '@nestjs/websockets';
 import { Logger } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
+import * as admin from 'firebase-admin';
 
 @WebSocketGateway({
     cors: {
-        origin: '*',
+        origin: [
+            'https://quinielaapp-d8fed.firebaseapp.com',
+            'https://quinielaapp-d8fed.web.app',
+            'http://localhost:5173',
+            'http://localhost:4173',
+        ],
+        credentials: true,
     },
 })
 export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
@@ -21,8 +28,22 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
         this.logger.log('WebSocket Gateway initialized');
     }
 
-    handleConnection(client: Socket, ...args: any[]) {
-        this.logger.log(`Client connected: ${client.id}`);
+    async handleConnection(client: Socket) {
+        try {
+            const token = client.handshake.auth?.token || client.handshake.headers?.authorization?.split(' ')[1];
+            if (!token) {
+                this.logger.warn(`Client ${client.id} rejected: no token`);
+                client.disconnect(true);
+                return;
+            }
+
+            const decoded = await admin.auth().verifyIdToken(token);
+            (client as any).user = decoded;
+            this.logger.log(`Client connected: ${client.id} (${decoded.email})`);
+        } catch (error) {
+            this.logger.warn(`Client ${client.id} rejected: invalid token`);
+            client.disconnect(true);
+        }
     }
 
     handleDisconnect(client: Socket) {
@@ -33,3 +54,4 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
         this.server.emit('match_updated', { weekId, matchId, ...payload });
     }
 }
+

@@ -7,6 +7,11 @@ import { onRequest } from 'firebase-functions/v2/https';
 
 const server = express();
 
+const ALLOWED_ORIGINS = [
+    'https://quinielaapp-d8fed.firebaseapp.com',
+    'https://quinielaapp-d8fed.web.app',
+];
+
 const createNestServer = async (expressInstance) => {
     const app = await NestFactory.create(
         AppModule,
@@ -14,8 +19,16 @@ const createNestServer = async (expressInstance) => {
     );
 
     app.enableCors({
-        origin: '*',
+        origin: (origin, callback) => {
+            // Permitir requests sin origin (ej. mobile apps, curl) o de orígenes permitidos
+            if (!origin || ALLOWED_ORIGINS.includes(origin)) {
+                callback(null, true);
+            } else {
+                callback(new Error('Bloqueado por CORS'));
+            }
+        },
         methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+        credentials: true,
     });
 
     app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true }));
@@ -36,3 +49,4 @@ export const api = onRequest({ maxInstances: 10 }, async (req, res) => {
     }
     server(req, res);
 });
+
