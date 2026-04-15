@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Trophy, ChevronRight, Loader2, Play, Activity, Timer, HelpCircle, LogOut, User, AlertTriangle, ShieldCheck, Target, Calculator, Banknote, Bell } from 'lucide-react';
+import { Trophy, ChevronRight, Loader2, Play, Activity, Timer, HelpCircle, LogOut, User, AlertTriangle, ShieldCheck, Target, Calculator, Banknote, Bell, Shield } from 'lucide-react';
 import { api } from '../../lib/api';
 import StandingsTable from './StandingsTable';
 import { Modal } from '../../components/ui/Modal';
@@ -14,7 +14,7 @@ export default function Home() {
     const { user, signOut } = useAuth();
     const adminEmail = import.meta.env.VITE_ADMIN_EMAIL || '';
     const isAdmin = adminEmail && user?.email?.toLowerCase() === adminEmail.toLowerCase();
-    
+
     const [weekName, setWeekName] = useState<string>("Cargando...");
     const [loading, setLoading] = useState(true);
     const [closeDate, setCloseDate] = useState<number | string | null>(null);
@@ -100,229 +100,251 @@ export default function Home() {
     );
 
     return (
-        <div className="min-h-screen bg-[#09090b] font-sans relative flex flex-col items-center py-6 sm:py-12 md:py-24">
+        <div className="min-h-screen bg-[#09090b] font-sans relative overflow-x-hidden">
 
             {/* Background Texture - Dot Pattern */}
             <div className="absolute inset-0 z-0 opacity-20 pointer-events-none"
                 style={{ backgroundImage: 'radial-gradient(#3f3f46 1px, transparent 1px)', backgroundSize: '32px 32px' }}>
             </div>
 
-            {/* Top Bar (User Profile + Rules) */}
-            <div className="absolute top-4 w-full px-4 md:top-8 md:px-8 z-50 flex items-center justify-between">
-                {/* User Profile */}
-                <div className="flex items-center gap-3 bg-zinc-900/80 border border-zinc-800 rounded-full px-3 py-1.5 backdrop-blur-md">
-                    {user?.photoURL ? (
-                        <img src={user.photoURL} alt="User" className="w-6 h-6 rounded-full" />
-                    ) : (
-                        <div className="p-1 bg-zinc-800 rounded-full"><User className="w-4 h-4 text-zinc-400" /></div>
-                    )}
-                    <span className="text-xs font-bold text-zinc-300 max-w-[100px] sm:max-w-xs truncate">
-                        {user?.displayName || user?.email || 'Usuario'}
-                    </span>
-                    <div className="h-4 w-px bg-zinc-800 mx-1"></div>
-                    <button 
-                        onClick={() => signOut()}
-                        className="text-zinc-500 hover:text-red-500 transition-colors"
-                        title="Cerrar sesión"
-                    >
-                        <LogOut className="w-4 h-4" />
-                    </button>
-                </div>
-
-                {/* Right side buttons */}
-                <div className="flex items-center gap-2">
-                    {isAdmin && (
-                        <button
-                            onClick={() => navigate('/admin')}
-                            className="flex items-center gap-2 px-4 py-2 bg-pool-green/10 hover:bg-pool-green/20 border border-pool-green/30 rounded-full backdrop-blur-md transition-all group"
-                        >
-                            <Trophy className="w-4 h-4 text-pool-green" />
-                            <span className="text-[10px] font-bold text-pool-green uppercase tracking-widest hidden sm:block">Admin</span>
-                        </button>
-                    )}
-                    <button
-                        onClick={() => setShowPayment(true)}
-                        className="flex items-center gap-2 px-4 py-2 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 rounded-full backdrop-blur-md transition-all group"
-                    >
-                        <Banknote className="w-4 h-4 text-amber-400 group-hover:text-amber-300 transition-colors" />
-                        <span className="text-[10px] font-bold text-amber-400 group-hover:text-amber-300 uppercase tracking-widest hidden sm:block">Pagar</span>
-                    </button>
-                    <button
-                        onClick={handleEnableNotifications}
-                        className="flex items-center gap-2 px-4 py-2 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 rounded-full backdrop-blur-md transition-all group"
-                        title="Activar o verificar notificaciones"
-                    >
-                        <Bell className="w-4 h-4 text-blue-400 group-hover:text-blue-300 transition-colors" />
-                        <span className="text-[10px] font-bold text-blue-400 group-hover:text-blue-300 uppercase tracking-widest hidden sm:block">Alertas</span>
-                    </button>
-                    <button
-                        onClick={() => setShowRules(true)}
-                        className="flex items-center gap-2 px-4 py-2 bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 rounded-full backdrop-blur-md transition-all group"
-                    >
-                        <HelpCircle className="w-4 h-4 text-zinc-400 group-hover:text-white transition-colors" />
-                        <span className="text-[10px] font-bold text-zinc-400 group-hover:text-white uppercase tracking-widest hidden sm:block">Reglas</span>
-                    </button>
-                </div>
-            </div>
-
-            {/* Gradient Orbs Container - Evita que el blur/translate rompa el scroll */}
+            {/* Gradient Orbs Container */}
             <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
                 <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#22c55e]/10 blur-[120px] rounded-full translate-x-1/3 -translate-y-1/3" />
                 <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-zinc-800/20 blur-[100px] rounded-full -translate-x-1/3 translate-y-1/3" />
             </div>
 
-            {/* Main Responsive Container */}
-            <div className="w-full max-w-6xl p-6 md:p-12 z-10 grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-24 items-center">
+            {/* ════════════════════════════════════════════════════════ */}
+            {/* MOBILE LAYOUT (< md) — vertical scroll, app-like       */}
+            {/* DESKTOP LAYOUT (>= md) — two column hero + actions      */}
+            {/* ════════════════════════════════════════════════════════ */}
 
-                {/* Left Column: Brand & Hero Text */}
-                <div className="flex flex-col items-center md:items-start text-center md:text-left space-y-8 md:space-y-10">
+            <div className="relative z-10 w-full max-w-6xl mx-auto">
 
-                    {/* Header Badge */}
-                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#22c55e]/10 border border-[#22c55e]/20 backdrop-blur-md">
-                        <span className="relative flex h-2 w-2">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#22c55e] opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-[#22c55e]"></span>
-                        </span>
-                        <span className="text-[10px] font-bold text-[#22c55e] uppercase tracking-widest leading-none">
-                            {weekName}
-                        </span>
+                {/* ─── TOP BAR ─── */}
+                <div className="flex items-center justify-between px-5 pt-5 pb-2 md:px-12 md:pt-10">
+                    {/* User Profile - clean and minimal */}
+                    <div className="flex items-center gap-3 p-2.5 rounded-3xl border border-zinc-800">
+                        {user?.photoURL ? (
+                            <img src={user.photoURL} alt="User" className="w-9 h-9 rounded-full ring-2 ring-[#22c55e]/40 shadow-lg shadow-[#22c55e]/10" />
+                        ) : (
+                            <div className="w-9 h-9 bg-gradient-to-br from-zinc-700 to-zinc-800 rounded-full flex items-center justify-center ring-2 ring-zinc-600 shadow-lg">
+                                <User className="w-4 h-4 text-zinc-300" />
+                            </div>
+                        )}
+                        <div className="flex flex-col">
+                            <span className="text-sm font-bold text-white max-w-[140px] sm:max-w-[200px] truncate leading-tight">
+                                {user?.displayName || user?.email || 'Usuario'}
+                            </span>
+                            <span className="text-[10px] text-zinc-500 leading-tight font-medium">Bienvenido de vuelta</span>
+                        </div>
+                        <div className="h-5 w-px bg-zinc-700 ml-1"></div>
+                        <button
+                            onClick={() => signOut()}
+                            className="p-2 -mr-1 rounded-lg hover:bg-transparent transition-all"
+                            title="Cerrar sesión"
+                        >
+                            <LogOut className="w-4 h-4 text-zinc-500 hover:text-red-400 transition-colors" />
+                        </button>
                     </div>
 
-                    {/* Timer Banner - Redesigned */}
-                    {timeLeft && (
-                        <div className="relative group overflow-hidden rounded-2xl bg-zinc-900 border border-zinc-800 p-4 mb-6 shadow-2xl shadow-[#22c55e]/10">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-[#22c55e]/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
+                    {/* Right: Admin (if applicable) */}
 
-                            <div className="relative z-10 flex items-center justify-between gap-4">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-[#22c55e]/10 rounded-lg animate-pulse">
-                                        <Timer className="w-5 h-5 text-[#22c55e]" />
+                    {isAdmin && (
+                        <button
+                            onClick={() => navigate('/admin')}
+                            className="flex items-center gap-1.5 px-3.5 py-2 bg-[#22c55e]/10 hover:bg-[#22c55e]/20 border border-[#22c55e]/20 rounded-xl transition-all active:scale-95"
+                        >
+                            <Shield className="w-3.5 h-3.5 text-[#22c55e]" />
+                            <span className="text-[11px] font-semibold text-[#22c55e]">Admin</span>
+                        </button>
+                    )}
+                </div>
+
+                {/* ─── JORNADA STATUS CARD ─── */}
+                <div className="px-5 pt-3 md:px-12">
+                    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#22c55e]/15 via-zinc-900/90 to-zinc-900 border border-[#22c55e]/20 p-4 shadow-xl shadow-[#22c55e]/5">
+                        {/* Decorative glow */}
+                        <div className="absolute top-0 right-0 w-40 h-40 bg-[#22c55e]/15 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
+                        <div className="absolute bottom-0 left-0 w-24 h-24 bg-[#22c55e]/10 rounded-full blur-2xl -ml-12 -mb-12 pointer-events-none"></div>
+
+                        <div className="relative z-10 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                {/* Animated jornada indicator */}
+                                <div className="p-2.5 bg-[#22c55e]/15 rounded-xl border border-[#22c55e]/20">
+                                    <Timer className="w-5 h-5 text-[#22c55e]" />
+                                </div>
+                                <div>
+                                    <div className="flex items-center gap-2 mb-0.5">
+                                        <span className="relative flex h-2 w-2">
+                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#22c55e] opacity-75"></span>
+                                            <span className="relative inline-flex rounded-full h-2 w-2 bg-[#22c55e]"></span>
+                                        </span>
+                                        <span className="text-[10px] font-bold text-[#22c55e] uppercase tracking-widest">{weekName}</span>
                                     </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">Cierre de Jornada</span>
-                                        <span className="text-xl md:text-2xl font-black text-white font-mono tracking-tight leading-none">
+                                    {timeLeft && (
+                                        <span className="text-xl font-black text-white font-mono tracking-tight leading-none">
                                             {timeLeft}
                                         </span>
-                                    </div>
+                                    )}
                                 </div>
+                            </div>
 
-                                {/* Status Indicator */}
-                                <div className="flex flex-col items-end">
-                                    <span className="flex h-2 w-2 relative">
-                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#fbbf24] opacity-75"></span>
-                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-[#fbbf24]"></span>
+                            {/* Status badge */}
+                            {timeLeft && (
+                                <div className="flex items-center gap-1.5 bg-amber-500/15 border border-amber-500/20 px-2.5 py-1 rounded-full">
+                                    <span className="flex h-1.5 w-1.5 relative">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-amber-400"></span>
                                     </span>
-                                    <span className="text-[8px] font-bold text-[#fbbf24] mt-1 uppercase tracking-widest">En Curso</span>
+                                    <span className="text-[9px] font-bold text-amber-300 uppercase tracking-wider">En Curso</span>
                                 </div>
-                            </div>
-
-                            {/* Progress Bar visual decoration */}
-                            <div className="absolute bottom-0 left-0 h-0.5 bg-zinc-800 w-full">
-                                <div className="h-full bg-gradient-to-r from-[#22c55e] to-zinc-500 w-3/4 animate-pulse"></div>
-                            </div>
+                            )}
                         </div>
-                    )}
 
-                    {/* Main Brand with "OFFICIAL APP" */}
-                    <div>
-                        <div className="flex items-center justify-center md:justify-start gap-4 mb-2">
+                        {/* Progress bar */}
+                        <div className="mt-3 h-1 bg-zinc-800 rounded-full overflow-hidden">
+                            <div className="h-full bg-gradient-to-r from-[#22c55e] to-[#22c55e]/40 rounded-full w-3/4 animate-pulse"></div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* ─── MAIN CONTENT GRID ─── */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-16 px-5 pt-6 md:px-12 md:pt-12 items-center">
+
+                    {/* LEFT COLUMN: Brand + Hero */}
+                    <div className="flex flex-col items-center md:items-start text-center md:text-left space-y-4 md:space-y-8">
+
+                        {/* Brand */}
+                        <div className="flex items-center gap-3 md:gap-4">
                             <div className="relative">
-                                <div className="absolute inset-0 bg-[#22c55e] blur-xl opacity-20 rounded-full"></div>
-                                <Trophy className="w-12 h-12 text-[#22c55e] relative z-10" />
+                                <div className="absolute inset-0 bg-[#22c55e] blur-xl opacity-25 rounded-full"></div>
+                                <Trophy className="w-10 h-10 md:w-14 md:h-14 text-[#22c55e] relative z-10" />
                             </div>
                             <div>
-                                <h1 className="text-4xl md:text-5xl font-black text-white italic tracking-tighter uppercase leading-none">
+                                <h1 className="text-3xl md:text-5xl font-black text-white italic tracking-tighter uppercase leading-none">
                                     Pro<span className="text-[#22c55e]">Quiniela</span>
                                 </h1>
-                                <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.4em] mt-1 ml-1 text-left">
+                                <p className="text-[8px] md:text-[10px] font-black text-zinc-600 uppercase tracking-[0.4em] mt-0.5 text-left">
                                     Official App
                                 </p>
                             </div>
                         </div>
 
-                        <h2 className="text-3xl md:text-5xl font-medium text-white leading-tight mt-8">
-                            Demuestra tu <br />
-                            <span className="font-black italic text-transparent bg-clip-text bg-gradient-to-r from-[#22c55e] to-zinc-200">PASIÓN</span>
-                        </h2>
-
-                        <p className="text-zinc-500 mt-6 text-sm md:text-lg max-w-md mx-auto md:mx-0 leading-relaxed">
-                            Predice los resultados, compite con amigos y gana premios cada semana.
-                        </p>
-                    </div>
-
-                    {/* Footer Info (Desktop Only) */}
-                    <div className="hidden md:block pt-8 border-t border-zinc-800 w-full">
-                        <p className="text-xs text-zinc-600 font-mono">
-                            v1.0.0 • Powered by React & Firebase
-                        </p>
-                    </div>
-                </div>
-
-                {/* Right Column: Actions Grid */}
-                <div className="w-full max-w-md mx-auto md:max-w-none flex flex-col gap-6">
-
-                    {/* Main Card: PLAY */}
-                    <button
-                        onClick={() => navigate('/fill')}
-                        className="group relative w-full h-48 md:h-64 bg-zinc-900 border border-zinc-800 rounded-[2rem] overflow-hidden hover:border-[#22c55e]/50 transition-all duration-300 shadow-2xl hover:shadow-[#22c55e]/20 hover:-translate-y-1"
-                    >
-                        <div className="absolute right-0 top-0 w-48 h-48 bg-[#22c55e]/5 rounded-full blur-3xl group-hover:bg-[#22c55e]/20 transition-colors"></div>
-
-                        <div className="absolute top-6 right-6 bg-zinc-800 p-3 rounded-full group-hover:bg-[#22c55e] group-hover:text-black transition-all">
-                            <ChevronRight className="w-6 h-6" />
-                        </div>
-
-                        <div className="absolute left-8 bottom-8 text-left">
-                            <div className="flex items-center gap-2 mb-4">
-                                <div className="p-2 bg-[#22c55e] rounded-lg">
-                                    <Play className="w-5 h-5 text-black fill-black" />
-                                </div>
-                                <span className="text-xs font-bold text-[#22c55e] uppercase tracking-wider bg-[#22c55e]/10 px-3 py-1 rounded-full">
-                                    Disponible
-                                </span>
-                            </div>
-                            <p className="text-4xl md:text-5xl font-black text-white uppercase italic tracking-tighter leading-none mb-2">
-                                Jugar Ahora
-                            </p>
-                            <p className="text-sm text-zinc-400 font-medium">
-                                Arma tu quiniela en segundos
+                        {/* Hero Text */}
+                        <div>
+                            <h2 className="text-2xl md:text-5xl font-medium text-white leading-tight">
+                                Demuestra tu <br />
+                                <span className="font-black italic text-transparent bg-clip-text bg-gradient-to-r from-[#22c55e] to-emerald-300">PASIÓN</span>
+                            </h2>
+                            <p className="text-zinc-500 mt-2 md:mt-5 text-xs md:text-base max-w-md mx-auto md:mx-0 leading-relaxed">
+                                Predice los resultados, compite con amigos y gana premios cada semana.
                             </p>
                         </div>
-                    </button>
 
-                    {/* Secondary Card: RESULTS */}
-                    <button
-                        onClick={() => navigate('/scoreboard')}
-                        className="group relative w-full h-32 bg-[#0e0e11] border border-zinc-800 rounded-[2rem] overflow-hidden hover:bg-zinc-900 transition-all p-0 hover:translate-x-2"
-                    >
-                        <div className="absolute inset-0 flex items-center justify-between px-8">
-                            <div className="flex items-center gap-6">
-                                <div className="w-14 h-14 bg-zinc-800 rounded-2xl flex items-center justify-center group-hover:bg-[#22c55e]/20 transition-colors">
-                                    <Activity className="w-7 h-7 text-white group-hover:text-[#22c55e] transition-colors" />
-                                </div>
-                                <div className="text-left">
-                                    <p className="text-2xl font-bold text-white leading-none mb-1 group-hover:text-[#22c55e] transition-colors">Resultados</p>
-                                    <p className="text-xs text-zinc-500 font-medium uppercase tracking-wider">Ver la Tabla General</p>
-                                </div>
-                            </div>
-                            <ChevronRight className="w-6 h-6 text-zinc-600 group-hover:text-white transition-colors" />
+                        {/* Quick Actions - Moved here as elegant small buttons */}
+                        <div className="flex items-center gap-2 flex-wrap justify-center md:justify-start pt-1">
+
+                            {/* <button
+                                onClick={() => setShowPayment(true)}
+                                className="flex items-center gap-1.5 px-3.5 py-2 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 rounded-xl transition-all active:scale-95"
+                            >
+                                <Banknote className="w-3.5 h-3.5 text-amber-400" />
+                                <span className="text-[11px] font-semibold text-amber-400">Pagar</span>
+                            </button> */}
+                            <button
+                                onClick={handleEnableNotifications}
+                                className="flex items-center gap-1.5 px-3.5 py-2 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 rounded-xl transition-all active:scale-95"
+                                title="Activar o verificar notificaciones"
+                            >
+                                <Bell className="w-3.5 h-3.5 text-blue-400" />
+                                <span className="text-[11px] font-semibold text-blue-400">Alertas</span>
+                            </button>
+                            <button
+                                onClick={() => setShowRules(true)}
+                                className="flex items-center gap-1.5 px-3.5 py-2 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 rounded-xl transition-all active:scale-95"
+                            >
+                                <HelpCircle className="w-3.5 h-3.5 text-amber-400" />
+                                <span className="text-[11px] font-semibold text-amber-400">Reglas</span>
+                            </button>
                         </div>
-                    </button>
 
-                    {/* Mobile Footer */}
-                    <div className="md:hidden text-center mt-4">
-                        <p className="text-[10px] text-zinc-700 font-bold uppercase tracking-widest">
-                            Quiniela App © 2026
-                        </p>
+                        {/* Footer Info (Desktop Only) */}
+                        <div className="hidden md:block pt-6 border-t border-zinc-800/60 w-full">
+                            <p className="text-xs text-zinc-600 font-mono">
+                                v1.8.0 • Powered by React & Firebase
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* RIGHT COLUMN: Action Cards */}
+                    <div className="w-full max-w-md mx-auto md:max-w-none flex flex-col gap-4 md:gap-6">
+
+                        {/* Main Card: PLAY */}
+                        <button
+                            onClick={() => navigate('/fill')}
+                            className="group relative w-full h-44 md:h-64 bg-zinc-900 border border-zinc-800 rounded-2xl md:rounded-[2rem] overflow-hidden hover:border-[#22c55e]/50 transition-all duration-300 shadow-2xl hover:shadow-[#22c55e]/20 active:scale-[0.98]"
+                        >
+                            <div className="absolute right-0 top-0 w-48 h-48 bg-[#22c55e]/5 rounded-full blur-3xl group-hover:bg-[#22c55e]/20 transition-colors"></div>
+
+                            <div className="absolute top-5 right-5 md:top-6 md:right-6 bg-zinc-800 p-2.5 md:p-3 rounded-full group-hover:bg-[#22c55e] group-hover:text-black transition-all">
+                                <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
+                            </div>
+
+                            <div className="absolute left-6 bottom-6 md:left-8 md:bottom-8 text-left">
+                                <div className="flex items-center gap-2 mb-3 md:mb-4">
+                                    <div className="p-1.5 md:p-2 bg-[#22c55e] rounded-lg">
+                                        <Play className="w-4 h-4 md:w-5 md:h-5 text-black fill-black" />
+                                    </div>
+                                    <span className="text-[10px] md:text-xs font-bold text-[#22c55e] uppercase tracking-wider bg-[#22c55e]/10 px-2.5 py-0.5 md:px-3 md:py-1 rounded-full">
+                                        Disponible
+                                    </span>
+                                </div>
+                                <p className="text-3xl md:text-5xl font-black text-white uppercase italic tracking-tighter leading-none mb-1 md:mb-2">
+                                    Jugar Ahora
+                                </p>
+                                <p className="text-xs md:text-sm text-zinc-400 font-medium">
+                                    Arma tu quiniela en segundos
+                                </p>
+                            </div>
+                        </button>
+
+                        {/* Secondary Card: RESULTS */}
+                        <button
+                            onClick={() => navigate('/scoreboard')}
+                            className="group relative w-full h-24 md:h-32 bg-[#0e0e11] border border-zinc-800 rounded-2xl md:rounded-[2rem] overflow-hidden hover:bg-zinc-900 transition-all p-0 active:scale-[0.98]"
+                        >
+                            <div className="absolute inset-0 flex items-center justify-between px-6 md:px-8">
+                                <div className="flex items-center gap-4 md:gap-6">
+                                    <div className="w-12 h-12 md:w-14 md:h-14 bg-zinc-800 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-[#22c55e]/20 transition-colors">
+                                        <Activity className="w-6 h-6 md:w-7 md:h-7 text-white group-hover:text-[#22c55e] transition-colors" />
+                                    </div>
+                                    <div className="text-left">
+                                        <p className="text-xl md:text-2xl font-bold text-white leading-none mb-0.5 group-hover:text-[#22c55e] transition-colors">Resultados</p>
+                                        <p className="text-[10px] md:text-xs text-zinc-500 font-medium uppercase tracking-wider">Ver la Tabla General</p>
+                                    </div>
+                                </div>
+                                <ChevronRight className="w-5 h-5 md:w-6 md:h-6 text-zinc-600 group-hover:text-white transition-colors" />
+                            </div>
+                        </button>
                     </div>
 
                 </div>
 
-                {/* Standings Table Full Width Container */}
-                <div className="md:col-span-2 w-full mt-8 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-500">
+                {/* ─── STANDINGS TABLE ─── */}
+                <div className="px-5 pt-8 md:px-12 md:pt-16 pb-8 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-500">
                     <StandingsTable league={activeLeague} />
                 </div>
+
+                {/* ─── MOBILE FOOTER ─── */}
+                <div className="md:hidden text-center pb-8 safe-area-bottom">
+                    <p className="text-[10px] text-zinc-700 font-bold uppercase tracking-widest">
+                        Quiniela App © 2026
+                    </p>
+                </div>
+
             </div>
+
+            {/* ════════ MODALS ════════ */}
 
             <Modal
                 isOpen={showRules}

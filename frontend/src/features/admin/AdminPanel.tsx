@@ -156,56 +156,70 @@ export default function AdminPanel() {
         );
     }
 
+    const tabs = [
+        { id: 'create-week' as const, label: 'Nueva', icon: Plus },
+        { id: 'results' as const, label: 'Resultados', icon: ClipboardList },
+        { id: 'participants' as const, label: 'Pagos', icon: User },
+        { id: 'manual-entry' as const, label: 'Manual', icon: PenTool },
+        { id: 'history' as const, label: 'Historial', icon: History },
+    ];
+
     return (
         <div className="min-h-screen bg-[#09090b] flex flex-col font-sans">
-            <header className="bg-black/40 backdrop-blur-md text-white p-6 sticky top-0 z-20 border-b border-white/5 shadow-xl">
+            <header className="bg-black/40 backdrop-blur-md text-white px-4 py-3 md:p-6 sticky top-0 z-20 border-b border-white/5 shadow-xl">
                 <div className="flex justify-between items-center max-w-4xl mx-auto w-full">
-                    <h1 className="font-bold text-xl flex items-center gap-2"><PenTool className="w-5 h-5 text-pool-accent" /> Panel Administrativo</h1>
-                    <div className="flex items-center gap-3">
+                    <h1 className="font-bold text-base md:text-xl flex items-center gap-2">
+                        <PenTool className="w-4 h-4 md:w-5 md:h-5 text-pool-accent" />
+                        <span className="hidden sm:inline">Panel Administrativo</span>
+                        <span className="sm:hidden">Admin</span>
+                    </h1>
+                    <div className="flex items-center gap-2">
                         <button 
                             onClick={() => navigate('/')} 
                             className="text-xs font-bold text-zinc-500 hover:text-white bg-white/5 px-3 py-1.5 rounded-lg border border-white/5 transition-colors"
                         >
-                            Volver al Inicio
+                            <span className="hidden sm:inline">Volver al Inicio</span>
+                            <span className="sm:hidden">Inicio</span>
                         </button>
                         <button 
                             onClick={() => { signOut(); navigate('/'); }} 
                             className="text-xs font-bold text-zinc-500 hover:text-white bg-white/5 px-3 py-1.5 rounded-lg border border-white/5 transition-colors"
                         >
-                            Cerrar Sesión
+                            <span className="hidden sm:inline">Cerrar Sesión</span>
+                            <span className="sm:hidden">Salir</span>
                         </button>
                     </div>
                 </div>
             </header>
 
-            <main className="flex-1 p-6 max-w-4xl mx-auto w-full space-y-8">
-                {/* Tabs */}
-                <div className="flex gap-4 p-1 bg-[#18181b] rounded-xl w-fit border border-white/5">
-                    <button onClick={() => setTab('create-week')} className={cn("px-6 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center gap-2", tab === 'create-week' ? "bg-pool-green text-[#020617] shadow-md" : "text-zinc-500 hover:text-white hover:bg-white/5")}>
-                        <Plus className="w-4 h-4" /> Nueva Jornada
-                    </button>
-                    <button onClick={() => setTab('results')} className={cn("px-6 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center gap-2", tab === 'results' ? "bg-pool-green text-[#020617] shadow-md" : "text-zinc-500 hover:text-white hover:bg-white/5")}>
-                        <ClipboardList className="w-4 h-4" /> Capturar Resultados
-                    </button>
-                    <button onClick={() => setTab('participants')} className={cn("px-6 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center gap-2", tab === 'participants' ? "bg-pool-green text-[#020617] shadow-md" : "text-zinc-500 hover:text-white hover:bg-white/5")}>
-                        <User className="w-4 h-4" /> Participantes
-                    </button>
-                    <button onClick={() => setTab('manual-entry')} className={cn("px-6 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center gap-2", tab === 'manual-entry' ? "bg-pool-green text-[#020617] shadow-md" : "text-zinc-500 hover:text-white hover:bg-white/5")}>
-                        <Plus className="w-4 h-4" /> Manual
-                    </button>
-                    <button onClick={() => setTab('history')} className={cn("px-6 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center gap-2", tab === 'history' ? "bg-pool-green text-[#020617] shadow-md" : "text-zinc-500 hover:text-white hover:bg-white/5")}>
-                        <History className="w-4 h-4" /> Historial
-                    </button>
+            <main className="flex-1 px-4 py-5 md:p-6 max-w-4xl mx-auto w-full space-y-6 md:space-y-8">
+                {/* Tabs - scrollable on mobile */}
+                <div className="flex gap-1.5 md:gap-2 p-1 bg-[#18181b] rounded-xl w-full md:w-fit border border-white/5 overflow-x-auto no-scrollbar">
+                    {tabs.map(t => (
+                        <button
+                            key={t.id}
+                            onClick={() => setTab(t.id)}
+                            className={cn(
+                                "shrink-0 flex-1 md:flex-initial px-3 md:px-6 py-2.5 rounded-lg text-xs md:text-sm font-bold transition-all flex items-center justify-center md:justify-start gap-1.5 md:gap-2",
+                                tab === t.id
+                                    ? "bg-pool-green text-[#020617] shadow-md"
+                                    : "text-zinc-500 hover:text-white hover:bg-white/5"
+                            )}
+                        >
+                            <t.icon className="w-4 h-4" />
+                            <span>{t.label}</span>
+                        </button>
+                    ))}
                 </div>
 
                 {tab === 'create-week' && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
 
                         {/* COLUMNA IZQUIERDA: Configuración y Banco */}
-                        <div className="space-y-6 flex flex-col h-full max-h-[900px]">
-                            <div className="bg-[#18181b] p-6 rounded-2xl shadow-lg border border-white/5 shrink-0">
+                        <div className="space-y-4 md:space-y-6 flex flex-col h-full md:max-h-[900px]">
+                            <div className="bg-[#18181b] p-4 md:p-6 rounded-2xl shadow-lg border border-white/5 shrink-0">
                                 <h2 className="text-xs font-bold text-zinc-500 uppercase mb-4 flex items-center gap-2"><span className="w-6 h-6 rounded bg-pool-accent/10 flex items-center justify-center text-[10px]">1</span> Configuración Principal</h2>
-                                <div className="grid grid-cols-2 gap-4 mb-4">
+                                <div className="grid grid-cols-2 gap-3 md:gap-4 mb-4">
                                     <div className="col-span-2">
                                         <label className="block text-[10px] font-bold text-zinc-500 mb-1 uppercase">Nombre de la Jornada</label>
                                         <input value={weekName} onChange={e => setWeekName(e.target.value)} className="w-full bg-[#09090b] text-white text-sm font-bold border border-zinc-800 rounded-lg p-3 focus:border-pool-green outline-none transition-colors" />
@@ -251,7 +265,7 @@ export default function AdminPanel() {
                                 onDrop={(e) => handleDrop(e, 'bank')}
                                 onDragOver={handleDragOver}
                             >
-                                <div className="flex justify-between items-center mb-4 shrink-0">
+                                <div className="flex justify-between items-center mb-3 md:mb-4 shrink-0">
                                     <h2 className="text-xs font-bold text-zinc-500 uppercase flex items-center gap-2"><span className="w-6 h-6 rounded bg-zinc-800 flex items-center justify-center text-[10px]">A</span> Banco de Partidos</h2>
                                     <div className="flex items-center gap-2">
                                         <span className="text-[10px] text-zinc-600 font-bold">{bankMatches.length}</span>
@@ -266,30 +280,30 @@ export default function AdminPanel() {
                                         )}
                                     </div>
                                 </div>
-                                <div className="flex-1 overflow-y-auto space-y-2 custom-scrollbar pr-2 pb-2">
+                                <div className="flex-1 overflow-y-auto space-y-2 custom-scrollbar pr-1 md:pr-2 pb-2">
                                     {bankMatches.map((m, idx) => (
                                         <div
                                             key={idx}
                                             draggable
                                             onDragStart={(e) => handleDragStart(e, 'bank', idx)}
                                             onDoubleClick={() => moveToSelected(idx)}
-                                            className="group relative flex flex-col p-3 bg-[#09090b] rounded-lg border border-white/5 cursor-grab active:cursor-grabbing hover:border-pool-green/30 transition-all hover:translate-x-1"
+                                            className="group relative flex flex-col p-2.5 md:p-3 bg-[#09090b] rounded-lg border border-white/5 cursor-grab active:cursor-grabbing hover:border-pool-green/30 transition-all hover:translate-x-1"
                                         >
-                                            <div className="absolute right-2 top-1/2 -translate-y-1/2 md:hidden">
-                                                <button onClick={(e) => { e.stopPropagation(); moveToSelected(idx); }} className="w-8 h-8 bg-pool-green text-[#020617] rounded-full flex items-center justify-center font-bold shadow-lg">
-                                                    <Plus className="text-[#22c55e] w-4 h-4" />
+                                            <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                                                <button onClick={(e) => { e.stopPropagation(); moveToSelected(idx); }} className="w-7 h-7 md:w-8 md:h-8 bg-pool-green text-[#020617] rounded-full flex items-center justify-center font-bold shadow-lg md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                                                    <Plus className="text-[#22c55e] w-3.5 h-3.5 md:w-4 md:h-4" />
                                                 </button>
                                             </div>
-                                            <div className="flex justify-between items-center text-sm md:pr-0 pr-10">
+                                            <div className="flex justify-between items-center text-xs md:text-sm pr-10">
                                                 <span className="font-bold text-zinc-300 w-2/5 text-right truncate">{m.homeTeam}</span>
-                                                <span className="text-[9px] text-zinc-500 font-bold bg-white/5 px-2 py-0.5 rounded mx-2 shrink-0">VS</span>
+                                                <span className="text-[9px] text-zinc-500 font-bold bg-white/5 px-1.5 md:px-2 py-0.5 rounded mx-1.5 md:mx-2 shrink-0">VS</span>
                                                 <span className="font-bold text-zinc-300 w-2/5 text-left truncate">{m.awayTeam}</span>
                                             </div>
-                                            <span className="text-[9px] text-zinc-600 text-center mt-1 uppercase tracking-wider md:pr-0 pr-10">{formatDisplayDate(m.date)}</span>
+                                            <span className="text-[8px] md:text-[9px] text-zinc-600 text-center mt-1 uppercase tracking-wider pr-10">{formatDisplayDate(m.date)}</span>
                                         </div>
                                     ))}
                                     {bankMatches.length === 0 && (
-                                        <div className="h-full min-h-[100px] flex items-center justify-center text-center text-zinc-600 border-2 border-dashed border-zinc-800 rounded-xl p-4">
+                                        <div className="h-full min-h-[80px] md:min-h-[100px] flex items-center justify-center text-center text-zinc-600 border-2 border-dashed border-zinc-800 rounded-xl p-4">
                                             <p className="text-xs">Usa el generador arriba para importar partidos aquí.</p>
                                         </div>
                                     )}
@@ -298,7 +312,7 @@ export default function AdminPanel() {
                         </div>
 
                         {/* COLUMNA DERECHA: Jornada Final */}
-                        <div className="space-y-6 flex flex-col h-full max-h-auto">
+                        <div className="space-y-4 md:space-y-6 flex flex-col h-full max-h-auto">
                             <div className="bg-[#18181b] p-4 md:p-6 rounded-2xl shadow-lg border border-white/5 flex-1 flex flex-col relative overflow-hidden"
                                 onDrop={(e) => handleDrop(e, 'selected')}
                                 onDragOver={handleDragOver}
@@ -306,40 +320,40 @@ export default function AdminPanel() {
                                 {/* Active background glow */}
                                 <div className="absolute top-0 right-0 w-64 h-64 bg-pool-green/5 rounded-full blur-[80px] pointer-events-none"></div>
 
-                                <div className="flex justify-between items-center mb-4 shrink-0 relative z-10">
+                                <div className="flex justify-between items-center mb-3 md:mb-4 shrink-0 relative z-10">
                                     <h2 className="text-xs font-bold text-pool-green uppercase flex items-center gap-2"><span className="w-6 h-6 rounded bg-pool-green text-[#020617] flex items-center justify-center text-[10px]">2</span> Jornada Final</h2>
                                     <span className="text-[10px] text-white bg-pool-green/20 px-2 py-1 rounded-full font-bold">{selectedMatches.length} partidos</span>
                                 </div>
 
-                                <div className="flex-1 overflow-y-auto space-y-2 custom-scrollbar pr-2 relative z-10 pb-4">
+                                <div className="flex-1 overflow-y-auto space-y-2 custom-scrollbar pr-1 md:pr-2 relative z-10 pb-4">
                                     {selectedMatches.map((m, idx) => (
                                         <div
                                             key={idx}
                                             draggable
                                             onDragStart={(e) => handleDragStart(e, 'selected', idx)}
                                             onDoubleClick={() => moveToBank(idx)}
-                                            className="group relative flex flex-col p-3 bg-black/60 backdrop-blur-sm rounded-lg border border-white/5 cursor-grab active:cursor-grabbing hover:border-pool-green shadow-sm"
+                                            className="group relative flex flex-col p-2.5 md:p-3 bg-black/60 backdrop-blur-sm rounded-lg border border-white/5 cursor-grab active:cursor-grabbing hover:border-pool-green shadow-sm"
                                         >
                                             <button onClick={() => moveToBank(idx)} className="absolute -top-2 -right-2 w-6 h-6 md:w-5 md:h-5 bg-red-500 text-white rounded-full text-sm md:text-xs font-black shadow-lg md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-center justify-center z-20">×</button>
-                                            <div className="flex justify-between items-center text-sm">
+                                            <div className="flex justify-between items-center text-xs md:text-sm">
                                                 <span className="font-bold text-white w-2/5 text-right truncate">{m.homeTeam}</span>
-                                                <span className="text-[9px] text-zinc-500 font-bold bg-white/5 px-2 py-0.5 rounded mx-2 shrink-0">VS</span>
+                                                <span className="text-[9px] text-zinc-500 font-bold bg-white/5 px-1.5 md:px-2 py-0.5 rounded mx-1.5 md:mx-2 shrink-0">VS</span>
                                                 <span className="font-bold text-white w-2/5 text-left truncate">{m.awayTeam}</span>
                                             </div>
-                                            <span className="text-[9px] text-zinc-400 text-center mt-1 uppercase tracking-wider">{formatDisplayDate(m.date)}</span>
+                                            <span className="text-[8px] md:text-[9px] text-zinc-400 text-center mt-1 uppercase tracking-wider">{formatDisplayDate(m.date)}</span>
                                         </div>
                                     ))}
                                     {selectedMatches.length === 0 && (
-                                        <div className="h-full min-h-[200px] flex items-center justify-center text-zinc-600 border-2 border-dashed border-pool-green/20 rounded-xl p-8 text-center bg-black/20">
+                                        <div className="h-full min-h-[160px] md:min-h-[200px] flex items-center justify-center text-zinc-600 border-2 border-dashed border-pool-green/20 rounded-xl p-6 md:p-8 text-center bg-black/20">
                                             <div className="max-w-[200px]">
-                                                <Trophy className="w-10 h-10 mx-auto mb-3 opacity-20 text-pool-green" />
-                                                <p className="text-xs">Arrastra y suelta partidos desde el Banco hacia aquí para armar la quiniela.</p>
+                                                <Trophy className="w-8 h-8 md:w-10 md:h-10 mx-auto mb-3 opacity-20 text-pool-green" />
+                                                <p className="text-xs">Arrastra o toca + para mover partidos desde el Banco hacia aquí.</p>
                                             </div>
                                         </div>
                                     )}
                                 </div>
 
-                                <button onClick={() => setShowPublishModal(true)} disabled={selectedMatches.length === 0 || loading} className="shrink-0 mt-4 w-full bg-pool-green text-zinc-500 font-black py-4 rounded-xl shadow-[0_0_20px_rgba(34,197,94,0.2)] hover:text-zinc-100 hover:shadow-[0_0_30px_rgba(34,197,94,0.4)] flex justify-center items-center gap-2 disabled:opacity-50 disabled:shadow-none transition-all hover:scale-[1.02] active:scale-[0.98]">
+                                <button onClick={() => setShowPublishModal(true)} disabled={selectedMatches.length === 0 || loading} className="shrink-0 mt-4 w-full bg-pool-green text-zinc-500 font-black py-3.5 md:py-4 rounded-xl shadow-[0_0_20px_rgba(34,197,94,0.2)] hover:text-zinc-100 hover:shadow-[0_0_30px_rgba(34,197,94,0.4)] flex justify-center items-center gap-2 disabled:opacity-50 disabled:shadow-none transition-all hover:scale-[1.02] active:scale-[0.98] text-sm md:text-base">
                                     {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Play className="w-5 h-5 fill-current" />} Publicar {selectedMatches.length} Partidos
                                 </button>
                             </div>
@@ -557,68 +571,69 @@ function ResultsEditor() {
     const realPrize = totalPot - (week?.adminFee || 0);
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-4 md:space-y-6">
             {/* Prize Management Section */}
-            <div className="bg-[#18181b] p-6 rounded-2xl border border-white/5 shadow-xl grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-[#18181b] p-4 md:p-6 rounded-2xl border border-white/5 shadow-xl grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
                 <div>
-                    <label className="block text-xs font-bold text-zinc-500 mb-2 uppercase">Recaudado (Total: {participantsCount})</label>
-                    <div className="text-2xl font-black text-white bg-[#09090b] p-3 rounded-lg border border-white/5 flex items-center gap-2">
-                        <span className="text-zinc-500 text-base">$</span>
+                    <label className="block text-[10px] md:text-xs font-bold text-zinc-500 mb-2 uppercase">Recaudado ({participantsCount})</label>
+                    <div className="text-xl md:text-2xl font-black text-white bg-[#09090b] p-3 rounded-lg border border-white/5 flex items-center gap-2">
+                        <span className="text-zinc-500 text-sm md:text-base">$</span>
                         {totalPot.toLocaleString()}
                     </div>
                 </div>
                 <div>
-                    <label className="block text-xs font-bold text-pool-accent mb-2 uppercase">Ganancia / Gastos</label>
+                    <label className="block text-[10px] md:text-xs font-bold text-pool-accent mb-2 uppercase">Gastos</label>
                     <div className="relative">
-                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 font-bold">$</span>
+                        <span className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 text-zinc-500 font-bold text-sm">$</span>
                         <input
                             type="number"
                             value={week?.adminFee || 0}
                             onChange={(e) => handleUpdateFee(parseFloat(e.target.value) || 0)}
-                            className="w-full bg-[#09090b] text-white text-xl font-bold border border-pool-accent/50 rounded-lg p-3 pl-8 focus:border-pool-green outline-none transition-colors"
+                            className="w-full bg-[#09090b] text-white text-lg md:text-xl font-bold border border-pool-accent/50 rounded-lg p-3 pl-7 md:pl-8 focus:border-pool-green outline-none transition-colors"
                         />
                     </div>
                 </div>
                 <div>
-                    <label className="block text-xs font-bold text-emerald-400 mb-2 uppercase">Premio Real a Repartir</label>
-                    <div className="text-3xl font-black text-emerald-400 bg-emerald-400/10 p-3 rounded-lg border border-emerald-400/20 flex items-center gap-2">
-                        <span className="text-emerald-500/50 text-xl">$</span>
+                    <label className="block text-[10px] md:text-xs font-bold text-emerald-400 mb-2 uppercase">Premio Real</label>
+                    <div className="text-2xl md:text-3xl font-black text-emerald-400 bg-emerald-400/10 p-3 rounded-lg border border-emerald-400/20 flex items-center gap-2">
+                        <span className="text-emerald-500/50 text-lg md:text-xl">$</span>
                         {realPrize.toLocaleString()}
                     </div>
                 </div>
             </div>
 
-            <div className="bg-[#18181b] p-6 rounded-2xl border border-white/5 shadow-xl relative">
-                <div className="flex justify-between items-center mb-6">
+            <div className="bg-[#18181b] p-4 md:p-6 rounded-2xl border border-white/5 shadow-xl relative">
+                {/* Header: stacks on mobile */}
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4 md:mb-6">
                     <h2 className="text-xs font-bold text-zinc-500 uppercase flex items-center gap-2">
                         <ClipboardList className="w-4 h-4" />
                         Capturar Marcadores
                     </h2>
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-wrap items-center gap-2">
                         <div className="flex bg-[#09090b] rounded-lg border border-white/5 overflow-hidden">
                             <select value={autoLeague} onChange={e => setAutoLeague(e.target.value)} className="bg-transparent text-white text-xs font-bold px-2 py-1.5 outline-none border-r border-white/5">
                                 <option value="liga-mx">Liga MX</option>
-                                <option value="champions-league">Champions League</option>
-                                <option value="premier-league">Premier League</option>
+                                <option value="champions-league">Champions</option>
+                                <option value="premier-league">Premier</option>
                             </select>
                             <button
                                 onClick={handleAutoScrapeResults}
                                 disabled={isScrapingResults}
-                                className="text-xs font-bold px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-white transition-colors flex items-center gap-2"
+                                className="text-xs font-bold px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-white transition-colors flex items-center gap-1.5"
                             >
-                                {isScrapingResults ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Descargar de ESPN'}
+                                {isScrapingResults ? <Loader2 className="w-3 h-3 animate-spin" /> : 'ESPN'}
                             </button>
                         </div>
                         {hasChanges && (
-                            <span className="text-xs font-bold text-amber-500 animate-pulse flex items-center gap-2">
-                                ⚠ Cambios sin guardar
+                            <span className="text-[10px] font-bold text-amber-500 animate-pulse">
+                                ⚠ Sin guardar
                             </span>
                         )}
                         <button
                             onClick={handleSaveAll}
                             disabled={!hasChanges || saving}
                             className={cn(
-                                "text-xs font-bold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2",
+                                "text-xs font-bold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5",
                                 hasChanges
                                     ? "bg-pool-green text-[#020617] hover:bg-emerald-400 shadow-lg shadow-pool-green/20"
                                     : "bg-zinc-800 text-zinc-500 cursor-not-allowed"
@@ -630,41 +645,42 @@ function ResultsEditor() {
                     </div>
                 </div>
 
-                <div className="space-y-4 mb-20">
+                <div className="space-y-3 md:space-y-4 mb-4">
                     {matches.map(m => (
-                        <div key={m.id} className="bg-[#09090b] p-4 rounded-xl border border-white/5 flex flex-col md:flex-row items-center justify-between gap-4">
-                            <div className="flex items-center gap-4 flex-1 justify-end">
-                                <span className="font-bold text-white text-right">{m.homeTeam}</span>
-                                <div className="bg-zinc-800 rounded-lg p-1 w-12 text-center">
-                                    <input
-                                        type="number"
-                                        className="w-full bg-transparent text-center text-white font-bold outline-none"
-                                        value={m.result?.homeScore || 0}
-                                        onChange={(e) => handleLocalUpdate(m.id, parseInt(e.target.value) || 0, m.result?.awayScore || 0)}
-                                    />
+                        <div key={m.id} className="bg-[#09090b] p-3 md:p-4 rounded-xl border border-white/5 flex flex-col gap-3">
+                            {/* Match row: team - score - status - score - team */}
+                            <div className="flex items-center justify-between gap-2">
+                                <span className="font-bold text-white text-xs md:text-sm flex-1 text-right truncate">{m.homeTeam}</span>
+                                <div className="flex items-center gap-1.5 md:gap-2 shrink-0">
+                                    <div className="bg-zinc-800 rounded-lg p-1 w-10 md:w-12 text-center">
+                                        <input
+                                            type="number"
+                                            className="w-full bg-transparent text-center text-white font-bold outline-none text-sm"
+                                            value={m.result?.homeScore || 0}
+                                            onChange={(e) => handleLocalUpdate(m.id, parseInt(e.target.value) || 0, m.result?.awayScore || 0)}
+                                        />
+                                    </div>
+                                    <button
+                                        onClick={() => handleToggleStatus(m)}
+                                        className="focus:outline-none hover:scale-110 transition-transform p-0.5"
+                                        title={m.status === 'FINISHED' ? 'Marcar como Pendiente' : 'Marcar como Finalizado'}
+                                    >
+                                        {m.status === 'FINISHED' ? (
+                                            <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                                        ) : (
+                                            <Circle className="w-5 h-5 text-zinc-600" />
+                                        )}
+                                    </button>
+                                    <div className="bg-zinc-800 rounded-lg p-1 w-10 md:w-12 text-center">
+                                        <input
+                                            type="number"
+                                            className="w-full bg-transparent text-center text-white font-bold outline-none text-sm"
+                                            value={m.result?.awayScore || 0}
+                                            onChange={(e) => handleLocalUpdate(m.id, m.result?.homeScore || 0, parseInt(e.target.value) || 0)}
+                                        />
+                                    </div>
                                 </div>
-                            </div>
-                            <button
-                                onClick={() => handleToggleStatus(m)}
-                                className="focus:outline-none hover:scale-110 transition-transform p-1"
-                                title={m.status === 'FINISHED' ? 'Marcar como Pendiente' : 'Marcar como Finalizado'}
-                            >
-                                {m.status === 'FINISHED' ? (
-                                    <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-                                ) : (
-                                    <Circle className="w-5 h-5 text-zinc-600" />
-                                )}
-                            </button>
-                            <div className="flex items-center gap-4 flex-1">
-                                <div className="bg-zinc-800 rounded-lg p-1 w-12 text-center">
-                                    <input
-                                        type="number"
-                                        className="w-full bg-transparent text-center text-white font-bold outline-none"
-                                        value={m.result?.awayScore || 0}
-                                        onChange={(e) => handleLocalUpdate(m.id, m.result?.homeScore || 0, parseInt(e.target.value) || 0)}
-                                    />
-                                </div>
-                                <span className="font-bold text-white text-left">{m.awayTeam}</span>
+                                <span className="font-bold text-white text-xs md:text-sm flex-1 text-left truncate">{m.awayTeam}</span>
                             </div>
                         </div>
                     ))}
@@ -774,8 +790,8 @@ function ParticipantsEditor({ weekId: propWeekId }: { weekId?: string }) {
     if (!weekId) return <div className="text-zinc-500 text-center py-12">No hay jornada activa.</div>;
 
     return (
-        <div className="bg-[#18181b] p-6 rounded-2xl border border-white/5 shadow-xl animate-in fade-in slide-in-from-bottom-4">
-            <div className="flex items-center justify-between mb-8">
+        <div className="bg-[#18181b] p-4 md:p-6 rounded-2xl border border-white/5 shadow-xl animate-in fade-in slide-in-from-bottom-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6 md:mb-8">
                 <h2 className="text-xs font-bold text-zinc-500 uppercase flex items-center gap-2">
                     <User className="w-4 h-4" />
                     Gestión de Participantes
@@ -784,7 +800,7 @@ function ParticipantsEditor({ weekId: propWeekId }: { weekId?: string }) {
                 <button
                     onClick={toggleVisibility}
                     className={cn(
-                        "px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all border",
+                        "px-3 md:px-4 py-2 rounded-lg text-[10px] md:text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all border w-fit",
                         hideUnpaid
                             ? "bg-red-500/10 text-red-500 border-red-500/20 hover:bg-red-500/20"
                             : "bg-emerald-500/10 text-emerald-500 border-emerald-500/20 hover:bg-emerald-500/20"
@@ -795,57 +811,59 @@ function ParticipantsEditor({ weekId: propWeekId }: { weekId?: string }) {
                 </button>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-2.5 md:space-y-3">
                 {participants.length === 0 ? (
                     <div className="text-center py-8 text-zinc-500 text-sm">No hay participantes aún.</div>
                 ) : (
                     participants.map(p => (
-                        <div key={p.id} className="bg-[#09090b] p-4 rounded-xl border border-white/5 flex items-center justify-between group hover:border-white/10 transition-colors">
-                            <div className="flex items-center gap-4">
-                                <div className={cn("w-10 h-10 rounded-full flex items-center justify-center font-bold text-white", p.paymentStatus === 'PAID' ? "bg-emerald-600" : "bg-zinc-800")}>
+                        <div key={p.id} className="bg-[#09090b] p-3 md:p-4 rounded-xl border border-white/5 group hover:border-white/10 transition-colors">
+                            {/* Mobile: stack vertically. Desktop: single row */}
+                            <div className="flex items-center gap-3 md:gap-4">
+                                <div className={cn("w-9 h-9 md:w-10 md:h-10 rounded-full flex items-center justify-center font-bold text-white text-sm shrink-0", p.paymentStatus === 'PAID' ? "bg-emerald-600" : "bg-zinc-800")}>
                                     {p.participantName.charAt(0).toUpperCase()}
                                 </div>
-                                <div>
-                                    <p className="font-bold text-white text-sm">{p.participantName}</p>
+                                <div className="flex-1 min-w-0">
+                                    <p className="font-bold text-white text-sm truncate">{p.participantName}</p>
                                     <p className="text-[10px] text-zinc-500 uppercase tracking-wider">{new Date(p.submittedAt).toLocaleDateString()}</p>
                                 </div>
+                                <div className="flex items-center gap-1.5 md:gap-2 shrink-0">
+                                    <button
+                                        onClick={() => togglePayment(p)}
+                                        className={cn(
+                                            "px-2.5 md:px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center gap-1 md:gap-1.5 transition-all border",
+                                            p.paymentStatus === 'PAID'
+                                                ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20"
+                                                : "bg-zinc-800 text-zinc-400 border-zinc-700 hover:bg-zinc-700 hover:text-white"
+                                        )}
+                                    >
+                                        {p.paymentStatus === 'PAID' ? (
+                                            <><CheckCircle2 className="w-3 h-3" /> <span className="hidden sm:inline">Pagado</span><span className="sm:hidden">✓</span></>
+                                        ) : (
+                                            <><DollarSign className="w-3 h-3" /> <span className="hidden sm:inline">Pendiente</span><span className="sm:hidden">$</span></>
+                                        )}
+                                    </button>
+
+                                    <button
+                                        onClick={() => {
+                                            setEditingPart(p);
+                                            setEditName(p.participantName);
+                                            setEditGoals(String(p.totalGoalsPrediction || 0));
+                                        }}
+                                        className="p-1.5 md:p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-white/5 transition-colors"
+                                        title="Editar Participante"
+                                    >
+                                        <PenTool className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                                    </button>
+
+                                    <button
+                                        onClick={() => deleteParticipant(p.id)}
+                                        className="p-1.5 md:p-2 rounded-lg text-red-500 hover:bg-red-500/10 transition-colors"
+                                        title="Eliminar Participante"
+                                    >
+                                        <Trash2 className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                                    </button>
+                                </div>
                             </div>
-
-                            <button
-                                onClick={() => togglePayment(p)}
-                                className={cn(
-                                    "px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 transition-all border",
-                                    p.paymentStatus === 'PAID'
-                                        ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20"
-                                        : "bg-zinc-800 text-zinc-400 border-zinc-700 hover:bg-zinc-700 hover:text-white"
-                                )}
-                            >
-                                {p.paymentStatus === 'PAID' ? (
-                                    <><CheckCircle2 className="w-3 h-3" /> Pagado</>
-                                ) : (
-                                    <><DollarSign className="w-3 h-3" /> Pendiente</>
-                                )}
-                            </button>
-
-                            <button
-                                onClick={() => {
-                                    setEditingPart(p);
-                                    setEditName(p.participantName);
-                                    setEditGoals(String(p.totalGoalsPrediction || 0));
-                                }}
-                                className="p-2 ml-2 rounded-lg text-zinc-400 hover:text-white hover:bg-white/5 transition-colors"
-                                title="Editar Participante"
-                            >
-                                <PenTool className="w-4 h-4" />
-                            </button>
-
-                            <button
-                                onClick={() => deleteParticipant(p.id)}
-                                className="p-2 ml-1 rounded-lg text-red-500 hover:bg-red-500/10 transition-colors"
-                                title="Eliminar Participante"
-                            >
-                                <Trash2 className="w-4 h-4" />
-                            </button>
                         </div>
                     ))
                 )}
@@ -951,14 +969,14 @@ function ManualEntryEditor() {
     if (!weekID) return <div className="text-center py-12 text-zinc-500">Cargando jornada...</div>;
 
     return (
-        <div className="bg-[#18181b] p-6 rounded-2xl border border-white/5 shadow-xl animate-in fade-in slide-in-from-bottom-4">
-            <h2 className="text-xs font-bold text-zinc-500 uppercase mb-6 flex items-center gap-2">
+        <div className="bg-[#18181b] p-4 md:p-6 rounded-2xl border border-white/5 shadow-xl animate-in fade-in slide-in-from-bottom-4">
+            <h2 className="text-xs font-bold text-zinc-500 uppercase mb-5 md:mb-6 flex items-center gap-2">
                 <Plus className="w-4 h-4" />
                 Registro Manual (Admin)
             </h2>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <form onSubmit={handleSubmit} className="space-y-5 md:space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                     <div>
                         <label className="block text-xs font-bold text-zinc-500 mb-2 uppercase">Participante</label>
                         <input value={name} onChange={e => setName(e.target.value)} className="w-full bg-[#09090b] text-white p-3 rounded-lg border border-zinc-700 focus:border-pool-green outline-none" placeholder="Nombre" />
@@ -969,18 +987,18 @@ function ManualEntryEditor() {
                     </div>
                 </div>
 
-                <div className="space-y-2 max-h-[400px] overflow-y-auto custom-scrollbar pr-2 border border-white/5 rounded-xl p-2 bg-[#09090b]/50">
+                <div className="space-y-2 max-h-[400px] overflow-y-auto custom-scrollbar pr-1 md:pr-2 border border-white/5 rounded-xl p-2 bg-[#09090b]/50">
                     {matches.map(m => (
-                        <div key={m.id} className="flex justify-between items-center text-xs p-2 bg-[#09090b] rounded border border-white/5">
-                            <span className="font-bold text-zinc-300 w-1/3 text-right">{m.homeTeam}</span>
-                            <div className="flex gap-1">
+                        <div key={m.id} className="flex items-center gap-2 text-xs p-2.5 md:p-2 bg-[#09090b] rounded border border-white/5">
+                            <span className="font-bold text-zinc-300 flex-1 text-right truncate text-[11px] md:text-xs">{m.homeTeam}</span>
+                            <div className="flex gap-1 shrink-0">
                                 {(['L', 'E', 'V'] as const).map(opt => (
                                     <button
                                         type="button"
                                         key={opt}
                                         onClick={() => handleSelect(m.id, opt)}
                                         className={cn(
-                                            "w-8 h-8 rounded font-black transition-colors border",
+                                            "w-8 h-8 rounded font-black transition-colors border text-xs",
                                             picks[m.id] === opt
                                                 ? "bg-pool-green text-black border-pool-green"
                                                 : "bg-zinc-800 text-zinc-500 border-zinc-700 hover:bg-zinc-700"
@@ -990,12 +1008,12 @@ function ManualEntryEditor() {
                                     </button>
                                 ))}
                             </div>
-                            <span className="font-bold text-zinc-300 w-1/3 text-left">{m.awayTeam}</span>
+                            <span className="font-bold text-zinc-300 flex-1 text-left truncate text-[11px] md:text-xs">{m.awayTeam}</span>
                         </div>
                     ))}
                 </div>
 
-                <button disabled={!isComplete || loading} className="w-full bg-pool-green text-black font-black py-4 rounded-xl disabled:opacity-50 hover:bg-emerald-400 transition-colors">
+                <button disabled={!isComplete || loading} className="w-full bg-pool-green text-black font-black py-3.5 md:py-4 rounded-xl disabled:opacity-50 hover:bg-emerald-400 transition-colors text-sm md:text-base">
                     {loading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : "Registrar Quiniela"}
                 </button>
             </form>
@@ -1058,8 +1076,8 @@ function HistoryViewer() {
     }
 
     return (
-        <div className="bg-[#18181b] p-6 rounded-2xl border border-white/5 shadow-xl animate-in fade-in slide-in-from-bottom-4">
-            <h2 className="text-xs font-bold text-zinc-500 uppercase mb-6 flex items-center gap-2">
+        <div className="bg-[#18181b] p-4 md:p-6 rounded-2xl border border-white/5 shadow-xl animate-in fade-in slide-in-from-bottom-4">
+            <h2 className="text-xs font-bold text-zinc-500 uppercase mb-5 md:mb-6 flex items-center gap-2">
                 <History className="w-4 h-4" />
                 Historial de Jornadas
             </h2>
@@ -1067,51 +1085,90 @@ function HistoryViewer() {
             {loading ? (
                 <div className="flex justify-center py-8"><Loader2 className="animate-spin text-pool-green" /></div>
             ) : (
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="border-b border-white/5 text-xs text-zinc-500 uppercase">
-                                <th className="p-4">Jornada</th>
-                                <th className="p-4">Fecha</th>
-                                <th className="p-4">Estado</th>
-                                <th className="p-4 text-center">Partidos</th>
-                                <th className="p-4 text-right">Acción</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-white/5 text-sm">
-                            {weeks.map(week => (
-                                <tr key={week.id} className="group hover:bg-white/5 transition-colors">
-                                    <td className="p-4 font-bold text-white">{week.name}</td>
-                                    <td className="p-4 text-zinc-400">{new Date(week.createdAt).toLocaleDateString()}</td>
-                                    <td className="p-4">
-                                        <span className={cn(
-                                            "px-2 py-1 rounded text-[10px] font-black uppercase tracking-wider",
-                                            week.status === 'OPEN' ? "bg-emerald-500/10 text-emerald-400" : "bg-zinc-800 text-zinc-500"
-                                        )}>
-                                            {week.status}
-                                        </span>
-                                    </td>
-                                    <td className="p-4 text-center text-zinc-400 font-mono">{week.matches?.length || 0}</td>
-                                    <td className="p-4 text-right flex items-center justify-end gap-2">
-                                        <button
-                                            onClick={() => setSelectedWeekId(week.id)}
-                                            className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg text-xs font-bold transition-colors"
-                                        >
-                                            Participantes
-                                        </button>
-                                        <button
-                                            onClick={() => handleDeleteWeek(week.id, week.name)}
-                                            className="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg text-xs font-bold transition-colors"
-                                            title="Eliminar Jornada"
-                                        >
-                                            Borrar
-                                        </button>
-                                    </td>
+                <>
+                    {/* Desktop: Table */}
+                    <div className="hidden md:block overflow-x-auto">
+                        <table className="w-full text-left border-collapse">
+                            <thead>
+                                <tr className="border-b border-white/5 text-xs text-zinc-500 uppercase">
+                                    <th className="p-4">Jornada</th>
+                                    <th className="p-4">Fecha</th>
+                                    <th className="p-4">Estado</th>
+                                    <th className="p-4 text-center">Partidos</th>
+                                    <th className="p-4 text-right">Acción</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                            </thead>
+                            <tbody className="divide-y divide-white/5 text-sm">
+                                {weeks.map(week => (
+                                    <tr key={week.id} className="group hover:bg-white/5 transition-colors">
+                                        <td className="p-4 font-bold text-white">{week.name}</td>
+                                        <td className="p-4 text-zinc-400">{new Date(week.createdAt).toLocaleDateString()}</td>
+                                        <td className="p-4">
+                                            <span className={cn(
+                                                "px-2 py-1 rounded text-[10px] font-black uppercase tracking-wider",
+                                                week.status === 'OPEN' ? "bg-emerald-500/10 text-emerald-400" : "bg-zinc-800 text-zinc-500"
+                                            )}>
+                                                {week.status}
+                                            </span>
+                                        </td>
+                                        <td className="p-4 text-center text-zinc-400 font-mono">{week.matches?.length || 0}</td>
+                                        <td className="p-4 text-right flex items-center justify-end gap-2">
+                                            <button
+                                                onClick={() => setSelectedWeekId(week.id)}
+                                                className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg text-xs font-bold transition-colors"
+                                            >
+                                                Participantes
+                                            </button>
+                                            <button
+                                                onClick={() => handleDeleteWeek(week.id, week.name)}
+                                                className="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg text-xs font-bold transition-colors"
+                                                title="Eliminar Jornada"
+                                            >
+                                                Borrar
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* Mobile: Card list */}
+                    <div className="md:hidden space-y-3">
+                        {weeks.map(week => (
+                            <div key={week.id} className="bg-[#09090b] p-4 rounded-xl border border-white/5">
+                                <div className="flex items-center justify-between mb-2">
+                                    <h3 className="font-bold text-white text-sm">{week.name}</h3>
+                                    <span className={cn(
+                                        "px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider",
+                                        week.status === 'OPEN' ? "bg-emerald-500/10 text-emerald-400" : "bg-zinc-800 text-zinc-500"
+                                    )}>
+                                        {week.status}
+                                    </span>
+                                </div>
+                                <div className="flex items-center justify-between text-[10px] text-zinc-500 mb-3">
+                                    <span>{new Date(week.createdAt).toLocaleDateString()}</span>
+                                    <span className="font-mono">{week.matches?.length || 0} partidos</span>
+                                </div>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => setSelectedWeekId(week.id)}
+                                        className="flex-1 px-3 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg text-xs font-bold transition-colors text-center"
+                                    >
+                                        Participantes
+                                    </button>
+                                    <button
+                                        onClick={() => handleDeleteWeek(week.id, week.name)}
+                                        className="px-3 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg text-xs font-bold transition-colors"
+                                        title="Eliminar Jornada"
+                                    >
+                                        Borrar
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </>
             )}
         </div>
     );

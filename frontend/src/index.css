@@ -56,6 +56,15 @@ body {
   }
 }
 
+/* Hide scrollbar for horizontal scroll areas */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* Base button styles override */
 button {
   font-family: inherit;
