@@ -222,6 +222,16 @@ export class WeeksService {
         });
 
         this.invalidateCache();
+
+        const finishedCount = result.matches.filter(m => m.status === 'FINISHED').length;
+        const totalCount = result.matches.length;
+
+        this.usersService.broadcastNotification(
+            '¡Resultados Actualizados!',
+            `Se actualizaron los marcadores de ${result.name} (${finishedCount}/${totalCount} partidos finalizados). ¡Revisa la tabla!`,
+            { url: '/scoreboard' }
+        ).catch(e => this.logger.error("Error sending results push notification", e));
+
         return result;
     }
 
