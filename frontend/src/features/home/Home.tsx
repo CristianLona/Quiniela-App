@@ -243,14 +243,13 @@ export default function Home() {
 
                         {/* Quick Actions - Moved here as elegant small buttons */}
                         <div className="flex items-center gap-2 flex-wrap justify-center md:justify-start pt-1">
-
-                            {/* <button
+                            <button
                                 onClick={() => setShowPayment(true)}
-                                className="flex items-center gap-1.5 px-3.5 py-2 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 rounded-xl transition-all active:scale-95"
+                                className="flex items-center gap-1.5 px-3.5 py-2 bg-[#25D366]/10 hover:bg-[#25D366]/20 border border-[#25D366]/20 rounded-xl transition-all active:scale-95"
                             >
-                                <Banknote className="w-3.5 h-3.5 text-amber-400" />
-                                <span className="text-[11px] font-semibold text-amber-400">Pagar</span>
-                            </button> */}
+                                <Banknote className="w-3.5 h-3.5 text-[#25D366]" />
+                                <span className="text-[11px] font-semibold text-[#25D366]">Pagar</span>
+                            </button>
                             <button
                                 onClick={handleEnableNotifications}
                                 className="flex items-center gap-1.5 px-3.5 py-2 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 rounded-xl transition-all active:scale-95"
