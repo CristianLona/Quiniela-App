@@ -1,4 +1,4 @@
-# ⚽ Quiniela App
+# ⚽ ProQuiniela
 
 A full-stack web application for managing and participating in sports prediction pools (quinielas).
 Built with clean architecture, layered security, and modern web technologies — fully deployed on Google Cloud Platform via Firebase.
@@ -13,8 +13,9 @@ The goal of this project is to practice and demonstrate:
 -   **REST API design** with authentication and authorization layers
 -   **Production-grade security**: bcrypt hashing, JWT, Firebase Auth, CORS policies, rate limiting
 -   **Performance optimization**: in-memory caching, query optimization, pagination
--   **Modern UI/UX** with real-time WebSocket updates
+-   **Modern UI/UX** with real-time WebSocket updates and mobile-first responsive design
 -   **Cloud deployment** on Firebase Hosting + Cloud Functions (2nd Gen)
+-   **Push notifications** via Firebase Cloud Messaging (FCM)
 
 This is a **personal project** built to strengthen my software engineering skills and prepare for professional environments.
 
@@ -38,6 +39,7 @@ This is a **personal project** built to strengthen my software engineering skill
 -   **Routing:** React Router DOM 7
 -   **Real-time:** Socket.io-client
 -   **Auth:** Firebase Authentication (Google Sign-In)
+-   **PWA:** VitePWA with service worker for offline support
 
 ### Backend
 
@@ -46,6 +48,7 @@ This is a **personal project** built to strengthen my software engineering skill
 -   **Authentication:** Firebase Admin SDK + JWT + bcrypt
 -   **Database:** Cloud Firestore (NoSQL)
 -   **Real-time:** Socket.io (WebSockets) with token-authenticated handshake
+-   **Push Notifications:** Firebase Cloud Messaging (FCM) — broadcast to all registered devices
 -   **Web Scraping:** Cheerio + Axios (with in-memory cache)
 -   **Security:** @nestjs/throttler (rate limiting), CORS whitelisting
 -   **Deployment:** Firebase Cloud Functions (2nd Gen, Node.js 22)
@@ -60,6 +63,7 @@ graph TD
     Client -->|WSS + Firebase Token| WS["WebSocket Gateway"]
     API -->|Firestore SDK| DB[(Cloud Firestore)]
     API -->|Firebase Admin| Auth[Firebase Auth]
+    API -->|FCM Admin SDK| FCM[Push Notifications]
     WS -->|Firestore SDK| DB
     API -->|Cheerio + Axios| ESPN[ESPN Scraper]
     
@@ -91,7 +95,7 @@ The application implements **defense in depth** with multiple security layers:
 | **Rate Limiting** | `@nestjs/throttler` | 60 req/min global, 5 login attempts per 5 minutes |
 | **Data Filtering** | Controller-level | Sensitive fields (`userEmail`) stripped from API responses |
 | **Input Validation** | Service-level | Name length limits, field sanitization on updates |
-| **Payment Privacy**| Secure Modal Component | Bank details (CLABE) obfuscated and gated behind authentication |
+| **Payment Privacy**| Secure Modal Component | Bank details (CLABE) obfuscated, gated behind authentication with reveal/blur UI |
 
 > **Note:** `VITE_ADMIN_EMAIL` in the frontend `.env` is intentionally public — it only controls UI visibility of the admin button. Actual admin authorization is enforced server-side by the `AdminGuard`.
 
@@ -111,25 +115,51 @@ The application implements **defense in depth** with multiple security layers:
 
 ## ✨ Key Features
 
--   **RESTful API** built with NestJS and TypeScript
--   **Real-time Updates** via authenticated WebSockets for instant scoreboard rendering
--   **Balatro-Style UI / Premium Dark Experience**:
-    -   Vibrant, high-contrast visual style with chunky borders and custom background patterns
-    -   "Juicy" animations (squash & stretch, bouncy interactions, dynamic hover states)
-    -   Toast notifications (Sonner) for user feedback
-    -   Fully responsive design (Mobile First)
--   **Web Push Notifications**: Firebase Cloud Messaging auto-triggers alerts for all registered devices when an admin opens a new week.
--   **Firebase Authentication** (Google Sign-In) for user tracking and securing sensitive data (like the payment modal).
--   **Automated Match Scraping** from ESPN (Liga MX, Champions League, Premier League)
--   **Admin panel** for comprehensive management:
-    -   Match & Score Management with real-time updates
-    -   History Tab for past weeks and participants
-    -   Manual Entry for offline participants
-    -   Secure JWT authentication with bcrypt-hashed passwords
--   **Sports prediction (quiniela) system**:
-    -   User-friendly filling flow with Firebase Auth ID tracking
-    -   Live countdowns and deadline validation
-    -   Interactive Scoreboard with auto-scaling tables
+### 🎮 Core Quiniela System
+-   **User-friendly filling flow** with Firebase Auth ID tracking
+-   **Live countdowns** and deadline validation
+-   **Interactive Scoreboard** with auto-scaling tables and real-time updates
+-   **Tiebreaker system** based on total goals prediction
+
+### 📱 Mobile-First Responsive Design
+-   **Optimized for all screen sizes** — designed mobile-first, scales up to desktop
+-   **Touch-friendly UI** with minimum 44px touch targets, active scaling effects
+-   **App-like vertical scroll layout** on mobile with natural document flow
+-   **Compact header** with user avatar pill and inline actions
+-   **Responsive admin panel** with mobile-optimized tabs, card layouts, and collapsible sections
+
+### 🔔 Push Notifications (FCM)
+-   **New week alerts** — all registered users receive push notifications when a new quiniela is opened
+-   **Results updates** — notifications sent when scoreboard results are saved with match completion progress (e.g. "5/9 partidos finalizados")
+-   **Foreground toasts** — in-app toast notifications via Sonner when the app is open
+-   **Background push** — native browser notifications via service worker when the app is closed
+
+### 💬 WhatsApp Integration
+-   **Pre-filled payment proof message** — opens WhatsApp with the user's name and email auto-filled, user picks group or contact
+-   **Group invite link** — direct link to join the quiniela's WhatsApp group
+-   **Configurable via environment variables** — no code changes needed to update numbers or group links
+
+### 💰 Payment System
+-   **Secure bank info modal** — CLABE and bank details protected behind reveal/blur UI, only visible to authenticated users
+-   **WhatsApp comprobante flow** — one-tap payment proof submission with pre-filled user data
+-   **Admin payment tracking** — toggle paid/unpaid status per participant, hide unpaid users from public scoreboard
+
+### 🏟 Premium Dark UI
+-   Vibrant, high-contrast visual style with gradient orbs and dot-pattern backgrounds
+-   "Juicy" animations (scale, hover states, animated ping indicators)
+-   Toast notifications (Sonner) for user feedback
+-   Glass-morphism cards with subtle glow effects
+
+### 🛡 Admin Panel
+-   **Create Week** — drag & drop match builder with auto-import from ESPN (Liga MX, Champions, Premier League)
+-   **Capture Results** — inline score editing with ESPN auto-scrape + batch save
+-   **Manage Participants** — payment toggling, name/goals editing, deletion
+-   **Manual Entry** — register offline participants with full pick selection
+-   **History** — browse past weeks and their participants with delete capability
+
+### 🌐 Real-time Updates
+-   **WebSocket integration** for instant scoreboard rendering
+-   **Auto-scraping** from ESPN for match schedules and live results
 
 ---
 
@@ -137,20 +167,23 @@ The application implements **defense in depth** with multiple security layers:
 
 ```
 quiniela-app/
-├── frontend/               # React client (Vite)
+├── frontend/               # React client (Vite + PWA)
+│   ├── public/
+│   │   └── firebase-messaging-sw.js  # FCM service worker
 │   ├── src/
 │   │   ├── context/        # Auth context (Firebase)
 │   │   ├── features/       # Pages: Home, Fill, Scoreboard, Admin
-│   │   ├── lib/            # API client, Firebase config
-│   │   └── components/     # Shared UI components
-│   └── .env                # Firebase config + VITE_ADMIN_EMAIL
+│   │   ├── lib/            # API client, Firebase config, notifications
+│   │   └── components/     # Shared UI: Modal, PaymentInfoModal
+│   └── .env                # Firebase config + WhatsApp + Payment info
 │
 ├── backend/                # NestJS API
 │   ├── src/
 │   │   ├── modules/
 │   │   │   ├── auth/       # Guards, JWT, bcrypt
-│   │   │   ├── weeks/      # Week CRUD + cache
-│   │   │   └── picks/      # Participant submissions
+│   │   │   ├── weeks/      # Week CRUD + cache + push notifications
+│   │   │   ├── picks/      # Participant submissions
+│   │   │   └── users/      # FCM token management + broadcast
 │   │   ├── scraper/        # ESPN match scraper + cache
 │   │   ├── standings/      # League standings
 │   │   ├── events/         # WebSocket gateway
@@ -246,6 +279,10 @@ quiniela-app/
     VITE_PAYMENT_BENEFICIARY="John Doe"
     VITE_PAYMENT_BANK="Bank Name"
     VITE_PAYMENT_CLABE="012345678901234567"
+    
+    # WhatsApp Integration (phone with country code, no +)
+    VITE_WHATSAPP_NUMBER="521234567890"
+    VITE_WHATSAPP_GROUP="https://chat.whatsapp.com/YOUR_GROUP_LINK"
     ```
 
 4.  Start the development server:
@@ -272,12 +309,12 @@ The following composite indexes are required:
 
 The application is deployed on Firebase.
 
-- **Frontend:** Firebase Hosting
+- **Frontend:** Firebase Hosting (PWA with service worker)
 - **Backend:** Firebase Cloud Functions (2nd Gen, Node.js 22)
 
 ```bash
-# Build frontend first
-cd frontend && npm run build && cd ..
+# Build everything
+cd frontend && npm run build && cd ../backend && npm run build && cd ..
 
 # Deploy everything
 firebase deploy --project your-project-id
@@ -317,7 +354,7 @@ firebase deploy --only functions --project your-project-id
 
 ## 📌 Project Status
 
-**✅ Production-ready** — The core Quiniela flow (filling, submission, scoreboard, admin publishing) is complete with security hardening and performance optimizations deployed.
+**✅ Production-ready** — The core Quiniela flow (filling, submission, scoreboard, admin publishing) is complete with security hardening, push notifications, WhatsApp integration, and mobile-first responsive design deployed.
 
 ---
 
