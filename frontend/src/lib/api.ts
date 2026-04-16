@@ -5,12 +5,6 @@ export const SOCKET_URL = import.meta.env.VITE_API_URL ? import.meta.env.VITE_AP
 
 import { auth } from './firebase';
 
-// Legacy compatibility
-export const setAuthToken = (token: string | null) => {
-    if (token) localStorage.setItem('adminToken', token);
-    else localStorage.removeItem('adminToken');
-};
-
 async function fetchJson<T>(endpoint: string, options?: RequestInit): Promise<T> {
     const headers: Record<string, string> = {
         'Content-Type': 'application/json',
@@ -18,12 +12,9 @@ async function fetchJson<T>(endpoint: string, options?: RequestInit): Promise<T>
     };
 
     try {
-        const firebaseToken = auth.currentUser ? await auth.currentUser.getIdToken() : null;
-        const savedToken = localStorage.getItem('adminToken');
-        const finalToken = firebaseToken || savedToken;
-
-        if (finalToken) {
-            headers['Authorization'] = `Bearer ${finalToken}`;
+        const token = auth.currentUser ? await auth.currentUser.getIdToken() : null;
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
         }
     } catch (error) {
         console.error("Error getting Firebase token", error);
@@ -43,9 +34,6 @@ async function fetchJson<T>(endpoint: string, options?: RequestInit): Promise<T>
 }
 
 export const api = {
-    auth: {
-        login: (password: string) => fetchJson<{ access_token: string }>('/auth/login', { method: 'POST', body: JSON.stringify({ password }) }),
-    },
     weeks: {
         parse: (text: string) =>
             fetchJson<WeekDraft>('/weeks/parse', { method: 'POST', body: JSON.stringify({ text }) }),
