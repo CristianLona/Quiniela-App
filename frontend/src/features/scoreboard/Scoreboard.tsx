@@ -1,12 +1,14 @@
 import { useState, useMemo, useEffect } from 'react';
 import type { Match, ParticipantEntry } from '../../types';
 import { cn } from '../../lib/utils';
-import { Trophy, Loader2, ArrowLeft, CheckCircle2, User } from 'lucide-react';
+import { Trophy, Loader2, ArrowLeft, CheckCircle2, User, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { api, SOCKET_URL } from '../../lib/api';
 import { getShortName } from '../../lib/teams';
 import { io } from 'socket.io-client';
 import { useNavigate } from 'react-router-dom';
+import { exportScoreboardToExcel } from '../../lib/exportScoreboard';
+import { useAuth } from '../../context/AuthContext';
 
 export default function Scoreboard() {
     const navigate = useNavigate();
@@ -15,6 +17,10 @@ export default function Scoreboard() {
     const [loading, setLoading] = useState(true);
     const [weekName, setWeekName] = useState('Cargando...');
     const [currentWeekData, setCurrentWeekData] = useState<any>(null);
+    const [exporting, setExporting] = useState(false);
+    const { user } = useAuth();
+    const adminEmail = import.meta.env.VITE_ADMIN_EMAIL || '';
+    const isAdmin = adminEmail && user?.email?.toLowerCase() === adminEmail.toLowerCase();
 
     // Auto-Scale Logic
     const [scale, setScale] = useState(1);
@@ -165,9 +171,42 @@ export default function Scoreboard() {
                     </button>
                     <h1 className="text-lg md:text-xl font-black text-white tracking-widest uppercase truncate">Resultados</h1>
 
-                    <button onClick={() => navigate('/fill')} className="flex items-center gap-2 px-4 py-2 bg-[#22c55e] rounded-xl hover:bg-[#16a34a] transition-colors shadow-[0_0_15px_rgba(34,197,94,0.3)]">
-                        <span className="text-sm font-black text-[#020617] uppercase">Jugar</span>
-                    </button>
+                    <div className="flex items-center gap-2">
+                        {isAdmin && (
+                            <button
+                                onClick={async () => {
+                                    setExporting(true);
+                                    try {
+                                        await exportScoreboardToExcel(
+                                            participants,
+                                            matches,
+                                            weekName,
+                                            totalGoals,
+                                            prizePot,
+                                        );
+                                        toast.success('Excel descargado correctamente');
+                                    } catch (err) {
+                                        console.error('Export error:', err);
+                                        toast.error('Error al exportar el archivo');
+                                    } finally {
+                                        setExporting(false);
+                                    }
+                                }}
+                                disabled={exporting || sortedParticipants.length === 0}
+                                className="group flex items-center gap-2 px-4 py-2 bg-black/40 backdrop-blur-md border border-white/5 rounded-xl hover:bg-white/5 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                title="Exportar a Excel"
+                            >
+                                {exporting
+                                    ? <Loader2 className="w-5 h-5 text-[#22c55e] animate-spin" />
+                                    : <Download className="w-5 h-5 text-[#22c55e] group-hover:translate-y-0.5 transition-transform" />
+                                }
+                                <span className="text-sm font-bold text-neutral-200 hidden md:block">Excel</span>
+                            </button>
+                            )}
+                            <button onClick={() => navigate('/fill')} className="flex items-center gap-2 px-4 py-2 bg-[#22c55e] rounded-xl hover:bg-[#16a34a] transition-colors shadow-[0_0_15px_rgba(34,197,94,0.3)]">
+                                <span className="text-sm font-black text-[#020617] uppercase">Jugar</span>
+                            </button>
+                    </div>
                 </div>
 
                 {/* Dashboard Ribbon */}

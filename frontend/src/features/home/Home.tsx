@@ -22,6 +22,7 @@ export default function Home() {
     const [activeLeague, setActiveLeague] = useState<string>("liga-mx");
     const [showRules, setShowRules] = useState(false);
     const [showPayment, setShowPayment] = useState(false);
+    const [avatarError, setAvatarError] = useState(false);
 
     const handleEnableNotifications = async () => {
         if ('Notification' in window && Notification.permission !== 'granted') {
@@ -33,7 +34,6 @@ export default function Home() {
             }
         } else if ('Notification' in window && Notification.permission === 'granted') {
             toast.info('Ya tienes las notificaciones activas');
-            // Try to refetch token silently just to be sure it's in backend
             requestNotificationPermission();
         }
     };
@@ -124,8 +124,8 @@ export default function Home() {
                 <div className="flex items-center justify-between px-5 pt-5 pb-2 md:px-12 md:pt-10">
                     {/* User Profile - clean and minimal */}
                     <div className="flex items-center gap-3 p-2.5 rounded-3xl border border-zinc-800">
-                        {user?.photoURL ? (
-                            <img src={user.photoURL} alt="User" className="w-9 h-9 rounded-full ring-2 ring-[#22c55e]/40 shadow-lg shadow-[#22c55e]/10" />
+                        {user?.photoURL && !avatarError ? (
+                            <img src={user.photoURL} alt="User" className="w-9 h-9 rounded-full ring-2 ring-[#22c55e]/40 shadow-lg shadow-[#22c55e]/10" onError={() => setAvatarError(true)} />
                         ) : (
                             <div className="w-9 h-9 bg-gradient-to-br from-zinc-700 to-zinc-800 rounded-full flex items-center justify-center ring-2 ring-zinc-600 shadow-lg">
                                 <User className="w-4 h-4 text-zinc-300" />
