@@ -17,6 +17,23 @@ export class UsersService {
         }, { merge: true });
     }
 
+    async savePhoneNumber(userId: string, phoneNumber: string): Promise<void> {
+        const db = this.firebaseService.getDb();
+        const userRef = db.collection('users').doc(userId);
+        
+        const admin = require('firebase-admin');
+        await userRef.set({
+            phoneNumber,
+            lastUpdated: admin.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+    }
+
+    async getUser(userId: string): Promise<any> {
+        const db = this.firebaseService.getDb();
+        const userDoc = await db.collection('users').doc(userId).get();
+        return userDoc.exists ? userDoc.data() : {};
+    }
+
     async getAllTokens(): Promise<string[]> {
         const db = this.firebaseService.getDb();
         const usersSnap = await db.collection('users').get();

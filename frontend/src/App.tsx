@@ -5,12 +5,14 @@ import AdminPanel from './features/admin/AdminPanel';
 import Home from './features/home/Home';
 import Login from './features/auth/Login';
 import ProtectedRoute from './components/ProtectedRoute';
+import { PhonePromptGlobal } from './components/PhonePromptGlobal';
 import { Toaster } from 'sonner';
 
 function App() {
   return (
     <BrowserRouter>
       <Toaster richColors position="top-center" theme="dark" />
+      <PhonePromptGlobal />
       <div className="min-h-screen bg-black text-white font-sans">
         <Routes>
           {/* Public route */}

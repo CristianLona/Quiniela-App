@@ -9,9 +9,10 @@ interface ModalProps {
     title?: string;
     children: React.ReactNode;
     className?: string; // For overriding max-width usually
+    hideCloseButton?: boolean;
 }
 
-export function Modal({ isOpen, onClose, title, children, className }: ModalProps) {
+export function Modal({ isOpen, onClose, title, children, className, hideCloseButton }: ModalProps) {
 
     // Lock body scroll when open
     useEffect(() => {
@@ -36,12 +37,14 @@ export function Modal({ isOpen, onClose, title, children, className }: ModalProp
                 {/* Header */}
                 <div className="flex items-center justify-between p-4 border-b border-white/5">
                     <h3 className="text-lg font-bold text-white">{title}</h3>
-                    <button
-                        onClick={onClose}
-                        className="p-2 hover:bg-white/10 rounded-full transition-colors text-slate-400 hover:text-white"
-                    >
-                        <X className="w-5 h-5" />
-                    </button>
+                    {!hideCloseButton && (
+                        <button
+                            onClick={onClose}
+                            className="p-2 hover:bg-white/10 rounded-full transition-colors text-slate-400 hover:text-white"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+                    )}
                 </div>
 
                 {/* Body */}

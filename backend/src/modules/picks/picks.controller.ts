@@ -11,7 +11,7 @@ export class PicksController {
     @Post()
     @UseGuards(FirebaseAuthGuard)
     submit(@Body() body: any, @User() user: any) {
-        return this.picksService.submitPick({ ...body, userEmail: user?.email });
+        return this.picksService.submitPick({ ...body, userEmail: user?.email, userId: user?.uid });
     }
 
     @Post('admin')
@@ -23,8 +23,20 @@ export class PicksController {
     @Get('week/:weekId')
     async getByWeek(@Param('weekId') weekId: string) {
         const picks = await this.picksService.findAllByWeek(weekId);
-        // Eliminar emails y campo normalizado de la respuesta — datos sensibles/internos
-        return picks.map(({ userEmail, participantNameNormalized, ...rest }) => rest);
+        // Eliminar emails, telefono y campo normalizado de la respuesta — datos sensibles/internos
+        return picks.map(({ userEmail, phoneNumber, participantNameNormalized, ...rest }) => rest);
+    }
+
+    @Get('week/:weekId/admin')
+    @UseGuards(AdminGuard)
+    async getByWeekAdmin(@Param('weekId') weekId: string) {
+        return this.picksService.findAllByWeekAdmin(weekId);
+    }
+
+    @Post('patch-phones')
+    @UseGuards(AdminGuard)
+    async patchPhones() {
+        return this.picksService.patchOldPicksPhoneNumbers();
     }
 
     @Patch(':id/payment')

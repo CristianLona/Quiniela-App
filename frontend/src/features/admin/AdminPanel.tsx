@@ -709,7 +709,7 @@ function ParticipantsEditor({ weekId: propWeekId }: { weekId?: string }) {
                 setWeekId(propWeekId);
                 const week = await api.weeks.getOne(propWeekId);
                 setHideUnpaid(!!week.hideUnpaid);
-                const parts = await api.picks.getByWeek(propWeekId);
+                const parts = await api.picks.getAdminByWeek(propWeekId);
                 setParticipants(parts.sort((a, b) => b.submittedAt - a.submittedAt));
             } else {
                 // Load active/latest week logic 
@@ -720,7 +720,7 @@ function ParticipantsEditor({ weekId: propWeekId }: { weekId?: string }) {
                     setWeekId(active.id);
                     setHideUnpaid(!!active.hideUnpaid);
 
-                    const parts = await api.picks.getByWeek(active.id);
+                    const parts = await api.picks.getAdminByWeek(active.id);
                     setParticipants(parts.sort((a, b) => b.submittedAt - a.submittedAt));
                 }
             }
@@ -825,6 +825,12 @@ function ParticipantsEditor({ weekId: propWeekId }: { weekId?: string }) {
                                 <div className="flex-1 min-w-0">
                                     <p className="font-bold text-white text-sm truncate">{p.participantName}</p>
                                     <p className="text-[10px] text-zinc-500 uppercase tracking-wider">{new Date(p.submittedAt).toLocaleDateString()}</p>
+                                    {(p.userEmail || p.phoneNumber) && (
+                                        <div className="text-[10px] text-zinc-400 mt-1 truncate">
+                                            {p.userEmail && <p> {p.userEmail}</p>}
+                                            {p.phoneNumber && <p> {p.phoneNumber}</p>}
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="flex items-center gap-1.5 md:gap-2 shrink-0">
                                     <button

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Trophy, ChevronRight, Loader2, Play, Activity, Timer, HelpCircle, LogOut, User, AlertTriangle, ShieldCheck, Target, Calculator, Banknote, Bell, Shield } from 'lucide-react';
+import { Trophy, ChevronRight, Loader2, Play, Activity, Timer, HelpCircle, LogOut, User, AlertTriangle, ShieldCheck, Target, Calculator, Bell, Shield, MessageCircle } from 'lucide-react';
 import { api } from '../../lib/api';
 import StandingsTable from './StandingsTable';
 import { Modal } from '../../components/ui/Modal';
@@ -247,8 +247,8 @@ export default function Home() {
                                 onClick={() => setShowPayment(true)}
                                 className="flex items-center gap-1.5 px-3.5 py-2 bg-[#25D366]/10 hover:bg-[#25D366]/20 border border-[#25D366]/20 rounded-xl transition-all active:scale-95"
                             >
-                                <Banknote className="w-3.5 h-3.5 text-[#25D366]" />
-                                <span className="text-[11px] font-semibold text-[#25D366]">Pagar</span>
+                                <MessageCircle className="w-3.5 h-3.5 text-[#25D366]" />
+                                <span className="text-[11px] font-semibold text-[#25D366]">Whatsapp</span>
                             </button>
                             <button
                                 onClick={handleEnableNotifications}

@@ -51,6 +51,7 @@ export interface ParticipantEntry {
     picks: PickSelection[];
     paymentStatus: PaymentStatus;
     userEmail?: string;
+    phoneNumber?: string;
 
     score?: number; 
     hits?: string[]; 

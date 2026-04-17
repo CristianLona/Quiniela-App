@@ -74,6 +74,8 @@ export const api = {
             fetchJson<ParticipantEntry>('/picks/admin', { method: 'POST', body: JSON.stringify(data) }),
 
         getByWeek: (weekId: string) => fetchJson<ParticipantEntry[]>(`/picks/week/${weekId}`),
+        
+        getAdminByWeek: (weekId: string) => fetchJson<ParticipantEntry[]>(`/picks/week/${weekId}/admin`),
 
         togglePayment: (id: string) => fetchJson<ParticipantEntry>(`/picks/${id}/payment`, { method: 'PATCH' }),
 
@@ -96,7 +98,12 @@ export const api = {
     },
 
     users: {
+        getMe: () => fetchJson<{ success: boolean; user: any }>('/users/me'),
+        
         saveFcmToken: (token: string) => 
             fetchJson<{ success: boolean }>('/users/fcm-token', { method: 'POST', body: JSON.stringify({ token }) }),
+            
+        savePhoneNumber: (phoneNumber: string) => 
+            fetchJson<{ success: boolean }>('/users/phone', { method: 'POST', body: JSON.stringify({ phoneNumber }) }),
     }
 };

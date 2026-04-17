@@ -57,4 +57,8 @@ export class FirebaseService implements OnModuleInit {
     getMessaging() {
         return admin.messaging();
     }
+
+    getAuth() {
+        return admin.auth();
+    }
 }

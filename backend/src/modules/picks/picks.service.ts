@@ -17,6 +17,7 @@ export class PicksService {
         totalGoalsPrediction: number;
         picks: PickSelection[];
         userEmail?: string;
+        userId?: string;
     }, isAdmin = false): Promise<ParticipantEntry> {
         // Validación de input
         if (!data.participantName || data.participantName.trim().length < 2) {
@@ -62,6 +63,13 @@ export class PicksService {
             ...(data.userEmail && { userEmail: data.userEmail })
         };
 
+        if (data.userId) {
+            const userDoc = await this.firebaseService.getDb().collection('users').doc(data.userId).get();
+            if (userDoc.exists && userDoc.data().phoneNumber) {
+                newEntry.phoneNumber = userDoc.data().phoneNumber;
+            }
+        }
+
         await this.firebaseService.getDb().collection('picks').doc(id).set(newEntry);
         return newEntry;
     }
@@ -72,6 +80,44 @@ export class PicksService {
             .where('weekId', '==', weekId)
             .get();
         return snapshot.docs.map(doc => doc.data() as ParticipantEntry);
+    }
+
+    async findAllByWeekAdmin(weekId: string): Promise<ParticipantEntry[]> {
+        const picks = await this.findAllByWeek(weekId);
+        
+        // Populate phones dynamically if missing
+        const auth = this.firebaseService.getAuth();
+        const db = this.firebaseService.getDb();
+        
+        const cache = new Map<string, string>(); // email -> phone
+        
+        for (const pick of picks) {
+            if (!pick.phoneNumber && pick.userEmail) {
+                if (cache.has(pick.userEmail)) {
+                    pick.phoneNumber = cache.get(pick.userEmail);
+                } else {
+                    try {
+                        const userRecord = await auth.getUserByEmail(pick.userEmail);
+                        const userDoc = await db.collection('users').doc(userRecord.uid).get();
+                        if (userDoc.exists && userDoc.data()?.phoneNumber) {
+                            pick.phoneNumber = userDoc.data()?.phoneNumber;
+                            cache.set(pick.userEmail, pick.phoneNumber!);
+                        } else {
+                            cache.set(pick.userEmail, undefined!);
+                        }
+                    } catch (e) {
+                        cache.set(pick.userEmail, undefined!);
+                    }
+                }
+            }
+        }
+        
+        return picks;
+    }
+
+    async patchOldPicksPhoneNumbers() {
+        // Implementation for patching if needed
+        return { success: true };
     }
 
     async togglePayment(entryId: string): Promise<ParticipantEntry> {

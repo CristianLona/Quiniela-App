@@ -55,6 +55,8 @@ export interface ParticipantEntry {
     hits?: string[]; // IDs of matches guessed correctly
     pointsDistance?: number; // Abs(totalGoalsPrediction - Week.totalGoalsResult) for tiebreak
     submittedAt: number;
+    userEmail?: string;
+    phoneNumber?: string;
 }
 
 export interface WeekDraft {
