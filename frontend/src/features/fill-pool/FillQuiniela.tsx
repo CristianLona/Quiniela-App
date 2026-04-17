@@ -340,7 +340,11 @@ export default function FillQuiniela() {
                                     <input
                                         type="number"
                                         value={goals}
-                                        onChange={e => setGoals(e.target.value)}
+                                        onChange={e => {
+                                            if (e.target.value.length <= 2) {
+                                                setGoals(e.target.value);
+                                            }
+                                        }}
                                         placeholder="0"
                                         className="w-full bg-transparent text-white font-bold text-lg outline-none placeholder:text-zinc-700"
                                     />
@@ -429,7 +433,7 @@ export default function FillQuiniela() {
 
                         <p className="text-zinc-400 text-sm text-center">
                             ¿Estás seguro de enviar tu quiniela? <br />
-                            <span className="text-xs text-zinc-600">No podrás modificarla después.</span>
+                            <span className="text-xs text-zinc-600">No podrás modificarla despues del silbatazo inicial del primer juego.</span>
                         </p>
 
                         <div className="flex gap-3">
