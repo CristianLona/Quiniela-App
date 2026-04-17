@@ -35,4 +35,14 @@ export class UsersController {
         await this.usersService.savePhoneNumber(userId, phoneNumber);
         return { success: true };
     }
+
+    @Post('accept-rules')
+    async acceptRules(@Req() req: Request) {
+        const userId = (req as any).user?.uid;
+        if (!userId) {
+            return { success: false, message: 'Unauthorized' };
+        }
+        await this.usersService.acceptRules(userId);
+        return { success: true };
+    }
 }

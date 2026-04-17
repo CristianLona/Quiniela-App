@@ -28,6 +28,18 @@ export class UsersService {
         }, { merge: true });
     }
 
+    async acceptRules(userId: string): Promise<void> {
+        const db = this.firebaseService.getDb();
+        const userRef = db.collection('users').doc(userId);
+        
+        const admin = require('firebase-admin');
+        await userRef.set({
+            hasAcceptedRules: true,
+            lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
+            acceptedRulesAt: admin.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+    }
+
     async getUser(userId: string): Promise<any> {
         const db = this.firebaseService.getDb();
         const userDoc = await db.collection('users').doc(userId).get();

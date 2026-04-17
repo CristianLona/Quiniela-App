@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import type { Match, MatchOutcome } from "../../types";
 import { MatchCard } from "../../components/MatchCard";
-import { Trophy, Clock, Loader2, User, Target, ArrowLeft, CheckCircle2, Ticket, Timer } from "lucide-react";
+import { Trophy, Clock, Loader2, User, Target, ArrowLeft, CheckCircle2, Ticket, Timer, AlertTriangle, ShieldCheck, Calculator } from "lucide-react";
 import { toast } from 'sonner';
 import { Modal } from '../../components/ui/Modal';
 import { cn } from "../../lib/utils";
@@ -22,6 +22,12 @@ export default function FillQuiniela() {
     const [loading, setLoading] = useState(false);
     const [fetching, setFetching] = useState(true);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
+    
+    // Terms and Conditions State
+    const [hasAcceptedTerms, setHasAcceptedTerms] = useState<boolean>(false);
+    const [showTermsModal, setShowTermsModal] = useState(false);
+    const [termsChecked, setTermsChecked] = useState(false);
+    const [acceptingTerms, setAcceptingTerms] = useState(false);
 
     const [matches, setMatches] = useState<Match[]>([]);
     const [weekID, setWeekID] = useState<string | null>(null);
@@ -62,7 +68,16 @@ export default function FillQuiniela() {
             .catch(err => {
                 console.error("Failed to load weeks", err);
                 toast.error("Error cargando la jornada activa");
+            });
+
+        // Parallel fetch for User state
+        api.users.getMe()
+            .then(res => {
+                if (res.success && res.user && res.user.hasAcceptedRules) {
+                    setHasAcceptedTerms(true);
+                }
             })
+            .catch(err => console.error("Error fetching user profile for terms", err))
             .finally(() => setFetching(false));
 
         // Background fetch for standings
@@ -149,7 +164,30 @@ export default function FillQuiniela() {
     const handlePreSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!isComplete || !weekID) return;
-        setShowConfirmModal(true);
+
+        if (!hasAcceptedTerms) {
+            setShowTermsModal(true);
+        } else {
+            setShowConfirmModal(true);
+        }
+    };
+
+    const handleAcceptTerms = async () => {
+        if (!termsChecked) return;
+        setAcceptingTerms(true);
+        try {
+            await api.users.acceptRules();
+            setHasAcceptedTerms(true);
+            setShowTermsModal(false);
+            setTimeout(() => {
+                setShowConfirmModal(true);
+            }, 150);
+        } catch (error) {
+            toast.error("Error al registrar aceptación. Intenta de nuevo.");
+            console.error("Terms error:", error);
+        } finally {
+            setAcceptingTerms(false);
+        }
     };
 
     const handleConfirmSubmit = async () => {
@@ -433,7 +471,7 @@ export default function FillQuiniela() {
 
                         <p className="text-zinc-400 text-sm text-center">
                             ¿Estás seguro de enviar tu quiniela? <br />
-                            <span className="text-xs text-zinc-600">No podrás modificarla despues del silbatazo inicial del primer juego.</span>
+                            <span className="text-xs text-zinc-600">No podrás modificarla despues.</span>
                         </p>
 
                         <div className="flex gap-3">
@@ -452,6 +490,77 @@ export default function FillQuiniela() {
                                 Enviar Ahora
                             </button>
                         </div>
+                    </div>
+                </Modal>
+
+                {/* Terms Modal */}
+                <Modal
+                    isOpen={showTermsModal}
+                    onClose={() => setShowTermsModal(false)}
+                    title="Condiciones de Participación"
+                >
+                    <div className="space-y-6 text-sm">
+                        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 sm:p-5 max-h-[60vh] overflow-y-auto space-y-4 shadow-inner custom-scrollbar">
+                            <p className="text-zinc-400 text-xs mb-2">Para garantizar un juego justo para todos, debes conocer y aceptar nuestras reglas antes de enviar tu primera quiniela:</p>
+                            
+                            <div className="space-y-4">
+                                <div className="flex gap-3">
+                                    <Target className="w-5 h-5 text-[#22c55e] shrink-0 mt-0.5" />
+                                    <div><strong className="text-white block mb-1">1. La Dinámica</strong>
+                                    <span className="text-zinc-400 text-xs">Predice el resultado final de todos los partidos semanales: Local, Empate o Visita. Toda quiniela sin pagar antes del inicio del primer partido será eliminada.</span></div>
+                                </div>
+                                <div className="flex gap-3">
+                                    <ShieldCheck className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
+                                    <div><strong className="text-white block mb-1">2. Puntuación</strong>
+                                    <span className="text-zinc-400 text-xs">Sumarás 1 punto por cada predicción correcta. Quien logre más puntos se lleva la bolsa.</span></div>
+                                </div>
+                                <div className="flex gap-3">
+                                    <Calculator className="w-5 h-5 text-purple-500 shrink-0 mt-0.5" />
+                                    <div><strong className="text-white block mb-1">3. Criterio de Desempate</strong>
+                                    <span className="text-zinc-400 text-xs">En caso de empate en puntos, gana quien se acerque más al "Total de Goles" de la jornada. Si hay empate exacto también en goles, gana quien haya enviado y registrado su quiniela primero.</span></div>
+                                </div>
+                                <div className="flex gap-3">
+                                    <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+                                    <div><strong className="text-white block mb-1">4. Partidos Suspendidos</strong>
+                                    <span className="text-zinc-400 text-xs">Si un partido se suspende por causas de fuerza mayor, quedará anulado de la quiniela y nadie recibirá puntos por él.</span></div>
+                                </div>
+                                <div className="flex gap-3">
+                                    <Timer className="w-5 h-5 text-cyan-500 shrink-0 mt-0.5" />
+                                    <div><strong className="text-white block mb-1">5. Resultados Oficiales</strong>
+                                    <span className="text-zinc-400 text-xs">Valen los resultados estrictamente al silbatazo final de los 90 min reglamentarios. No se cuentan tiempos extra, penales ni decisiones en la mesa. Las modificaciones a la quiniela posterior al envío no están permitidas.</span></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <label className="flex items-start gap-3 cursor-pointer group bg-zinc-900/50 p-3 rounded-lg border border-zinc-800 hover:border-zinc-700 transition-colors">
+                            <div className="relative flex items-start pt-1">
+                                <input
+                                    type="checkbox"
+                                    className="peer sr-only"
+                                    checked={termsChecked}
+                                    onChange={(e) => setTermsChecked(e.target.checked)}
+                                />
+                                <div className="w-5 h-5 border-2 border-zinc-500 rounded bg-zinc-900 peer-checked:bg-[#22c55e] peer-checked:border-[#22c55e] transition-colors flex items-center justify-center">
+                                    <CheckCircle2 className="w-3.5 h-3.5 text-black opacity-0 peer-checked:opacity-100 transition-opacity" />
+                                </div>
+                            </div>
+                            <span className="text-xs text-zinc-300 font-medium leading-relaxed select-none">
+                                He leído, entendido y acepto las reglas y condiciones de juego para participar en la quiniela.
+                            </span>
+                        </label>
+
+                        <button
+                            onClick={handleAcceptTerms}
+                            disabled={!termsChecked || acceptingTerms}
+                            className={cn(
+                                "w-full py-4 rounded-xl font-black text-sm uppercase tracking-widest transition-all text-center flex items-center justify-center gap-2",
+                                termsChecked
+                                    ? "bg-[#22c55e] text-black shadow-lg shadow-[#22c55e]/20 hover:scale-[1.02]"
+                                    : "bg-zinc-900 text-zinc-600 border border-zinc-800 cursor-not-allowed"
+                            )}
+                        >
+                            {acceptingTerms ? <Loader2 className="w-5 h-5 animate-spin" /> : "Aceptar y Continuar"}
+                        </button>
                     </div>
                 </Modal>
             </div>

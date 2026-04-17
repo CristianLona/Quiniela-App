@@ -105,5 +105,8 @@ export const api = {
             
         savePhoneNumber: (phoneNumber: string) => 
             fetchJson<{ success: boolean }>('/users/phone', { method: 'POST', body: JSON.stringify({ phoneNumber }) }),
+            
+        acceptRules: () =>
+            fetchJson<{ success: boolean }>('/users/accept-rules', { method: 'POST' }),
     }
 };

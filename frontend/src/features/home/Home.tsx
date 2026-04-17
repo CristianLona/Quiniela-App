@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Trophy, ChevronRight, Loader2, Play, Activity, Timer, HelpCircle, LogOut, User, AlertTriangle, ShieldCheck, Target, Calculator, Bell, Shield, MessageCircle, PenTool } from 'lucide-react';
+import { Trophy, ChevronRight, Loader2, Play, Activity, Timer, HelpCircle, LogOut, User, AlertTriangle, ShieldCheck, Target, Calculator, Bell, Shield, MessageCircle} from 'lucide-react';
 import { api } from '../../lib/api';
 import StandingsTable from './StandingsTable';
 import { Modal } from '../../components/ui/Modal';
@@ -8,6 +8,9 @@ import PaymentInfoModal from '../../components/PaymentInfoModal';
 import { useAuth } from '../../context/AuthContext';
 import { requestNotificationPermission } from '../../lib/notifications';
 import { toast } from 'sonner';
+
+const APP_VERSION = "v2.0.0";
+
 
 export default function Home() {
     const navigate = useNavigate();
@@ -270,7 +273,7 @@ export default function Home() {
                         {/* Footer Info (Desktop Only) */}
                         <div className="hidden md:block pt-6 border-t border-zinc-800/60 w-full">
                             <p className="text-xs text-zinc-600 font-mono">
-                                v1.8.0 • Powered by React & Firebase
+                                {APP_VERSION} • Powered by React & Firebase
                             </p>
                         </div>
                     </div>
@@ -335,9 +338,12 @@ export default function Home() {
                 </div>
 
                 {/* ─── MOBILE FOOTER ─── */}
-                <div className="md:hidden text-center pb-8 safe-area-bottom">
+                <div className="md:hidden text-center pb-8 safe-area-bottom flex flex-col gap-1">
                     <p className="text-[10px] text-zinc-700 font-bold uppercase tracking-widest">
                         Quiniela App © 2026
+                    </p>
+                    <p className="text-[10px] text-zinc-600 font-mono">
+                        {APP_VERSION} • Powered by React & Firebase
                     </p>
                 </div>
 
@@ -416,17 +422,6 @@ export default function Home() {
                             </div>
                             <p className="text-zinc-400 text-xs leading-relaxed">
                                 Los resultados válidos para la quiniela son estrictamente al <strong className="text-white">silbatazo final de los 90 minutos reglamentarios</strong>. No se tomarán en cuenta tiempos extra, penales ni decisiones en la mesa dictaminadas posteriormente (como VAR en días posteriores o alineaciones indebidas).
-                            </p>
-                        </div>
-                        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 flex flex-col gap-3 sm:col-span-2 group hover:border-pink-500/30 transition-colors">
-                            <div className="flex items-center gap-3 mb-1">
-                                <div className="w-10 h-10 rounded-full bg-pink-500/10 flex items-center justify-center shrink-0">
-                                    <PenTool className="w-5 h-5 text-pink-500" />
-                                </div>
-                                <h4 className="font-bold text-white uppercase tracking-wide text-xs">6. Modificaciones de Quiniela</h4>
-                            </div>
-                            <p className="text-zinc-400 text-xs leading-relaxed">
-                                Si cometiste un error o deseas cambiar algún resultado, puedes enviar un mensaje al administrador para solicitar el ajuste. <strong className="text-white">IMPORTANTE:</strong> Todo cambio debe ser antes del silbatazo inicial del primer juego; una vez iniciada la jornada ya no serán posibles las modificaciones.
                             </p>
                         </div>
                     </div>
