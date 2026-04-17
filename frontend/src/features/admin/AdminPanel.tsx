@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { cn } from '../../lib/utils';
-import { Lock, Plus, Play, Loader2, Trophy, ClipboardList, PenTool, User, Eye, EyeOff, DollarSign, CheckCircle2, Circle, History, ArrowRight, Trash2} from 'lucide-react';
-import type { WeekDraft, Match, ParticipantEntry, Week } from '../../types';
+import { Lock, Plus, Play, Loader2, Trophy, ClipboardList, PenTool, User, Eye, EyeOff, DollarSign, CheckCircle2, Circle, History, ArrowRight, Trash2, AlertTriangle} from 'lucide-react';
+import type { WeekDraft, Match, MatchStatus, ParticipantEntry, Week } from '../../types';
 import { toast } from 'sonner';
 import { Modal } from '../../components/ui/Modal';
 import { api } from '../../lib/api';
@@ -453,10 +453,14 @@ function ResultsEditor() {
     };
 
     const handleToggleStatus = (m: Match) => {
-        const newStatus = m.status === 'FINISHED' ? 'SCHEDULED' : 'FINISHED';
+        let newStatus: MatchStatus = 'SCHEDULED';
+        if (m.status === 'SCHEDULED') newStatus = 'FINISHED';
+        if (m.status === 'FINISHED') newStatus = 'POSTPONED';
+        if (m.status === 'POSTPONED') newStatus = 'SCHEDULED';
+
         setMatches(prev => prev.map(match => {
             if (match.id === m.id) {
-                return { ...match, status: newStatus as any };
+                return { ...match, status: newStatus };
             }
             return match;
         }));
@@ -663,10 +667,12 @@ function ResultsEditor() {
                                     <button
                                         onClick={() => handleToggleStatus(m)}
                                         className="focus:outline-none hover:scale-110 transition-transform p-0.5"
-                                        title={m.status === 'FINISHED' ? 'Marcar como Pendiente' : 'Marcar como Finalizado'}
+                                        title={m.status === 'FINISHED' ? 'Finalizado' : m.status === 'POSTPONED' ? 'Suspendido' : 'Pendiente'}
                                     >
                                         {m.status === 'FINISHED' ? (
                                             <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                                        ) : m.status === 'POSTPONED' ? (
+                                            <AlertTriangle className="w-5 h-5 text-zinc-500" />
                                         ) : (
                                             <Circle className="w-5 h-5 text-zinc-600" />
                                         )}

@@ -283,9 +283,10 @@ export default function Scoreboard() {
                                                                     m.result?.outcome === 'L' ? 'bg-white border-white text-black' :
                                                                         m.result?.outcome === 'E' ? 'bg-zinc-700 border-zinc-700 text-white' :
                                                                             'bg-[#22c55e] border-[#22c55e] text-black'
-                                                                ) : 'bg-[#09090b] border-white/10 text-zinc-700'
+                                                                ) : m.status === 'POSTPONED' ? 'bg-zinc-900 border-zinc-800 text-zinc-500 line-through decoration-zinc-600'
+                                                                : 'bg-[#09090b] border-white/10 text-zinc-700'
                                                             )}>
-                                                                {m.status === 'FINISHED' ? m.result?.outcome : '-'}
+                                                                {m.status === 'FINISHED' ? m.result?.outcome : m.status === 'POSTPONED' ? 'S' : '-'}
                                                             </div>
 
                                                             <div className="h-5 text-[10px] font-mono font-bold text-zinc-400">
@@ -327,6 +328,7 @@ export default function Scoreboard() {
                                                         <td key={m.id} className="p-2 text-center">
                                                             <div className={cn(
                                                                 "w-8 h-8 mx-auto rounded-lg text-xs flex items-center justify-center font-bold transition-all border-2",
+                                                                m.status === 'POSTPONED' ? "bg-zinc-900/50 border-zinc-800/50 text-zinc-600 line-through decoration-zinc-700" :
                                                                 isHit
                                                                     ? "bg-[#22c55e] border-[#22c55e] text-black shadow-[0_0_15px_rgba(34,197,94,0.3)] scale-110"
                                                                     : "text-zinc-500 bg-white/5 border-transparent"
@@ -343,10 +345,17 @@ export default function Scoreboard() {
                                     </tbody>
                                     <tfoot>
                                         <tr className="bg-[#09090b]/50 border-t-2 border-white/10">
-                                            <td className="p-4 text-right font-bold text-xs uppercase text-zinc-500 sticky left-0 bg-[#09090b]" colSpan={matches.length + 2}>
-                                                Total Goles Real:
+                                            <td className="p-4 text-right sticky left-0 bg-[#09090b]" colSpan={matches.length + 2}>
+                                                <div className="flex flex-col items-end justify-center">
+                                                    <span className="font-bold text-xs uppercase text-zinc-500">Total Goles Real:</span>
+                                                    {matches.some(m => m.status === 'POSTPONED') && (
+                                                        <span className="text-[9px] text-amber-500/80 font-medium normal-case mt-0.5">
+                                                            *Excluye partidos suspendidos
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </td>
-                                            <td className="p-4 text-center font-black text-xl text-white bg-[#09090b]">
+                                            <td className="p-4 text-center font-black text-xl text-white bg-[#09090b] align-middle">
                                                 {totalGoals}
                                             </td>
                                         </tr>

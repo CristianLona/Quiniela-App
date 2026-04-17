@@ -392,7 +392,30 @@ export default function Home() {
                                 <h4 className="font-bold text-white uppercase tracking-wide text-xs">3. Criterio de Desempate (Goles)</h4>
                             </div>
                             <p className="text-zinc-400 text-xs leading-relaxed">
-                                Si hay un empate en primer lugar, se decidirá utilizando el <strong className="text-white">Total de Goles de toda la Jornada</strong>. Quien se haya acercado más al número total de goles reales anotados en conjunto (no importa si se pasó o le faltaron) será el gran ganador.
+                                Si hay un empate en primer lugar, se decidirá utilizando el <strong className="text-white">Total de Goles de toda la Jornada</strong>. Quien se haya acercado más al número total de goles reales anotados en conjunto será el gran ganador. <br/><span className="text-amber-500 mt-1 block">*En caso de empate exacto también en goles, el premio se repartirá     entre los empatados.</span>
+                            </p>
+                        </div>
+
+                        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 flex flex-col gap-3 sm:col-span-2 group hover:border-amber-500/30 transition-colors">
+                            <div className="flex items-center gap-3 mb-1">
+                                <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center shrink-0">
+                                    <AlertTriangle className="w-5 h-5 text-amber-500" />
+                                </div>
+                                <h4 className="font-bold text-white uppercase tracking-wide text-xs">4. Partidos Suspendidos</h4>
+                            </div>
+                            <p className="text-zinc-400 text-xs leading-relaxed">
+                                Si un partido se suspende o cancela por causas de fuerza mayor, <strong className="text-white">quedará anulado de la quiniela</strong>. Nadie recibirá puntos por ese partido.
+                            </p>
+                        </div>
+                        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 flex flex-col gap-3 sm:col-span-2 group hover:border-[#22c55e]/30 transition-colors">
+                            <div className="flex items-center gap-3 mb-1">
+                                <div className="w-10 h-10 rounded-full bg-[#22c55e]/10 flex items-center justify-center shrink-0">
+                                    <Timer className="w-5 h-5 text-[#22c55e]" />
+                                </div>
+                                <h4 className="font-bold text-white uppercase tracking-wide text-xs">5. Resultados Oficiales</h4>
+                            </div>
+                            <p className="text-zinc-400 text-xs leading-relaxed">
+                                Los resultados válidos para la quiniela son estrictamente al <strong className="text-white">silbatazo final de los 90 minutos reglamentarios</strong>. No se tomarán en cuenta tiempos extra, penales ni decisiones en la mesa dictaminadas posteriormente (como VAR en días posteriores o alineaciones indebidas).
                             </p>
                         </div>
                     </div>
