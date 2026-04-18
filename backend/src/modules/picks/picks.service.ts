@@ -18,6 +18,7 @@ export class PicksService {
         picks: PickSelection[];
         userEmail?: string;
         userId?: string;
+        appVersion?: string;
     }, isAdmin = false): Promise<ParticipantEntry> {
         // Validación de input
         if (!data.participantName || data.participantName.trim().length < 2) {
@@ -60,7 +61,8 @@ export class PicksService {
             submittedAt: Date.now(),
             score: 0,
             hits: [],
-            ...(data.userEmail && { userEmail: data.userEmail })
+            ...(data.userEmail && { userEmail: data.userEmail }),
+            ...(data.appVersion && { appVersion: data.appVersion })
         };
 
         if (data.userId) {
@@ -89,24 +91,31 @@ export class PicksService {
         const auth = this.firebaseService.getAuth();
         const db = this.firebaseService.getDb();
         
-        const cache = new Map<string, string>(); // email -> phone
+        const cache = new Map<string, { phone?: string, hasAcceptedRules?: boolean }>();
         
         for (const pick of picks) {
-            if (!pick.phoneNumber && pick.userEmail) {
+            if (pick.userEmail) {
                 if (cache.has(pick.userEmail)) {
-                    pick.phoneNumber = cache.get(pick.userEmail);
+                    const cachedData = cache.get(pick.userEmail);
+                    if (!pick.phoneNumber && cachedData?.phone) pick.phoneNumber = cachedData.phone;
+                    pick.hasAcceptedRules = cachedData?.hasAcceptedRules || false;
                 } else {
                     try {
                         const userRecord = await auth.getUserByEmail(pick.userEmail);
                         const userDoc = await db.collection('users').doc(userRecord.uid).get();
-                        if (userDoc.exists && userDoc.data()?.phoneNumber) {
-                            pick.phoneNumber = userDoc.data()?.phoneNumber;
-                            cache.set(pick.userEmail, pick.phoneNumber!);
+                        if (userDoc.exists) {
+                            const data = userDoc.data();
+                            if (!pick.phoneNumber && data?.phoneNumber) pick.phoneNumber = data.phoneNumber;
+                            pick.hasAcceptedRules = data?.hasAcceptedRules || false;
+                            
+                            cache.set(pick.userEmail, { phone: data?.phoneNumber, hasAcceptedRules: data?.hasAcceptedRules });
                         } else {
-                            cache.set(pick.userEmail, undefined!);
+                            cache.set(pick.userEmail, { hasAcceptedRules: false });
+                            pick.hasAcceptedRules = false;
                         }
                     } catch (e) {
-                        cache.set(pick.userEmail, undefined!);
+                        cache.set(pick.userEmail, { hasAcceptedRules: false });
+                        pick.hasAcceptedRules = false;
                     }
                 }
             }

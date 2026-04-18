@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Trophy, ChevronRight, Loader2, Play, Activity, Timer, HelpCircle, LogOut, User, AlertTriangle, ShieldCheck, Target, Calculator, Bell, Shield, MessageCircle} from 'lucide-react';
+import { Trophy, ChevronRight, Loader2, Play, Activity, Timer, HelpCircle, LogOut, User, AlertTriangle, ShieldCheck, Target, Calculator, Bell, Shield, MessageCircle, Lock} from 'lucide-react';
 import { api } from '../../lib/api';
 import StandingsTable from './StandingsTable';
 import { Modal } from '../../components/ui/Modal';
@@ -8,9 +8,7 @@ import PaymentInfoModal from '../../components/PaymentInfoModal';
 import { useAuth } from '../../context/AuthContext';
 import { requestNotificationPermission } from '../../lib/notifications';
 import { toast } from 'sonner';
-
-const APP_VERSION = "v2.0.0";
-
+import { APP_VERSION } from '../../version';
 
 export default function Home() {
     const navigate = useNavigate();
@@ -422,6 +420,17 @@ export default function Home() {
                             </div>
                             <p className="text-zinc-400 text-xs leading-relaxed">
                                 Los resultados válidos para la quiniela son estrictamente al <strong className="text-white">silbatazo final de los 90 minutos reglamentarios</strong>. No se tomarán en cuenta tiempos extra, penales ni decisiones en la mesa dictaminadas posteriormente (como VAR en días posteriores o alineaciones indebidas).
+                            </p>
+                        </div>
+                        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 flex flex-col gap-3 sm:col-span-2 group hover:border-blue-500/30 transition-colors">
+                            <div className="flex items-center gap-3 mb-1">
+                                <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0">
+                                    <Lock className="w-5 h-5 text-blue-500" />
+                                </div>
+                                <h4 className="font-bold text-white uppercase tracking-wide text-xs">6. Envío Definitivo</h4>
+                            </div>
+                            <p className="text-zinc-400 text-xs leading-relaxed">
+                                Una vez que guardes y envíes tu quiniela a través de la aplicación, <strong className="text-white">no será posible realizar cambios ni modificaciones</strong> en tus pronósticos. Asegúrate de revisar bien tus selecciones antes de confirmar.
                             </p>
                         </div>
                     </div>

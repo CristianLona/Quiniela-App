@@ -57,6 +57,8 @@ export interface ParticipantEntry {
     hits?: string[]; 
     pointsDistance?: number; 
     submittedAt: number;
+    hasAcceptedRules?: boolean;
+    appVersion?: string;
 }
 
 export interface WeekDraft {

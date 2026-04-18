@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { cn } from '../../lib/utils';
-import { Lock, Plus, Play, Loader2, Trophy, ClipboardList, PenTool, User, Eye, EyeOff, DollarSign, CheckCircle2, Circle, History, ArrowRight, Trash2, AlertTriangle} from 'lucide-react';
+import { Lock, Plus, Play, Loader2, Trophy, ClipboardList, PenTool, User, Eye, EyeOff, DollarSign, CheckCircle2, Circle, History, ArrowRight, Trash2, AlertTriangle, ShieldCheck} from 'lucide-react';
 import type { WeekDraft, Match, MatchStatus, ParticipantEntry, Week } from '../../types';
 import { toast } from 'sonner';
 import { Modal } from '../../components/ui/Modal';
@@ -829,8 +829,20 @@ function ParticipantsEditor({ weekId: propWeekId }: { weekId?: string }) {
                                     {p.participantName.charAt(0).toUpperCase()}
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <p className="font-bold text-white text-sm truncate">{p.participantName}</p>
-                                    <p className="text-[10px] text-zinc-500 uppercase tracking-wider">{new Date(p.submittedAt).toLocaleDateString()}</p>
+                                    <div className="flex flex-wrap items-center gap-1.5">
+                                        <p className="font-bold text-white text-sm truncate">{p.participantName}</p>
+                                        {p.hasAcceptedRules && (
+                                            <span title="Aceptó términos" className="flex shrink-0">
+                                                <ShieldCheck className="w-3.5 h-3.5 text-blue-500" />
+                                            </span>
+                                        )}
+                                        {p.appVersion ? (
+                                            <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-mono tracking-wider border border-emerald-500/20" title="Versión enviada">{p.appVersion}</span>
+                                        ) : (
+                                            <span className="text-[9px] px-1.5 py-0.5 rounded bg-red-500/20 text-red-500 font-mono tracking-wider border border-red-500/20" title="Versión antigua - Sin registro">v1.x</span>
+                                        )}
+                                    </div>
+                                    <p className="text-[10px] text-zinc-500 uppercase tracking-wider mt-0.5">{new Date(p.submittedAt).toLocaleDateString()}</p>
                                     {(p.userEmail || p.phoneNumber) && (
                                         <div className="text-[10px] text-zinc-400 mt-1 truncate">
                                             {p.userEmail && <p> {p.userEmail}</p>}

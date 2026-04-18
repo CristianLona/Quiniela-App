@@ -67,10 +67,10 @@ export const api = {
     },
 
     picks: {
-        submit: (data: { weekId: string; participantName: string; totalGoalsPrediction: number; picks: PickSelection[] }) =>
+        submit: (data: { weekId: string; participantName: string; totalGoalsPrediction: number; picks: PickSelection[]; appVersion?: string }) =>
             fetchJson<ParticipantEntry>('/picks', { method: 'POST', body: JSON.stringify(data) }),
 
-        adminSubmit: (data: { weekId: string; participantName: string; totalGoalsPrediction: number; picks: PickSelection[] }) =>
+        adminSubmit: (data: { weekId: string; participantName: string; totalGoalsPrediction: number; picks: PickSelection[]; appVersion?: string }) =>
             fetchJson<ParticipantEntry>('/picks/admin', { method: 'POST', body: JSON.stringify(data) }),
 
         getByWeek: (weekId: string) => fetchJson<ParticipantEntry[]>(`/picks/week/${weekId}`),

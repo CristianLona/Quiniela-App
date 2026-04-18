@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import type { Match, MatchOutcome } from "../../types";
 import { MatchCard } from "../../components/MatchCard";
-import { Trophy, Clock, Loader2, User, Target, ArrowLeft, CheckCircle2, Ticket, Timer, AlertTriangle, ShieldCheck, Calculator } from "lucide-react";
+import { Trophy, Clock, Loader2, User, Target, ArrowLeft, CheckCircle2, Ticket, Timer, AlertTriangle, ShieldCheck, Calculator, Lock } from "lucide-react";
 import { toast } from 'sonner';
 import { Modal } from '../../components/ui/Modal';
 import { cn } from "../../lib/utils";
@@ -9,6 +9,7 @@ import { api } from "../../lib/api";
 import { getShortName } from "../../lib/teams";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { APP_VERSION } from "../../version";
 
 export default function FillQuiniela() {
     const navigate = useNavigate();
@@ -200,7 +201,8 @@ export default function FillQuiniela() {
                 weekId: weekID,
                 participantName: name.trim(),
                 totalGoalsPrediction: parseInt(goals),
-                picks: picksArray
+                picks: picksArray,
+                appVersion: APP_VERSION
             });
 
             toast.success("¡Quiniela enviada con éxito! Mucha suerte");
@@ -528,6 +530,11 @@ export default function FillQuiniela() {
                                     <Timer className="w-5 h-5 text-cyan-500 shrink-0 mt-0.5" />
                                     <div><strong className="text-white block mb-1">5. Resultados Oficiales</strong>
                                     <span className="text-zinc-400 text-xs">Valen los resultados estrictamente al silbatazo final de los 90 min reglamentarios. No se cuentan tiempos extra, penales ni decisiones en la mesa. Las modificaciones a la quiniela posterior al envío no están permitidas.</span></div>
+                                </div>
+                                <div className="flex gap-3">
+                                    <Lock className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
+                                    <div><strong className="text-white block mb-1">6. Envío Definitivo</strong>
+                                    <span className="text-zinc-400 text-xs">Una vez que guardes y envíes tu quiniela a través de la aplicación, no será posible realizar cambios ni modificaciones en tus pronósticos. Asegúrate de revisar bien tus selecciones antes de confirmar.</span></div>
                                 </div>
                             </div>
                         </div>

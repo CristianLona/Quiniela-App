@@ -57,6 +57,8 @@ export interface ParticipantEntry {
     submittedAt: number;
     userEmail?: string;
     phoneNumber?: string;
+    hasAcceptedRules?: boolean;
+    appVersion?: string;
 }
 
 export interface WeekDraft {
