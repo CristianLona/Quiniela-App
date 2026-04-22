@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { cn } from '../../lib/utils';
-import { Lock, Plus, Play, Loader2, Trophy, ClipboardList, PenTool, User, Eye, EyeOff, DollarSign, CheckCircle2, Circle, History, ArrowRight, Trash2, AlertTriangle, ShieldCheck} from 'lucide-react';
+import { Lock, Plus, Play, Loader2, Trophy, ClipboardList, PenTool, User, Eye, EyeOff, DollarSign, CheckCircle2, Circle, History, ArrowRight, Trash2, AlertTriangle, ShieldCheck, Download} from 'lucide-react';
 import type { WeekDraft, Match, MatchStatus, ParticipantEntry, Week } from '../../types';
 import { toast } from 'sonner';
 import { Modal } from '../../components/ui/Modal';
 import { api } from '../../lib/api';
+import { exportScoreboardToExcel } from '../../lib/exportScoreboard';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -1049,6 +1050,7 @@ function HistoryViewer() {
     const [weeks, setWeeks] = useState<Week[]>([]);
     const [selectedWeekId, setSelectedWeekId] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
+    const [exportingId, setExportingId] = useState<string | null>(null);
 
     const fetchWeeks = async () => {
         setLoading(true);
@@ -1059,6 +1061,57 @@ function HistoryViewer() {
             toast.error('Error cargando historial');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleExportWeek = async (week: Week) => {
+        setExportingId(week.id);
+        try {
+            const rawParts = await api.picks.getAdminByWeek(week.id);
+            const paidParts = rawParts.filter(p => p.paymentStatus === 'PAID');
+            
+            if (paidParts.length === 0) {
+                toast.error('No hay participantes pagados en esta jornada.');
+                setExportingId(null);
+                return;
+            }
+
+            const totalGoals = week.matches.reduce((acc, m) => {
+                if (m.status === 'FINISHED' && m.result) {
+                    return acc + m.result.homeScore + m.result.awayScore;
+                }
+                return acc;
+            }, 0);
+
+            const participants = paidParts.map(p => {
+                let score = 0;
+                const hits: string[] = [];
+                p.picks.forEach(pick => {
+                    const match = week.matches.find(m => m.id === pick.matchId);
+                    if (match && match.status === 'FINISHED' && match.result?.outcome === pick.selection) {
+                        score++;
+                        hits.push(match.id);
+                    }
+                });
+                return { ...p, score, hits };
+            });
+
+            const prizePot = (participants.length * (week.price || 0)) - (week.adminFee || 0);
+            const finalPot = prizePot > 0 ? prizePot : 0;
+
+            await exportScoreboardToExcel(
+                participants,
+                week.matches,
+                week.name,
+                totalGoals,
+                finalPot
+            );
+            toast.success('Excel generado correctamente');
+        } catch (e) {
+            console.error(e);
+            toast.error('Error al exportar histórico');
+        } finally {
+            setExportingId(null);
         }
     };
 
@@ -1138,6 +1191,15 @@ function HistoryViewer() {
                                         <td className="p-4 text-center text-zinc-400 font-mono">{week.matches?.length || 0}</td>
                                         <td className="p-4 text-right flex items-center justify-end gap-2">
                                             <button
+                                                onClick={() => handleExportWeek(week)}
+                                                disabled={exportingId === week.id}
+                                                className="px-3 py-1.5 bg-[#22c55e]/10 hover:bg-[#22c55e]/20 text-[#22c55e] rounded-lg text-xs font-bold transition-colors flex items-center gap-1 disabled:opacity-50"
+                                                title="Exportar a Excel"
+                                            >
+                                                {exportingId === week.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
+                                                Excel
+                                            </button>
+                                            <button
                                                 onClick={() => setSelectedWeekId(week.id)}
                                                 className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg text-xs font-bold transition-colors"
                                             >
@@ -1174,10 +1236,18 @@ function HistoryViewer() {
                                     <span>{new Date(week.createdAt).toLocaleDateString()}</span>
                                     <span className="font-mono">{week.matches?.length || 0} partidos</span>
                                 </div>
-                                <div className="flex gap-2">
+                                <div className="flex gap-2 text-center items-stretch h-8">
+                                    <button
+                                        onClick={() => handleExportWeek(week)}
+                                        disabled={exportingId === week.id}
+                                        className="w-10 bg-[#22c55e]/10 hover:bg-[#22c55e]/20 text-[#22c55e] rounded-lg text-xs font-bold transition-colors flex items-center justify-center disabled:opacity-50"
+                                        title="Exportar a Excel"
+                                    >
+                                        {exportingId === week.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                                    </button>
                                     <button
                                         onClick={() => setSelectedWeekId(week.id)}
-                                        className="flex-1 px-3 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg text-xs font-bold transition-colors text-center"
+                                        className="flex-1 px-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg text-xs font-bold transition-colors flex items-center justify-center"
                                     >
                                         Participantes
                                     </button>

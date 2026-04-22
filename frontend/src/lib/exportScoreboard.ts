@@ -49,10 +49,16 @@ export async function exportScoreboardToExcel(
         views: [{ state: 'frozen', xSplit: 1, ySplit: 5 }],
     });
 
-    // Sort participants by score descending
-    const sorted = [...participants].sort((a, b) => (b.score || 0) - (a.score || 0));
+    const sorted = [...participants].sort((a, b) => {
+        if ((b.score || 0) !== (a.score || 0)) {
+            return (b.score || 0) - (a.score || 0);
+        }
+        const aGoalsDiff = Math.abs((a.totalGoalsPrediction || 0) - totalGoals);
+        const bGoalsDiff = Math.abs((b.totalGoalsPrediction || 0) - totalGoals);
+        return aGoalsDiff - bGoalsDiff;
+    });
     const matchCount = matches.length;
-    const totalCols = 1 + matchCount + 2; // Name + matches + PTS + GOL
+    const totalCols = 1 + matchCount + 2; 
 
     // ─── TITLE SECTION ───────────────────────────────────────────────
     // Row 1: Title

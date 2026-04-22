@@ -14,7 +14,7 @@ import { APP_VERSION } from "../../version";
 export default function FillQuiniela() {
     const navigate = useNavigate();
     const { user } = useAuth();
-    
+
     // Extraemos solo el primer nombre
     const defaultName = user?.displayName ? user.displayName.split(' ')[0] : (user?.email?.split('@')[0] || "");
     const [name, setName] = useState(defaultName);
@@ -23,7 +23,7 @@ export default function FillQuiniela() {
     const [loading, setLoading] = useState(false);
     const [fetching, setFetching] = useState(true);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
-    
+
     // Terms and Conditions State
     const [hasAcceptedTerms, setHasAcceptedTerms] = useState<boolean>(false);
     const [showTermsModal, setShowTermsModal] = useState(false);
@@ -278,9 +278,9 @@ export default function FillQuiniela() {
 
                     <button
                         onClick={() => navigate('/scoreboard')}
-                        className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center hover:border-[#22c55e]/50 transition-colors group"
+                        className="flex items-center gap-1.5 px-3.5 py-2 bg-[#22c55e]/10 hover:bg-[#22c55e]/20 border border-[#22c55e]/20 rounded-xl transition-all active:scale-95"
                     >
-                        <Trophy className="w-5 h-5 text-zinc-500 group-hover:text-[#22c55e] transition-colors" />
+                        <Trophy className="w-5 h-5 text-[#22c55e] group-hover:text-[#22c55e] transition-colors" />
                     </button>
                 </div>
             </div>
@@ -504,37 +504,37 @@ export default function FillQuiniela() {
                     <div className="space-y-6 text-sm">
                         <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 sm:p-5 max-h-[60vh] overflow-y-auto space-y-4 shadow-inner custom-scrollbar">
                             <p className="text-zinc-400 text-xs mb-2">Para garantizar un juego justo para todos, debes conocer y aceptar nuestras reglas antes de enviar tu primera quiniela:</p>
-                            
+
                             <div className="space-y-4">
                                 <div className="flex gap-3">
                                     <Target className="w-5 h-5 text-[#22c55e] shrink-0 mt-0.5" />
                                     <div><strong className="text-white block mb-1">1. La Dinámica</strong>
-                                    <span className="text-zinc-400 text-xs">Predice el resultado final de todos los partidos semanales: Local, Empate o Visita. Toda quiniela sin pagar antes del inicio del primer partido será eliminada.</span></div>
+                                        <span className="text-zinc-400 text-xs">Predice el resultado final de todos los partidos semanales: Local, Empate o Visita. Toda quiniela sin pagar antes del inicio del primer partido será eliminada.</span></div>
                                 </div>
                                 <div className="flex gap-3">
                                     <ShieldCheck className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
                                     <div><strong className="text-white block mb-1">2. Puntuación</strong>
-                                    <span className="text-zinc-400 text-xs">Sumarás 1 punto por cada predicción correcta. Quien logre más puntos se lleva la bolsa.</span></div>
+                                        <span className="text-zinc-400 text-xs">Sumarás 1 punto por cada predicción correcta. Quien logre más puntos se lleva la bolsa.</span></div>
                                 </div>
                                 <div className="flex gap-3">
                                     <Calculator className="w-5 h-5 text-purple-500 shrink-0 mt-0.5" />
                                     <div><strong className="text-white block mb-1">3. Criterio de Desempate</strong>
-                                    <span className="text-zinc-400 text-xs">En caso de empate en puntos, gana quien se acerque más al "Total de Goles" de la jornada. Si hay empate exacto también en goles, gana quien haya enviado y registrado su quiniela primero.</span></div>
+                                        <span className="text-zinc-400 text-xs">En caso de empate en puntos, gana quien se acerque más al "Total de Goles" de la jornada. Si hay empate exacto también en goles,<br /><span className="text-amber-500 mt-1 block">*En caso de empate exacto también en goles, el premio se repartirá entre los empatados.</span></span></div>
                                 </div>
                                 <div className="flex gap-3">
                                     <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
                                     <div><strong className="text-white block mb-1">4. Partidos Suspendidos</strong>
-                                    <span className="text-zinc-400 text-xs">Si un partido se suspende por causas de fuerza mayor, quedará anulado de la quiniela y nadie recibirá puntos por él.</span></div>
+                                        <span className="text-zinc-400 text-xs">Si un partido se suspende por causas de fuerza mayor, quedará anulado de la quiniela y nadie recibirá puntos por él.</span></div>
                                 </div>
                                 <div className="flex gap-3">
                                     <Timer className="w-5 h-5 text-cyan-500 shrink-0 mt-0.5" />
                                     <div><strong className="text-white block mb-1">5. Resultados Oficiales</strong>
-                                    <span className="text-zinc-400 text-xs">Valen los resultados estrictamente al silbatazo final de los 90 min reglamentarios. No se cuentan tiempos extra, penales ni decisiones en la mesa. Las modificaciones a la quiniela posterior al envío no están permitidas.</span></div>
+                                        <span className="text-zinc-400 text-xs">Valen los resultados estrictamente al silbatazo final de los 90 min reglamentarios. No se cuentan tiempos extra, penales ni decisiones en la mesa. Las modificaciones a la quiniela posterior al envío no están permitidas.</span></div>
                                 </div>
                                 <div className="flex gap-3">
                                     <Lock className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
                                     <div><strong className="text-white block mb-1">6. Envío Definitivo</strong>
-                                    <span className="text-zinc-400 text-xs">Una vez que guardes y envíes tu quiniela a través de la aplicación, no será posible realizar cambios ni modificaciones en tus pronósticos. Asegúrate de revisar bien tus selecciones antes de confirmar.</span></div>
+                                        <span className="text-zinc-400 text-xs">Una vez que guardes y envíes tu quiniela a través de la aplicación, no será posible realizar cambios ni modificaciones en tus pronósticos. Asegúrate de revisar bien tus selecciones antes de confirmar.</span></div>
                                 </div>
                             </div>
                         </div>

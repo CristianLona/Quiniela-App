@@ -126,16 +126,25 @@ export default function Scoreboard() {
         });
     }, [rawParticipants, matches]);
 
-    const sortedParticipants = useMemo(() => {
-        return [...participants].sort((a, b) => (b.score || 0) - (a.score || 0));
-    }, [participants]);
+    const totalGoals = useMemo(() => {
+        return matches.reduce((acc, m) => {
+            if (m.status === 'FINISHED' && m.result) {
+                return acc + m.result.homeScore + m.result.awayScore;
+            }
+            return acc;
+        }, 0);
+    }, [matches]);
 
-    const totalGoals = matches.reduce((acc, m) => {
-        if (m.status === 'FINISHED' && m.result) {
-            return acc + m.result.homeScore + m.result.awayScore;
-        }
-        return acc;
-    }, 0);
+    const sortedParticipants = useMemo(() => {
+        return [...participants].sort((a, b) => {
+            if ((b.score || 0) !== (a.score || 0)) {
+                return (b.score || 0) - (a.score || 0);
+            }
+            const aGoalsDiff = Math.abs((a.totalGoalsPrediction || 0) - totalGoals);
+            const bGoalsDiff = Math.abs((b.totalGoalsPrediction || 0) - totalGoals);
+            return aGoalsDiff - bGoalsDiff;
+        });
+    }, [participants, totalGoals]);
 
     const prizePot = useMemo(() => {
         if (!currentWeekData) return 0;
@@ -203,8 +212,8 @@ export default function Scoreboard() {
                                 <span className="text-sm font-bold text-neutral-200 hidden md:block">Excel</span>
                             </button>
                             )}
-                            <button onClick={() => navigate('/fill')} className="flex items-center gap-2 px-4 py-2 bg-[#22c55e] rounded-xl hover:bg-[#16a34a] transition-colors shadow-[0_0_15px_rgba(34,197,94,0.3)]">
-                                <span className="text-sm font-black text-[#020617] uppercase">Jugar</span>
+                            <button onClick={() => navigate('/fill')} className="flex items-center gap-1.5 px-3.5 py-2 bg-[#22c55e]/10 hover:bg-[#22c55e]/20 border border-[#22c55e]/20 rounded-xl transition-all active:scale-95">
+                                <span className="text-sm font-black text-[#22c55e] uppercase">Jugar</span>
                             </button>
                     </div>
                 </div>
