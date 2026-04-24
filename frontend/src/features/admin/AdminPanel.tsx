@@ -109,19 +109,31 @@ export default function AdminPanel() {
         try {
             const matches = await api.scraper.getMatches(autoLeague);
             if (!matches || matches.length === 0) {
-                toast.error('No se encontraron partidos para esta liga esta semana.');
+                toast.error('No se encontraron partidos para esta liga.');
                 return;
             }
 
             const limit = autoLeague === 'liga-mx' ? 9 : (autoLeague === 'premier-league' ? 10 : 15);
-            const limitedMatches = matches.slice(0, limit);
 
-            const rawTextLines = limitedMatches.map((m: any) => `${m.homeTeam} vs ${m.awayTeam} ${m.date}`);
-            const newText = rawTextLines.join('\n');
+            // Buscar el primer partido PROGRAMADO (saltando los ya jugados)
+            const firstScheduledIdx = matches.findIndex((m: any) => m.status === 'SCHEDULED' || m.status === 'LIVE');
+            const startIdx = firstScheduledIdx >= 0 ? firstScheduledIdx : 0;
+            const limitedMatches = matches.slice(startIdx, startIdx + limit);
 
-            const result = await api.weeks.parse(newText);
-            setBankMatches(prev => [...prev, ...result.parsedMatches]);
-            toast.success(`Se agregaron ${result.parsedMatches.length} partidos al Banco`);
+            // Construir los objetos de partido directamente (sin pasar por el parser de texto)
+            const newMatches: Omit<Match, 'id' | 'weekId' | 'status'>[] = limitedMatches.map((m: any) => {
+                const isoDate = m.date; // ESPN devuelve ISO: "2026-04-25T23:00Z"
+                const ts = new Date(isoDate).getTime();
+                return {
+                    homeTeam: m.homeTeam,
+                    awayTeam: m.awayTeam,
+                    date: isoDate,
+                    timestamp: ts,
+                };
+            });
+
+            setBankMatches(prev => [...prev, ...newMatches]);
+            toast.success(`Se agregaron ${newMatches.length} partidos al Banco`);
 
         } catch (err) {
             toast.error('Error al autogenerar: ' + String(err));
@@ -129,6 +141,8 @@ export default function AdminPanel() {
             setIsAutoGenerating(false);
         }
     };
+
+
 
     const handlePublish = async () => {
         if (!draft) return;
@@ -254,7 +268,7 @@ export default function AdminPanel() {
                                         <div className="h-px bg-zinc-800 flex-1"></div>
                                     </div>
 
-                                    <textarea value={weekText} onChange={e => setWeekText(e.target.value)} placeholder={`Equipo VS Equipo`} className="w-full h-16 bg-[#18181b] p-3 text-xs text-zinc-300 border border-zinc-800 rounded-lg focus:border-pool-green outline-none font-mono resize-none custom-scrollbar" />
+                                    <textarea value={weekText} onChange={e => setWeekText(e.target.value)} placeholder={`Puebla vs Querétaro Vie 24-04 21:00 17 14\nLocal VS Visita Día DD-MM HH:MM PosL PosV`} className="w-full h-20 bg-[#18181b] p-3 text-xs text-zinc-300 border border-zinc-800 rounded-lg focus:border-pool-green outline-none font-mono resize-none custom-scrollbar placeholder:text-zinc-600" />
                                     <button onClick={handleParse} disabled={loading || !weekText.trim()} className="w-full text-xs bg-zinc-800 text-white font-bold px-4 py-2 rounded-lg flex items-center justify-center gap-2 hover:bg-zinc-700 disabled:opacity-50 transition-colors">
                                         {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Plus className="w-3 h-3" />} <span>Procesar Texto al Banco</span>
                                     </button>

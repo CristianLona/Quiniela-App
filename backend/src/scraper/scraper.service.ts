@@ -1,43 +1,87 @@
 import { Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
-import * as cheerio from 'cheerio';
+
+// ─── Interfaces ──────────────────────────────────────────────────────────────
 
 export interface ScrapedMatch {
-    date: string;
-    homeTeam: string;
-    awayTeam: string;
-    homeScore?: number;
-    awayScore?: number;
-    status: 'TBD' | 'LIVE' | 'FINISHED'; 
+    matchId:   string;
+    date:      string;          // ISO date string (e.g. "2026-04-25T03:00Z")
+    homeTeam:  string;
+    awayTeam:  string;
+    homeScore: number | null;   // null = partido no jugado todavía
+    awayScore: number | null;
+    status:    'SCHEDULED' | 'LIVE' | 'FINISHED' | 'POSTPONED';
+    league:    string;
 }
 
-interface CacheEntry<T> {
-    data: T;
+interface CacheEntry {
+    data:      ScrapedMatch[];
     expiresAt: number;
 }
 
-const LEAGUE_URLS: Record<string, string> = {
-    'liga-mx': 'https://www.espn.com.mx/futbol/calendario/_/liga/mex.1',
-    'champions-league': 'https://www.espn.com.mx/futbol/calendario/_/liga/uefa.champions',
-    'premier-league': 'https://www.espn.com.mx/futbol/calendario/_/liga/eng.1'
+// ─── Configuración de ligas ───────────────────────────────────────────────────
+//
+// Usamos la API JSON de ESPN (site.api.espn.com), que es pública y estable.
+// Cada liga se identifica con su slug ESPN en la URL del scoreboard.
+//
+// Para agregar nuevas ligas, basta con encontrar el slug correcto en:
+//   https://site.api.espn.com/apis/site/v2/sports/soccer/{slug}/scoreboard
+//
+
+const LEAGUES: Record<string, { name: string; slug: string }> = {
+    'liga-mx': {
+        name: 'Liga MX',
+        slug: 'mex.1',
+    },
+    'champions-league': {
+        name: 'UEFA Champions League',
+        slug: 'uefa.champions',
+    },
+    'premier-league': {
+        name: 'Premier League',
+        slug: 'eng.1',
+    },
+    'la-liga': {
+        name: 'La Liga',
+        slug: 'esp.1',
+    },
+    'serie-a': {
+        name: 'Serie A',
+        slug: 'ita.1',
+    },
+    'bundesliga': {
+        name: 'Bundesliga',
+        slug: 'ger.1',
+    },
+    'ligue-1': {
+        name: 'Ligue 1',
+        slug: 'fra.1',
+    },
+    'mls': {
+        name: 'MLS',
+        slug: 'usa.1',
+    },
 };
 
-const CACHE_TTL_MS = 10 * 60 * 1000; 
+const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutos
+
+const ESPN_BASE = 'https://site.api.espn.com/apis/site/v2/sports/soccer';
+
+// ─── Servicio ─────────────────────────────────────────────────────────────────
 
 @Injectable()
 export class ScraperService {
     private readonly logger = new Logger(ScraperService.name);
-    private readonly cache = new Map<string, CacheEntry<ScrapedMatch[]>>();
+    private readonly cache  = new Map<string, CacheEntry>();
 
-    private readonly HEADERS = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-    };
+    // ── Métodos públicos ──────────────────────────────────────────────────────
 
     /**
-     * Extrae los partidos de la semana actual listados en la página de calendarios/resultados
-     * Resultados cacheados por 10 minutos por liga.
+     * Retorna los partidos para una liga usando la API JSON de ESPN.
+     * Incluye partidos recientes (con marcador) y próximos (programados).
+     * Por defecto usa 'liga-mx'.
      */
-    async scrapeMatches(leagueSlug: string): Promise<ScrapedMatch[]> {
+    async scrapeMatches(leagueSlug: string = 'liga-mx'): Promise<ScrapedMatch[]> {
         // Revisar caché
         const cached = this.cache.get(leagueSlug);
         if (cached && Date.now() < cached.expiresAt) {
@@ -45,77 +89,12 @@ export class ScraperService {
             return cached.data;
         }
 
-        const url = LEAGUE_URLS[leagueSlug] || LEAGUE_URLS['liga-mx'];
+        const league = LEAGUES[leagueSlug] || LEAGUES['liga-mx'];
+        const leagueName = league.name;
 
         try {
-            this.logger.debug(`Cache MISS for ${leagueSlug} — scraping ESPN...`);
-            const { data } = await axios.get(url, { headers: this.HEADERS, timeout: 15000 });
-            const $ = cheerio.load(data);
-            const matches: ScrapedMatch[] = [];
-
-            $('.ResponsiveTable').each((i, tableNode) => {
-                const dateStr = $(tableNode).find('.Table__Title').text().trim();
-
-                $(tableNode).find('tbody tr').each((j, row) => {
-                    const tds = $(row).find('td');
-                    if (tds.length < 3) return;
-
-                    let homeTeam = '', awayTeam = '', resultOrTime = '';
-
-                    const homeNode1 = $(row).find('.home');
-                    const awayNode1 = $(row).find('.away');
-                    const localNode = $(row).find('.local');
-
-                    if (localNode.length > 0) {
-                        homeTeam = $(tds[0]).find('.Table__Team, a.team-name span').last().text().trim() || $(tds[0]).text().trim();
-                        awayTeam = localNode.find('.Table__Team, a.team-name span').last().text().trim() || localNode.text().replace(/[0-9\-:v\sF]/g, '').trim();
-
-                        const scoreText = localNode.find('a.at').text().trim();
-                        if (scoreText.includes('-')) {
-                            resultOrTime = scoreText;
-                        } else {
-                            resultOrTime = $(tds[2]).text().trim();
-                        }
-                    } else if (homeNode1.length && awayNode1.length) {
-                        homeTeam = homeNode1.find('a.team-name span').first().text().trim() || homeNode1.text().trim();
-                        awayTeam = awayNode1.find('a.team-name span').first().text().trim() || awayNode1.text().trim();
-                        resultOrTime = $(row).find('.result, .time').text().trim();
-                    } else {
-                        homeTeam = $(tds[0]).find('.hide-mobile').first().text().trim() || $(tds[0]).text().trim();
-                        awayTeam = $(tds[1]).find('.hide-mobile').first().text().trim() || $(tds[1]).text().trim();
-                        resultOrTime = $(tds[2]).text().trim();
-                    }
-
-                    awayTeam = awayTeam.replace(/^v\s*/i, '').trim();
-
-                    if (!homeTeam || !awayTeam) return;
-
-                    let homeScore: number | undefined;
-                    let awayScore: number | undefined;
-                    let status: 'TBD' | 'LIVE' | 'FINISHED' = 'TBD';
-                    let matchTime = '';
-
-                    if (resultOrTime.includes('-')) {
-                        const match = resultOrTime.match(/(\d+)\s*-\s*(\d+)/);
-                        if (match) {
-                            homeScore = parseInt(match[1], 10);
-                            awayScore = parseInt(match[2], 10);
-                            status = 'FINISHED';
-                        }
-                    } else if (resultOrTime.includes(':')) {
-                        matchTime = resultOrTime;
-                    }
-
-                    matches.push({
-                        date: matchTime ? `${dateStr} ${matchTime}` : dateStr,
-                        homeTeam,
-                        awayTeam,
-                        homeScore,
-                        awayScore,
-                        status
-                    });
-                });
-            });
+            this.logger.debug(`Cache MISS for ${leagueSlug} — consultando ESPN API...`);
+            const matches = await this.fetchFromESPN(league.slug, leagueName);
 
             // Guardar en caché
             this.cache.set(leagueSlug, {
@@ -123,18 +102,123 @@ export class ScraperService {
                 expiresAt: Date.now() + CACHE_TTL_MS,
             });
 
-            this.logger.debug(`Scraped ${matches.length} matches for ${leagueSlug}, cached for 10 min`);
+            this.logger.debug(`ESPN API → ${matches.length} partidos para ${leagueSlug}, cacheados por 10 min`);
             return matches;
 
-        } catch (error) {
+        } catch (error: any) {
             // Si hay caché expirado, mejor retornar datos viejos que fallar
             if (cached) {
-                this.logger.warn(`Error scraping ${leagueSlug}, returning stale cache: ${error.message}`);
+                this.logger.warn(`Error consultando ESPN para ${leagueSlug}, devolviendo caché expirado: ${error.message}`);
                 return cached.data;
             }
-            this.logger.error(`Error scraping matches: ${error.message}`);
+            this.logger.error(`Error obteniendo partidos de ESPN: ${error.message}`);
             throw error;
         }
     }
-}
 
+    // ── Lógica de consulta a ESPN API ─────────────────────────────────────────
+
+    /**
+     * Genera el rango de fechas para la consulta a ESPN:
+     *   - 2 meses atrás (para obtener resultados recientes)
+     *   - 6 meses adelante (para obtener próximos partidos)
+     */
+    private getDateRange(): string {
+        const now = new Date();
+
+        const past = new Date(now);
+        past.setMonth(now.getMonth() - 2);
+
+        const future = new Date(now);
+        future.setMonth(now.getMonth() + 6);
+
+        const fmt = (d: Date) => {
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${y}${m}${day}`;
+        };
+
+        return `${fmt(past)}-${fmt(future)}`;
+    }
+
+    /**
+     * Consulta la API de ESPN y transforma los eventos en ScrapedMatch[].
+     *
+     * Endpoint: GET {ESPN_BASE}/{slug}/scoreboard?dates=YYYYMMDD-YYYYMMDD&limit=1000
+     *
+     * Cada evento de ESPN tiene esta estructura (simplificada):
+     *   event.id                                     → matchId
+     *   event.date                                   → ISO date string
+     *   event.status.type.name                       → "STATUS_SCHEDULED" | "STATUS_FULL_TIME" | ...
+     *   event.competitions[0].competitors[]           → array con home y away
+     *     .homeAway                                  → "home" | "away"
+     *     .team.displayName                          → nombre del equipo
+     *     .score                                     → marcador (string)
+     */
+    private async fetchFromESPN(slug: string, leagueName: string): Promise<ScrapedMatch[]> {
+        const dateRange = this.getDateRange();
+        const url = `${ESPN_BASE}/${slug}/scoreboard?dates=${dateRange}&limit=1000`;
+
+        const { data } = await axios.get(url, {
+            timeout: 20_000,
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept': 'application/json',
+            },
+        });
+
+        if (!data?.events) {
+            this.logger.warn(`ESPN API no devolvió eventos para ${slug}`);
+            return [];
+        }
+
+        const matches: ScrapedMatch[] = [];
+
+        for (const event of data.events) {
+            const comp = event.competitions?.[0];
+            if (!comp?.competitors) continue;
+
+            const homeObj = comp.competitors.find((c: any) => c.homeAway === 'home');
+            const awayObj = comp.competitors.find((c: any) => c.homeAway === 'away');
+            if (!homeObj || !awayObj) continue;
+
+            // Determinar status
+            const espnStatus: string = event.status?.type?.name || '';
+            let status: ScrapedMatch['status'] = 'SCHEDULED';
+
+            if (espnStatus.includes('FULL_TIME') || espnStatus.includes('FINAL')) {
+                status = 'FINISHED';
+            } else if (
+                espnStatus.includes('IN_PROGRESS') ||
+                espnStatus.includes('HALFTIME') ||
+                espnStatus.includes('LIVE')
+            ) {
+                status = 'LIVE';
+            } else if (espnStatus.includes('POSTPONED') || espnStatus.includes('CANCELED') || espnStatus.includes('SUSPENDED')) {
+                status = 'POSTPONED';
+            }
+
+            // Parsear marcador — ESPN siempre retorna score como string
+            const homeScoreRaw = parseInt(homeObj.score, 10);
+            const awayScoreRaw = parseInt(awayObj.score, 10);
+
+            // Solo asignar marcador si el partido ya se jugó o está en vivo
+            const homeScore = (status === 'FINISHED' || status === 'LIVE') && !isNaN(homeScoreRaw) ? homeScoreRaw : null;
+            const awayScore = (status === 'FINISHED' || status === 'LIVE') && !isNaN(awayScoreRaw) ? awayScoreRaw : null;
+
+            matches.push({
+                matchId:   event.id,
+                date:      event.date,           // ISO string nativo de ESPN
+                homeTeam:  homeObj.team?.displayName || 'TBD',
+                awayTeam:  awayObj.team?.displayName || 'TBD',
+                homeScore,
+                awayScore,
+                status,
+                league:    leagueName,
+            });
+        }
+
+        return matches;
+    }
+}
